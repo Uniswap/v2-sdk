@@ -54,7 +54,7 @@ export class Pair {
     tokenB: Token,
     provider = getDefaultProvider(getNetwork(tokenA.chainId))
   ): Promise<Pair> {
-    invariant(tokenA.chainId == tokenB.chainId, 'CHAIN_ID')
+    invariant(tokenA.chainId === tokenB.chainId, 'CHAIN_ID')
     const address = Pair.getAddress(tokenA, tokenB)
     const balances = await Promise.all([
       new Contract(tokenA.address, ERC20, provider).balanceOf(address),
