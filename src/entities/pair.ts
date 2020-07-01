@@ -1,3 +1,4 @@
+import { TokenAmount } from './fractions/tokenAmount'
 import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
 import { getNetwork } from '@ethersproject/networks'
@@ -21,7 +22,6 @@ import IUniswapV2Pair from '@uniswap/v2-core/build/IUniswapV2Pair.json'
 import { sqrt, parseBigintIsh } from '../utils'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
 import { Token } from './token'
-import { TokenAmount } from './fractions/tokenAmount'
 
 let CACHE: { [token0Address: string]: { [token1Address: string]: string } } = {}
 

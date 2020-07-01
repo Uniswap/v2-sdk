@@ -1,4 +1,4 @@
-import { ChainId, Token, TokenAmount, Pair, InsufficientInputAmountError } from '../src'
+import { ChainId, Token, Pair, InsufficientInputAmountError, TokenAmount } from '../src'
 import { sortedInsert } from '../src/utils'
 
 describe('miscellaneous', () => {
