@@ -34,7 +34,7 @@ describe('Trade', () => {
 
   it('can be constructed with ETHER as input', () => {
     const trade = new Trade(
-      new Route([pair_weth_0], WETH[ChainId.MAINNET]),
+      new Route([pair_weth_0], ETHER),
       new CurrencyAmount(ETHER, JSBI.BigInt(100)),
       TradeType.EXACT_INPUT
     )
@@ -45,7 +45,7 @@ describe('Trade', () => {
 
   it('can be constructed with ETHER as output', () => {
     const trade = new Trade(
-      new Route([pair_weth_0], token0),
+      new Route([pair_weth_0], token0, ETHER),
       new CurrencyAmount(ETHER, JSBI.BigInt(100)),
       TradeType.EXACT_OUTPUT
     )

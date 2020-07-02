@@ -106,16 +106,30 @@ export class Trade {
     return this.priceImpact
   }
 
+  /**
+   * Constructs an exact in trade with the given amount in and route
+   * @param route route of the exact in trade
+   * @param amountIn the amount being passed in
+   */
+  public static exactIn(route: Route, amountIn: CurrencyAmount): Trade {
+    return new Trade(route, amountIn, TradeType.EXACT_INPUT)
+  }
+
+  /**
+   * Constructs an exact out trade with the given amount out and route
+   * @param route route of the exact out trade
+   * @param amountOut the amount returned by the trade
+   */
+  public static exactOut(route: Route, amountOut: CurrencyAmount): Trade {
+    return new Trade(route, amountOut, TradeType.EXACT_OUTPUT)
+  }
+
   public constructor(route: Route, amount: CurrencyAmount, tradeType: TradeType) {
     const amounts: TokenAmount[] = new Array(route.path.length)
     const nextPairs: Pair[] = new Array(route.pairs.length)
     if (tradeType === TradeType.EXACT_INPUT) {
-      invariant(
-        currencyEquals(amount.currency, route.input) ||
-          (amount.currency === ETHER && route.input.equals(WETH[route.input.chainId])),
-        'INPUT'
-      )
-      amounts[0] = wrappedAmount(amount, route.input.chainId)
+      invariant(currencyEquals(amount.currency, route.input), 'INPUT')
+      amounts[0] = wrappedAmount(amount, route.chainId)
       for (let i = 0; i < route.path.length - 1; i++) {
         const pair = route.pairs[i]
         const [outputAmount, nextPair] = pair.getOutputAmount(amounts[i])
@@ -123,12 +137,8 @@ export class Trade {
         nextPairs[i] = nextPair
       }
     } else {
-      invariant(
-        currencyEquals(amount.currency, route.output) ||
-          (amount.currency === ETHER && route.output.equals(WETH[route.output.chainId])),
-        'OUTPUT'
-      )
-      amounts[amounts.length - 1] = wrappedAmount(amount, route.output.chainId)
+      invariant(currencyEquals(amount.currency, route.output), 'OUTPUT')
+      amounts[amounts.length - 1] = wrappedAmount(amount, route.chainId)
       for (let i = route.path.length - 1; i > 0; i--) {
         const pair = route.pairs[i - 1]
         const [inputAmount, nextPair] = pair.getInputAmount(amounts[i])
