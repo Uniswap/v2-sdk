@@ -1,11 +1,14 @@
-import { Token } from 'entities/token'
+import { ETHER } from './currency'
+import { currencyEquals, Token, WETH } from './token'
 import invariant from 'tiny-invariant'
 
-import { ONE, TradeType, ZERO } from '../constants'
+import { ChainId, ONE, TradeType, ZERO } from '../constants'
 import { sortedInsert } from '../utils'
-import { Fraction, TokenAmount } from './fractions'
+import { CurrencyAmount } from './fractions/currencyAmount'
+import { Fraction } from './fractions/fraction'
 import { Percent } from './fractions/percent'
 import { Price } from './fractions/price'
+import { TokenAmount } from './fractions/tokenAmount'
 import { Pair } from './pair'
 import { Route } from './route'
 
@@ -20,16 +23,16 @@ function computePriceImpact(midPrice: Price, inputAmount: TokenAmount, outputAmo
 
 // minimal interface so the input output comparator may be shared across types
 interface InputOutput {
-  readonly inputAmount: TokenAmount
-  readonly outputAmount: TokenAmount
+  readonly inputAmount: CurrencyAmount
+  readonly outputAmount: CurrencyAmount
 }
 
 // comparator function that allows sorting trades by their output amounts, in decreasing order, and then input amounts
 // in increasing order. i.e. the best trades have the most outputs for the least inputs and are sorted first
 export function inputOutputComparator(a: InputOutput, b: InputOutput): number {
   // must have same input and output token for comparison
-  invariant(a.inputAmount.token.equals(b.inputAmount.token), 'INPUT_TOKEN')
-  invariant(a.outputAmount.token.equals(b.outputAmount.token), 'OUTPUT_TOKEN')
+  invariant(currencyEquals(a.inputAmount.currency, b.inputAmount.currency), 'INPUT_CURRENCY')
+  invariant(currencyEquals(a.outputAmount.currency, b.outputAmount.currency), 'OUTPUT_CURRENCY')
   if (a.outputAmount.equalTo(b.outputAmount)) {
     if (a.inputAmount.equalTo(b.inputAmount)) {
       return 0
@@ -75,11 +78,22 @@ export interface BestTradeOptions {
   maxHops?: number
 }
 
+/**
+ * Given a currency amount and a chain ID, returns the equivalent representation as the token amount.
+ * In other words, if the currency is ETHER, returns the WETH token amount for the given chain. Otherwise, returns
+ * the input currency amount.
+ */
+function wrappedAmount(currencyAmount: CurrencyAmount, chainId: ChainId): TokenAmount {
+  if (currencyAmount instanceof TokenAmount) return currencyAmount
+  if (currencyAmount.currency === ETHER) return new TokenAmount(WETH[chainId], currencyAmount.raw)
+  invariant(false, 'CURRENCY')
+}
+
 export class Trade {
   public readonly route: Route
   public readonly tradeType: TradeType
-  public readonly inputAmount: TokenAmount
-  public readonly outputAmount: TokenAmount
+  public readonly inputAmount: CurrencyAmount
+  public readonly outputAmount: CurrencyAmount
   // the price expressed in terms of output/input
   public readonly executionPrice: Price
   // the mid price after the trade executes assuming zero slippage
@@ -92,12 +106,16 @@ export class Trade {
     return this.priceImpact
   }
 
-  public constructor(route: Route, amount: TokenAmount, tradeType: TradeType) {
-    invariant(amount.token.equals(tradeType === TradeType.EXACT_INPUT ? route.input : route.output), 'TOKEN')
+  public constructor(route: Route, amount: CurrencyAmount, tradeType: TradeType) {
     const amounts: TokenAmount[] = new Array(route.path.length)
     const nextPairs: Pair[] = new Array(route.pairs.length)
     if (tradeType === TradeType.EXACT_INPUT) {
-      amounts[0] = amount
+      invariant(
+        currencyEquals(amount.currency, route.input) ||
+          (amount.currency === ETHER && route.input.equals(WETH[route.input.chainId])),
+        'INPUT'
+      )
+      amounts[0] = wrappedAmount(amount, route.input.chainId)
       for (let i = 0; i < route.path.length - 1; i++) {
         const pair = route.pairs[i]
         const [outputAmount, nextPair] = pair.getOutputAmount(amounts[i])
@@ -105,7 +123,12 @@ export class Trade {
         nextPairs[i] = nextPair
       }
     } else {
-      amounts[amounts.length - 1] = amount
+      invariant(
+        currencyEquals(amount.currency, route.output) ||
+          (amount.currency === ETHER && route.output.equals(WETH[route.output.chainId])),
+        'OUTPUT'
+      )
+      amounts[amounts.length - 1] = wrappedAmount(amount, route.output.chainId)
       for (let i = route.path.length - 1; i > 0; i--) {
         const pair = route.pairs[i - 1]
         const [inputAmount, nextPair] = pair.getInputAmount(amounts[i])
@@ -126,31 +149,31 @@ export class Trade {
   }
 
   // get the minimum amount that must be received from this trade for the given slippage tolerance
-  public minimumAmountOut(slippageTolerance: Percent): TokenAmount {
+  public minimumAmountOut(slippageTolerance: Percent): CurrencyAmount {
     invariant(!slippageTolerance.lessThan(ZERO), 'SLIPPAGE_TOLERANCE')
     if (this.tradeType === TradeType.EXACT_OUTPUT) {
       return this.outputAmount
     } else {
-      return new TokenAmount(
-        this.outputAmount.token,
-        new Fraction(ONE)
-          .add(slippageTolerance)
-          .invert()
-          .multiply(this.outputAmount.raw).quotient
-      )
+      const slippageAdjustedAmountOut = new Fraction(ONE)
+        .add(slippageTolerance)
+        .invert()
+        .multiply(this.outputAmount.raw).quotient
+      return this.outputAmount instanceof TokenAmount
+        ? new TokenAmount(this.outputAmount.token, slippageAdjustedAmountOut)
+        : new CurrencyAmount(this.outputAmount.currency, slippageAdjustedAmountOut)
     }
   }
 
   // get the maximum amount in that can be spent via this trade for the given slippage tolerance
-  public maximumAmountIn(slippageTolerance: Percent): TokenAmount {
+  public maximumAmountIn(slippageTolerance: Percent): CurrencyAmount {
     invariant(!slippageTolerance.lessThan(ZERO), 'SLIPPAGE_TOLERANCE')
     if (this.tradeType === TradeType.EXACT_INPUT) {
       return this.inputAmount
     } else {
-      return new TokenAmount(
-        this.inputAmount.token,
-        new Fraction(ONE).add(slippageTolerance).multiply(this.inputAmount.raw).quotient
-      )
+      const slippageAdjustedAmountIn = new Fraction(ONE).add(slippageTolerance).multiply(this.inputAmount.raw).quotient
+      return this.inputAmount instanceof TokenAmount
+        ? new TokenAmount(this.inputAmount.token, slippageAdjustedAmountIn)
+        : new CurrencyAmount(this.inputAmount.currency, slippageAdjustedAmountIn)
     }
   }
 
