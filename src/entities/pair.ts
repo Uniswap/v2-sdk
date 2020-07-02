@@ -175,7 +175,7 @@ export class Pair {
       totalSupplyAdjusted = totalSupply
     } else {
       invariant(!!kLast, 'K_LAST')
-      const kLastParsed = parseBigintIsh(kLast as any)
+      const kLastParsed = parseBigintIsh(kLast)
       if (!JSBI.equal(kLastParsed, ZERO)) {
         const rootK = sqrt(JSBI.multiply(this.reserve0.raw, this.reserve1.raw))
         const rootKLast = sqrt(kLastParsed)
