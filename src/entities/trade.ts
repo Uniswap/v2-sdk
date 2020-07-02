@@ -1,9 +1,8 @@
-import { ETHER } from './currency'
-import { currencyEquals, Token, WETH } from './token'
 import invariant from 'tiny-invariant'
 
 import { ChainId, ONE, TradeType, ZERO } from '../constants'
 import { sortedInsert } from '../utils'
+import { ETHER } from './currency'
 import { CurrencyAmount } from './fractions/currencyAmount'
 import { Fraction } from './fractions/fraction'
 import { Percent } from './fractions/percent'
@@ -11,10 +10,11 @@ import { Price } from './fractions/price'
 import { TokenAmount } from './fractions/tokenAmount'
 import { Pair } from './pair'
 import { Route } from './route'
+import { currencyEquals, Token, WETH } from './token'
 
 // returns the percent difference between the mid price and the execution price
 // we call this price impact in the UI
-function computePriceImpact(midPrice: Price, inputAmount: TokenAmount, outputAmount: TokenAmount): Percent {
+function computePriceImpact(midPrice: Price, inputAmount: CurrencyAmount, outputAmount: CurrencyAmount): Percent {
   const exactQuote = midPrice.raw.multiply(inputAmount.raw)
   // calculate slippage := (exactQuote - outputAmount) / exactQuote
   const slippage = exactQuote.subtract(outputAmount.raw).divide(exactQuote)
@@ -139,13 +139,16 @@ export class Trade {
 
     this.route = route
     this.tradeType = tradeType
-    const inputAmount = amounts[0]
-    const outputAmount = amounts[amounts.length - 1]
-    this.inputAmount = inputAmount
-    this.outputAmount = outputAmount
-    this.executionPrice = new Price(route.input, route.output, inputAmount.raw, outputAmount.raw)
+    this.inputAmount = tradeType === TradeType.EXACT_INPUT ? amount : amounts[0]
+    this.outputAmount = tradeType === TradeType.EXACT_OUTPUT ? amount : amounts[amounts.length - 1]
+    this.executionPrice = new Price(
+      this.inputAmount.currency,
+      this.outputAmount.currency,
+      this.inputAmount.raw,
+      this.outputAmount.raw
+    )
     this.nextMidPrice = Price.fromRoute(new Route(nextPairs, route.input))
-    this.priceImpact = computePriceImpact(route.midPrice, inputAmount, outputAmount)
+    this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount)
   }
 
   // get the minimum amount that must be received from this trade for the given slippage tolerance
@@ -183,18 +186,19 @@ export class Trade {
   // the amount in among multiple routes.
   public static bestTradeExactIn(
     pairs: Pair[],
-    amountIn: TokenAmount,
+    currencyAmountIn: CurrencyAmount,
     tokenOut: Token,
     { maxNumResults = 3, maxHops = 3 }: BestTradeOptions = {},
     // used in recursion.
     currentPairs: Pair[] = [],
-    originalAmountIn: TokenAmount = amountIn,
+    originalAmountIn: CurrencyAmount = currencyAmountIn,
     bestTrades: Trade[] = []
   ): Trade[] {
     invariant(pairs.length > 0, 'PAIRS')
     invariant(maxHops > 0, 'MAX_HOPS')
-    invariant(originalAmountIn === amountIn || currentPairs.length > 0, 'INVALID_RECURSION')
+    invariant(originalAmountIn === currencyAmountIn || currentPairs.length > 0, 'INVALID_RECURSION')
 
+    const amountIn = wrappedAmount(currencyAmountIn, tokenOut.chainId)
     for (let i = 0; i < pairs.length; i++) {
       const pair = pairs[i]
       // pair irrelevant
@@ -216,7 +220,7 @@ export class Trade {
         sortedInsert(
           bestTrades,
           new Trade(
-            new Route([...currentPairs, pair], originalAmountIn.token),
+            new Route([...currentPairs, pair], wrappedAmount(originalAmountIn, tokenOut.chainId).token),
             originalAmountIn,
             TradeType.EXACT_INPUT
           ),
@@ -253,17 +257,18 @@ export class Trade {
   public static bestTradeExactOut(
     pairs: Pair[],
     tokenIn: Token,
-    amountOut: TokenAmount,
+    currencyAmountOut: CurrencyAmount,
     { maxNumResults = 3, maxHops = 3 }: BestTradeOptions = {},
     // used in recursion.
     currentPairs: Pair[] = [],
-    originalAmountOut: TokenAmount = amountOut,
+    originalAmountOut: CurrencyAmount = currencyAmountOut,
     bestTrades: Trade[] = []
   ): Trade[] {
     invariant(pairs.length > 0, 'PAIRS')
     invariant(maxHops > 0, 'MAX_HOPS')
-    invariant(originalAmountOut === amountOut || currentPairs.length > 0, 'INVALID_RECURSION')
+    invariant(originalAmountOut === currencyAmountOut || currentPairs.length > 0, 'INVALID_RECURSION')
 
+    const amountOut = wrappedAmount(currencyAmountOut, tokenIn.chainId)
     for (let i = 0; i < pairs.length; i++) {
       const pair = pairs[i]
       // pair irrelevant
