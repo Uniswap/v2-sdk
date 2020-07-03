@@ -38,7 +38,6 @@ export class Route {
       const output = currentInput.equals(pair.token0) ? pair.token1 : pair.token0
       path.push(output)
     }
-    invariant(path.length === new Set(path).size, 'PATH')
 
     this.pairs = pairs
     this.path = path

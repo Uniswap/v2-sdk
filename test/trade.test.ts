@@ -35,24 +35,40 @@ describe('Trade', () => {
   it('can be constructed with ETHER as input', () => {
     const trade = new Trade(
       new Route([pair_weth_0], ETHER),
-      new CurrencyAmount(ETHER, JSBI.BigInt(100)),
+      CurrencyAmount.ether(JSBI.BigInt(100)),
       TradeType.EXACT_INPUT
     )
-    expect(trade.outputAmount.currency).toEqual(token0)
     expect(trade.inputAmount.currency).toEqual(ETHER)
+    expect(trade.outputAmount.currency).toEqual(token0)
   })
-  it.todo('can be constructed with ETHER as input for exact output')
+  it('can be constructed with ETHER as input for exact output', () => {
+    const trade = new Trade(
+      new Route([pair_weth_0], ETHER, token0),
+      new TokenAmount(token0, JSBI.BigInt(100)),
+      TradeType.EXACT_OUTPUT
+    )
+    expect(trade.inputAmount.currency).toEqual(ETHER)
+    expect(trade.outputAmount.currency).toEqual(token0)
+  })
 
   it('can be constructed with ETHER as output', () => {
     const trade = new Trade(
       new Route([pair_weth_0], token0, ETHER),
-      new CurrencyAmount(ETHER, JSBI.BigInt(100)),
+      CurrencyAmount.ether(JSBI.BigInt(100)),
       TradeType.EXACT_OUTPUT
     )
-    expect(trade.outputAmount.currency).toEqual(ETHER)
     expect(trade.inputAmount.currency).toEqual(token0)
+    expect(trade.outputAmount.currency).toEqual(ETHER)
   })
-  it.todo('can be constructed with ETHER as output for exact input')
+  it('can be constructed with ETHER as output for exact input', () => {
+    const trade = new Trade(
+      new Route([pair_weth_0], token0, ETHER),
+      new TokenAmount(token0, JSBI.BigInt(100)),
+      TradeType.EXACT_INPUT
+    )
+    expect(trade.inputAmount.currency).toEqual(token0)
+    expect(trade.outputAmount.currency).toEqual(ETHER)
+  })
 
   describe('#bestTradeExactIn', () => {
     it('throws with empty pairs', () => {

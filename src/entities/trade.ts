@@ -149,8 +149,18 @@ export class Trade {
 
     this.route = route
     this.tradeType = tradeType
-    this.inputAmount = tradeType === TradeType.EXACT_INPUT ? amount : amounts[0]
-    this.outputAmount = tradeType === TradeType.EXACT_OUTPUT ? amount : amounts[amounts.length - 1]
+    this.inputAmount =
+      tradeType === TradeType.EXACT_INPUT
+        ? amount
+        : route.input === ETHER
+        ? CurrencyAmount.ether(amounts[0].raw)
+        : amounts[0]
+    this.outputAmount =
+      tradeType === TradeType.EXACT_OUTPUT
+        ? amount
+        : route.output === ETHER
+        ? CurrencyAmount.ether(amounts[amounts.length - 1].raw)
+        : amounts[amounts.length - 1]
     this.executionPrice = new Price(
       this.inputAmount.currency,
       this.outputAmount.currency,
@@ -173,7 +183,7 @@ export class Trade {
         .multiply(this.outputAmount.raw).quotient
       return this.outputAmount instanceof TokenAmount
         ? new TokenAmount(this.outputAmount.token, slippageAdjustedAmountOut)
-        : new CurrencyAmount(this.outputAmount.currency, slippageAdjustedAmountOut)
+        : CurrencyAmount.ether(slippageAdjustedAmountOut)
     }
   }
 
@@ -186,7 +196,7 @@ export class Trade {
       const slippageAdjustedAmountIn = new Fraction(ONE).add(slippageTolerance).multiply(this.inputAmount.raw).quotient
       return this.inputAmount instanceof TokenAmount
         ? new TokenAmount(this.inputAmount.token, slippageAdjustedAmountIn)
-        : new CurrencyAmount(this.inputAmount.currency, slippageAdjustedAmountIn)
+        : CurrencyAmount.ether(slippageAdjustedAmountIn)
     }
   }
 
