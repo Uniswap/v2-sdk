@@ -146,6 +146,9 @@ describe('Trade', () => {
       )
       expect(result).toHaveLength(0)
     })
+
+    it.todo('works for ETHER currency input')
+    it.todo('works for ETHER currency output')
   })
 
   describe('#maximumAmountIn', () => {
@@ -342,5 +345,8 @@ describe('Trade', () => {
       )
       expect(result).toHaveLength(0)
     })
+
+    it.todo('works for ETHER currency input')
+    it.todo('works for ETHER currency output')
   })
 })
