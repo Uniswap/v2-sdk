@@ -76,7 +76,7 @@ export abstract class Router {
         }
         break
       case TradeType.EXACT_OUTPUT:
-        invariant(!useFeeOnTransfer)
+        invariant(!useFeeOnTransfer, 'EXACT_OUT_FOT')
         if (etherIn) {
           methodName = 'swapETHForExactTokens'
           // (uint amountOut, address[] calldata path, address to, uint deadline)

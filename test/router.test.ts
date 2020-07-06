@@ -62,9 +62,47 @@ describe('Router', () => {
       })
     })
     describe('exact out', () => {
-      it.todo('ether to token1')
-      it.todo('token1 to ether')
-      it.todo('token0 to token1')
+      it('ether to token1', () => {
+        const result = Router.swapCallParameters(
+          Trade.exactOut(new Route([pair_weth_0, pair_0_1], ETHER, token1), new TokenAmount(token1, JSBI.BigInt(100))),
+          { ttl: 50, recipient: '0x0000000000000000000000000000000000000004', allowedSlippage: new Percent('1', '100') }
+        )
+        expect(result.methodName).toEqual('swapETHForExactTokens')
+        expect(result.args.slice(0, -1)).toEqual([
+          '0x64',
+          [WETH[ChainId.MAINNET].address, token0.address, token1.address],
+          '0x0000000000000000000000000000000000000004'
+        ])
+        checkDeadline(result.args[result.args.length - 1])
+      })
+      it('token1 to ether', () => {
+        const result = Router.swapCallParameters(
+          Trade.exactOut(new Route([pair_0_1, pair_weth_0], token1, ETHER), CurrencyAmount.ether(JSBI.BigInt(100))),
+          { ttl: 50, recipient: '0x0000000000000000000000000000000000000004', allowedSlippage: new Percent('1', '100') }
+        )
+        expect(result.methodName).toEqual('swapTokensForExactETH')
+        expect(result.args.slice(0, -1)).toEqual([
+          '0x64',
+          '0x80',
+          [token1.address, token0.address, WETH[ChainId.MAINNET].address],
+          '0x0000000000000000000000000000000000000004'
+        ])
+        checkDeadline(result.args[result.args.length - 1])
+      })
+      it('token0 to token1', () => {
+        const result = Router.swapCallParameters(
+          Trade.exactOut(new Route([pair_0_1], token0, token1), new TokenAmount(token1, JSBI.BigInt(100))),
+          { ttl: 50, recipient: '0x0000000000000000000000000000000000000004', allowedSlippage: new Percent('1', '100') }
+        )
+        expect(result.methodName).toEqual('swapTokensForExactTokens')
+        expect(result.args.slice(0, -1)).toEqual([
+          '0x64',
+          '0x71',
+          [token0.address, token1.address],
+          '0x0000000000000000000000000000000000000004'
+        ])
+        checkDeadline(result.args[result.args.length - 1])
+      })
     })
     describe('supporting fee on transfer', () => {
       describe('exact in', () => {
@@ -126,9 +164,48 @@ describe('Router', () => {
         })
       })
       describe('exact out', () => {
-        it.todo('ether to token1')
-        it.todo('token1 to ether')
-        it.todo('token0 to token1')
+        it('ether to token1', () => {
+          expect(() =>
+            Router.swapCallParameters(
+              Trade.exactOut(
+                new Route([pair_weth_0, pair_0_1], ETHER, token1),
+                new TokenAmount(token1, JSBI.BigInt(100))
+              ),
+              {
+                ttl: 50,
+                recipient: '0x0000000000000000000000000000000000000004',
+                allowedSlippage: new Percent('1', '100'),
+                feeOnTransfer: true
+              }
+            )
+          ).toThrow('EXACT_OUT_FOT')
+        })
+        it('token1 to ether', () => {
+          expect(() =>
+            Router.swapCallParameters(
+              Trade.exactOut(new Route([pair_0_1, pair_weth_0], token1, ETHER), CurrencyAmount.ether(JSBI.BigInt(100))),
+              {
+                ttl: 50,
+                recipient: '0x0000000000000000000000000000000000000004',
+                allowedSlippage: new Percent('1', '100'),
+                feeOnTransfer: true
+              }
+            )
+          ).toThrow('EXACT_OUT_FOT')
+        })
+        it('token0 to token1', () => {
+          expect(() =>
+            Router.swapCallParameters(
+              Trade.exactOut(new Route([pair_0_1], token0, token1), new TokenAmount(token1, JSBI.BigInt(100))),
+              {
+                ttl: 50,
+                recipient: '0x0000000000000000000000000000000000000004',
+                allowedSlippage: new Percent('1', '100'),
+                feeOnTransfer: true
+              }
+            )
+          ).toThrow('EXACT_OUT_FOT')
+        })
       })
     })
   })
