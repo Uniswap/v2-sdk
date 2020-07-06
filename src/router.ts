@@ -29,11 +29,15 @@ function toHex(currencyAmount: CurrencyAmount) {
 }
 
 /**
- * Represents the Uniswap V2 Router, and has static methods for generating and executing trades.
+ * Represents the Uniswap V2 Router, and has static methods for helping execute trades.
  */
-export default class Router {
+export abstract class Router {
   /**
-   * Creates the hex encoded parameters to pass to an ethers provider as arguments to the router.
+   * Cannot be constructed.
+   */
+  private constructor() {}
+  /**
+   * Produces the on-chain method name to call and the hex encoded parameters to pass as arguments for a given trade.
    * @param trade to produce call parameters for
    * @param options options for the call parameters
    */

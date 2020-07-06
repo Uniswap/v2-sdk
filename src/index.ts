@@ -13,4 +13,4 @@ export {
 
 export * from './errors'
 export * from './entities'
-export { default as Router, SwapParameters, TradeOptions } from './router'
+export * from './router'
