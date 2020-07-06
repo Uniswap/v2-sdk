@@ -22,11 +22,15 @@ export interface SwapParameters {
   methodName: string
   // the arguments to pass to the method, all hex encoded
   args: (string | string[])[]
+  // the amount of wei to send in hex
+  value: string
 }
 
 function toHex(currencyAmount: CurrencyAmount) {
   return `0x${currencyAmount.raw.toString(16)}`
 }
+
+const ZERO_HEX = '0x0'
 
 /**
  * Represents the Uniswap V2 Router, and has static methods for helping execute trades.
@@ -57,22 +61,26 @@ export abstract class Router {
 
     let methodName: string
     let args: (string | string[])[]
+    let value: string
     switch (trade.tradeType) {
       case TradeType.EXACT_INPUT:
         if (etherIn) {
           methodName = useFeeOnTransfer ? 'swapExactETHForTokensSupportingFeeOnTransferTokens' : 'swapExactETHForTokens'
           // (uint amountOutMin, address[] calldata path, address to, uint deadline)
           args = [amountOut, path, to, deadline]
+          value = amountIn
         } else if (etherOut) {
           methodName = useFeeOnTransfer ? 'swapExactTokensForETHSupportingFeeOnTransferTokens' : 'swapExactTokensForETH'
           // (uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
           args = [amountIn, amountOut, path, to, deadline]
+          value = ZERO_HEX
         } else {
           methodName = useFeeOnTransfer
             ? 'swapExactTokensForTokensSupportingFeeOnTransferTokens'
             : 'swapExactTokensForTokens'
           // (uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
           args = [amountIn, amountOut, path, to, deadline]
+          value = ZERO_HEX
         }
         break
       case TradeType.EXACT_OUTPUT:
@@ -81,20 +89,24 @@ export abstract class Router {
           methodName = 'swapETHForExactTokens'
           // (uint amountOut, address[] calldata path, address to, uint deadline)
           args = [amountOut, path, to, deadline]
+          value = amountIn
         } else if (etherOut) {
           methodName = 'swapTokensForExactETH'
           // (uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
           args = [amountOut, amountIn, path, to, deadline]
+          value = ZERO_HEX
         } else {
           methodName = 'swapTokensForExactTokens'
           // (uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
           args = [amountOut, amountIn, path, to, deadline]
+          value = ZERO_HEX
         }
         break
     }
     return {
       methodName,
-      args
+      args,
+      value
     }
   }
 }

@@ -30,6 +30,7 @@ describe('Router', () => {
           [WETH[ChainId.MAINNET].address, token0.address, token1.address],
           '0x0000000000000000000000000000000000000004'
         ])
+        expect(result.value).toEqual('0x64')
         checkDeadline(result.args[result.args.length - 1])
       })
       it('token1 to ether', () => {
@@ -44,6 +45,7 @@ describe('Router', () => {
           [token1.address, token0.address, WETH[ChainId.MAINNET].address],
           '0x0000000000000000000000000000000000000004'
         ])
+        expect(result.value).toEqual('0x0')
         checkDeadline(result.args[result.args.length - 1])
       })
       it('token0 to token1', () => {
@@ -58,6 +60,7 @@ describe('Router', () => {
           [token0.address, token1.address],
           '0x0000000000000000000000000000000000000004'
         ])
+        expect(result.value).toEqual('0x0')
         checkDeadline(result.args[result.args.length - 1])
       })
     })
@@ -73,6 +76,7 @@ describe('Router', () => {
           [WETH[ChainId.MAINNET].address, token0.address, token1.address],
           '0x0000000000000000000000000000000000000004'
         ])
+        expect(result.value).toEqual('0x80')
         checkDeadline(result.args[result.args.length - 1])
       })
       it('token1 to ether', () => {
@@ -87,6 +91,7 @@ describe('Router', () => {
           [token1.address, token0.address, WETH[ChainId.MAINNET].address],
           '0x0000000000000000000000000000000000000004'
         ])
+        expect(result.value).toEqual('0x0')
         checkDeadline(result.args[result.args.length - 1])
       })
       it('token0 to token1', () => {
@@ -101,6 +106,7 @@ describe('Router', () => {
           [token0.address, token1.address],
           '0x0000000000000000000000000000000000000004'
         ])
+        expect(result.value).toEqual('0x0')
         checkDeadline(result.args[result.args.length - 1])
       })
     })
@@ -122,6 +128,7 @@ describe('Router', () => {
             [WETH[ChainId.MAINNET].address, token0.address, token1.address],
             '0x0000000000000000000000000000000000000004'
           ])
+          expect(result.value).toEqual('0x64')
           checkDeadline(result.args[result.args.length - 1])
         })
         it('token1 to ether', () => {
@@ -141,6 +148,7 @@ describe('Router', () => {
             [token1.address, token0.address, WETH[ChainId.MAINNET].address],
             '0x0000000000000000000000000000000000000004'
           ])
+          expect(result.value).toEqual('0x0')
           checkDeadline(result.args[result.args.length - 1])
         })
         it('token0 to token1', () => {
@@ -160,6 +168,7 @@ describe('Router', () => {
             [token0.address, token1.address],
             '0x0000000000000000000000000000000000000004'
           ])
+          expect(result.value).toEqual('0x0')
           checkDeadline(result.args[result.args.length - 1])
         })
       })
