@@ -290,7 +290,7 @@ export class Trade {
   // the amount in among multiple routes.
   public static bestTradeExactOut(
     pairs: Pair[],
-    tokenIn: Token,
+    currencyIn: Currency,
     currencyAmountOut: CurrencyAmount,
     { maxNumResults = 3, maxHops = 3 }: BestTradeOptions = {},
     // used in recursion.
@@ -301,8 +301,16 @@ export class Trade {
     invariant(pairs.length > 0, 'PAIRS')
     invariant(maxHops > 0, 'MAX_HOPS')
     invariant(originalAmountOut === currencyAmountOut || currentPairs.length > 0, 'INVALID_RECURSION')
+    const chainId: ChainId | undefined =
+      currencyAmountOut instanceof TokenAmount
+        ? currencyAmountOut.token.chainId
+        : currencyIn instanceof Token
+        ? currencyIn.chainId
+        : undefined
+    invariant(chainId !== undefined, 'CHAIN_ID')
 
-    const amountOut = wrappedAmount(currencyAmountOut, tokenIn.chainId)
+    const amountOut = wrappedAmount(currencyAmountOut, chainId)
+    const tokenIn = wrappedCurrency(currencyIn, chainId)
     for (let i = 0; i < pairs.length; i++) {
       const pair = pairs[i]
       // pair irrelevant
@@ -323,7 +331,11 @@ export class Trade {
       if (amountIn.token.equals(tokenIn)) {
         sortedInsert(
           bestTrades,
-          new Trade(new Route([pair, ...currentPairs], tokenIn), originalAmountOut, TradeType.EXACT_OUTPUT),
+          new Trade(
+            new Route([pair, ...currentPairs], currencyIn, originalAmountOut.currency),
+            originalAmountOut,
+            TradeType.EXACT_OUTPUT
+          ),
           maxNumResults,
           tradeComparator
         )
@@ -333,7 +345,7 @@ export class Trade {
         // otherwise, consider all the other paths that arrive at this token as long as we have not exceeded maxHops
         Trade.bestTradeExactOut(
           pairsExcludingThisPair,
-          tokenIn,
+          currencyIn,
           amountIn,
           {
             maxNumResults,

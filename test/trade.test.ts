@@ -372,7 +372,33 @@ describe('Trade', () => {
       expect(result).toHaveLength(0)
     })
 
-    it.todo('works for ETHER currency input')
-    it.todo('works for ETHER currency output')
+    it('works for ETHER currency input', () => {
+      const result = Trade.bestTradeExactOut(
+        [pair_weth_0, pair_0_1, pair_0_3, pair_1_3],
+        ETHER,
+        new TokenAmount(token3, JSBI.BigInt(100))
+      )
+      expect(result).toHaveLength(2)
+      expect(result[0].inputAmount.currency).toEqual(ETHER)
+      expect(result[0].route.path).toEqual([WETH[ChainId.MAINNET], token0, token1, token3])
+      expect(result[0].outputAmount.currency).toEqual(token3)
+      expect(result[1].inputAmount.currency).toEqual(ETHER)
+      expect(result[1].route.path).toEqual([WETH[ChainId.MAINNET], token0, token3])
+      expect(result[1].outputAmount.currency).toEqual(token3)
+    })
+    it('works for ETHER currency output', () => {
+      const result = Trade.bestTradeExactOut(
+        [pair_weth_0, pair_0_1, pair_0_3, pair_1_3],
+        token3,
+        CurrencyAmount.ether(JSBI.BigInt(100))
+      )
+      expect(result).toHaveLength(2)
+      expect(result[0].inputAmount.currency).toEqual(token3)
+      expect(result[0].route.path).toEqual([token3, token0, WETH[ChainId.MAINNET]])
+      expect(result[0].outputAmount.currency).toEqual(ETHER)
+      expect(result[1].inputAmount.currency).toEqual(token3)
+      expect(result[1].route.path).toEqual([token3, token1, token0, WETH[ChainId.MAINNET]])
+      expect(result[1].outputAmount.currency).toEqual(ETHER)
+    })
   })
 })
