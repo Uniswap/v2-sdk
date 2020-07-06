@@ -18,7 +18,7 @@ describe('Router', () => {
   const pair_weth_0 = new Pair(new TokenAmount(WETH[ChainId.MAINNET], '1000'), new TokenAmount(token0, '1000'))
 
   describe('#swapCallParameters', () => {
-    it.only('exact in ether to token1', () => {
+    it('exact in ether to token1', () => {
       const result = Router.swapCallParameters(
         Trade.exactIn(new Route([pair_weth_0, pair_0_1], ETHER, token1), CurrencyAmount.ether(JSBI.BigInt(100))),
         { ttl: 50, recipient: '0x0000000000000000000000000000000000000004', allowedSlippage: new Percent('1', '100') }
