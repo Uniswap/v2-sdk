@@ -2,7 +2,7 @@ import invariant from 'tiny-invariant'
 
 import { ChainId, ONE, TradeType, ZERO } from '../constants'
 import { sortedInsert } from '../utils'
-import { ETHER } from './currency'
+import { Currency, ETHER } from './currency'
 import { CurrencyAmount } from './fractions/currencyAmount'
 import { Fraction } from './fractions/fraction'
 import { Percent } from './fractions/percent'
@@ -86,6 +86,12 @@ export interface BestTradeOptions {
 function wrappedAmount(currencyAmount: CurrencyAmount, chainId: ChainId): TokenAmount {
   if (currencyAmount instanceof TokenAmount) return currencyAmount
   if (currencyAmount.currency === ETHER) return new TokenAmount(WETH[chainId], currencyAmount.raw)
+  invariant(false, 'CURRENCY')
+}
+
+function wrappedCurrency(currency: Currency, chainId: ChainId): Token {
+  if (currency instanceof Token) return currency
+  if (currency === ETHER) return WETH[chainId]
   invariant(false, 'CURRENCY')
 }
 
@@ -207,7 +213,7 @@ export class Trade {
   public static bestTradeExactIn(
     pairs: Pair[],
     currencyAmountIn: CurrencyAmount,
-    tokenOut: Token,
+    currencyOut: Currency,
     { maxNumResults = 3, maxHops = 3 }: BestTradeOptions = {},
     // used in recursion.
     currentPairs: Pair[] = [],
@@ -217,8 +223,16 @@ export class Trade {
     invariant(pairs.length > 0, 'PAIRS')
     invariant(maxHops > 0, 'MAX_HOPS')
     invariant(originalAmountIn === currencyAmountIn || currentPairs.length > 0, 'INVALID_RECURSION')
+    const chainId: ChainId | undefined =
+      currencyAmountIn instanceof TokenAmount
+        ? currencyAmountIn.token.chainId
+        : currencyOut instanceof Token
+        ? currencyOut.chainId
+        : undefined
+    invariant(chainId !== undefined, 'CHAIN_ID')
 
-    const amountIn = wrappedAmount(currencyAmountIn, tokenOut.chainId)
+    const amountIn = wrappedAmount(currencyAmountIn, chainId)
+    const tokenOut = wrappedCurrency(currencyOut, chainId)
     for (let i = 0; i < pairs.length; i++) {
       const pair = pairs[i]
       // pair irrelevant
@@ -240,7 +254,7 @@ export class Trade {
         sortedInsert(
           bestTrades,
           new Trade(
-            new Route([...currentPairs, pair], wrappedAmount(originalAmountIn, tokenOut.chainId).token),
+            new Route([...currentPairs, pair], originalAmountIn.currency, currencyOut),
             originalAmountIn,
             TradeType.EXACT_INPUT
           ),
@@ -254,7 +268,7 @@ export class Trade {
         Trade.bestTradeExactIn(
           pairsExcludingThisPair,
           amountOut,
-          tokenOut,
+          currencyOut,
           {
             maxNumResults,
             maxHops: maxHops - 1
