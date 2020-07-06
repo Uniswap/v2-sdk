@@ -32,7 +32,7 @@ export abstract class Fetcher {
    * @param symbol optional symbol of the token
    * @param name optional name of the token
    */
-  static async fetchTokenData(
+  public static async fetchTokenData(
     chainId: ChainId,
     address: string,
     provider = getDefaultProvider(getNetwork(chainId)),
@@ -61,7 +61,7 @@ export abstract class Fetcher {
    * @param tokenB second token
    * @param provider the provider to use to fetch the data
    */
-  static async fetchPairData(
+  public static async fetchPairData(
     tokenA: Token,
     tokenB: Token,
     provider = getDefaultProvider(getNetwork(tokenA.chainId))

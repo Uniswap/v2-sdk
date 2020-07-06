@@ -10,13 +10,13 @@ export class Token extends Currency {
   public readonly chainId: ChainId
   public readonly address: string
 
-  constructor(chainId: ChainId, address: string, decimals: number, symbol?: string, name?: string) {
+  public constructor(chainId: ChainId, address: string, decimals: number, symbol?: string, name?: string) {
     super(decimals, symbol, name)
     this.chainId = chainId
     this.address = validateAndParseAddress(address)
   }
 
-  equals(other: Token): boolean {
+  public equals(other: Token): boolean {
     // short circuit on reference equality
     if (this === other) {
       return true
@@ -31,7 +31,7 @@ export class Token extends Currency {
     return equivalent
   }
 
-  sortsBefore(other: Token): boolean {
+  public sortsBefore(other: Token): boolean {
     invariant(this.chainId === other.chainId, 'CHAIN_IDS')
     invariant(this.address !== other.address, 'ADDRESSES')
     return this.address.toLowerCase() < other.address.toLowerCase()

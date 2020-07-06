@@ -72,19 +72,19 @@ export class Pair {
     return this.token0.chainId
   }
 
-  get token0(): Token {
+  public get token0(): Token {
     return this.tokenAmounts[0].token
   }
 
-  get token1(): Token {
+  public get token1(): Token {
     return this.tokenAmounts[1].token
   }
 
-  get reserve0(): TokenAmount {
+  public get reserve0(): TokenAmount {
     return this.tokenAmounts[0]
   }
 
-  get reserve1(): TokenAmount {
+  public get reserve1(): TokenAmount {
     return this.tokenAmounts[1]
   }
 
