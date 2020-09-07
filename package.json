@@ -1,16 +1,17 @@
 {
-  "name": "@uniswap/sdk",
+  "name": "@levx/sushiswap-sdk",
   "license": "MIT",
-  "version": "3.0.2",
-  "description": "🛠 An SDK for building applications on top of Uniswap.",
+  "version": "3.0.0",
+  "description": "🛠 An SDK for building applications on top of Sushiswap.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "repository": "https://github.com/Uniswap/uniswap-sdk.git",
+  "repository": "https://github.com/lev-x/sushiswap-sdk",
   "keywords": [
     "uniswap",
+    "sushiswap",
     "ethereum"
   ],
   "module": "dist/sdk.esm.js",
