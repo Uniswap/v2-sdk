@@ -1,5 +1,5 @@
 {
-  "name": "@uniswap/sdk",
+  "name": "uniswap-fuse-sdk",
   "license": "MIT",
   "version": "3.0.3",
   "description": "🛠 An SDK for building applications on top of Uniswap.",
