@@ -1,7 +1,7 @@
 {
   "name": "uniswap-fuse-sdk",
   "license": "MIT",
-  "version": "3.0.3a2",
+  "version": "3.0.3a3",
   "description": "🛠 An SDK for building applications on top of Uniswap.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
