@@ -11,7 +11,7 @@ To run the tests, follow these steps. You must have at least node v10 and [yarn]
 First clone the repository:
 
 ```sh
-git clone https://github.com/lev-x/sushiswap-sdk.git
+git clone https://github.com/sushiswap-community/sushiswap-sdk.git
 ```
 
 Move into the sushiswap-sdk working directory
