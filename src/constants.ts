@@ -1,4 +1,8 @@
 import JSBI from 'jsbi'
+//import { bytecode } from '@eggswap/core/build/contracts/UniswapV2Pair.json'
+//import { keccak256 } from '@ethersproject/solidity'
+
+//const COMPUTED_INIT_CODE_HASH = keccak256(['bytes'], [`${bytecode}`])
 
 // exports for external consumption
 export type BigintIsh = JSBI | bigint | string
@@ -24,9 +28,30 @@ export enum Rounding {
   ROUND_UP
 }
 
-export const FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
+//export const FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
 
-export const INIT_CODE_HASH = '0xc0c875d9c0f62295072f21084a19a575ff5ef887aa5ed8ce83ccfc708901071a'
+export const FACTORY_ADDRESS = {
+  1: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f',
+  2: '0xb709d6d184B51dC811cAa1B4841f8bdC700cF84b',
+  3: '0xb709d6d184B51dC811cAa1B4841f8bdC700cF84b',
+  4: '0xb709d6d184B51dC811cAa1B4841f8bdC700cF84b',
+  5: '0xb709d6d184B51dC811cAa1B4841f8bdC700cF84b',
+  42: '0xb709d6d184B51dC811cAa1B4841f8bdC700cF84b',
+  1337: '0xb709d6d184B51dC811cAa1B4841f8bdC700cF84b'
+}
+
+//export const INIT_CODE_HASH = COMPUTED_INIT_CODE_HASH;
+//export const INIT_CODE_HASH = '0xc0c875d9c0f62295072f21084a19a575ff5ef887aa5ed8ce83ccfc708901071a'
+
+export const INIT_CODE_HASH = {
+  1: '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f',
+  2: '0xc0c875d9c0f62295072f21084a19a575ff5ef887aa5ed8ce83ccfc708901071a',
+  3: '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f',
+  4: '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f',
+  5: '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f',
+  42: '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f',
+  1337: '0xc0c875d9c0f62295072f21084a19a575ff5ef887aa5ed8ce83ccfc708901071a'
+}
 
 export const MINIMUM_LIQUIDITY = JSBI.BigInt(1000)
 
