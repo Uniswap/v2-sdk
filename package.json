@@ -1,7 +1,7 @@
 {
   "name": "@eggswap/sdk",
   "license": "MIT",
-  "version": "3.0.4",
+  "version": "3.0.6",
   "description": "🛠 An SDK for building applications on top of Eggswap.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -22,7 +22,7 @@
     "prepublishOnly": "tsdx build"
   },
   "dependencies": {
-    "@eggswap/core": "^1.0.0",
+    "@eggswap/core": "^1.0.2",
     "big.js": "^5.2.2",
     "decimal.js-light": "^2.5.0",
     "jsbi": "^3.1.1",
