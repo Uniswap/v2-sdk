@@ -66,7 +66,7 @@ export const WETH = {
   ),
   [ChainId.EXPANSE]: new Token(
     ChainId.EXPANSE,
-    '0x1871b7f0b930173be7f7f6abe6e90a0dd83a3c91',
+    '0x331631B4bb93b9B8962faE15860BD538a389395A',
     18,
     'WEXP',
     'Wrapped Expanse'
@@ -87,5 +87,5 @@ export const WETH = {
   ),
   [ChainId.GÖRLI]: new Token(ChainId.GÖRLI, '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6', 18, 'WETH', 'Wrapped Ether'),
   [ChainId.KOVAN]: new Token(ChainId.KOVAN, '0xd0A1E359811322d97991E03f863a0C30C2cF029C', 18, 'WETH', 'Wrapped Ether'),
-  [ChainId.LOCAL]: new Token(ChainId.LOCAL, '0x8cECD5073D7c7Db1f0f47CAA0f221cF0B7D9ca1a', 18, 'WETH', 'Wrapped Expanse')
+  [ChainId.LOCAL]: new Token(ChainId.LOCAL, '0x8cECD5073D7c7Db1f0f47CAA0f221cF0B7D9ca1a', 18, 'WEXP', 'Wrapped Expanse')
 }
