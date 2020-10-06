@@ -1,7 +1,7 @@
 {
   "name": "@eggswap/sdk",
   "license": "MIT",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "🛠 An SDK for building applications on top of Eggswap.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
