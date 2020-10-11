@@ -29,7 +29,7 @@ export class Pair {
 
   public static getAddress(tokenA: Token, tokenB: Token): string {
 
-    console.log('Factory Address: ' + FACTORY_ADDRESS[tokenA.chainId] + ' chainid: ' +tokenA.chainId);
+    //console.log('Factory Address: ' + FACTORY_ADDRESS[tokenA.chainId] + ' chainid: ' +tokenA.chainId);
 
     const tokens = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
 
