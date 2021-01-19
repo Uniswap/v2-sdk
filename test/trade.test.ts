@@ -26,7 +26,7 @@ describe('Trade', () => {
   const pair_1_3 = new Pair(new TokenAmount(token1, JSBI.BigInt(1200)), new TokenAmount(token3, JSBI.BigInt(1300)))
 
   const pair_weth_0 = new Pair(
-    new TokenAmount(WETH_MAINNET , JSBI.BigInt(1000)),
+    new TokenAmount(WETH_MAINNET, JSBI.BigInt(1000)),
     new TokenAmount(token0, JSBI.BigInt(1000))
   )
 

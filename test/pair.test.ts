@@ -6,9 +6,7 @@ describe('Pair', () => {
 
   describe('constructor', () => {
     it('cannot be used for tokens on different chains', () => {
-      expect(() => new Pair(new TokenAmount(USDC, '100'), new TokenAmount(WETH_RINKEBY, '100'))).toThrow(
-        'CHAIN_IDS'
-      )
+      expect(() => new Pair(new TokenAmount(USDC, '100'), new TokenAmount(WETH_RINKEBY, '100'))).toThrow('CHAIN_IDS')
     })
   })
 
@@ -96,9 +94,9 @@ describe('Pair', () => {
     })
 
     it('throws if not in the pair', () => {
-      expect(() =>
-        new Pair(new TokenAmount(DAI, '101'), new TokenAmount(USDC, '100')).reserveOf(WETH_RINKEBY)
-      ).toThrow('TOKEN')
+      expect(() => new Pair(new TokenAmount(DAI, '101'), new TokenAmount(USDC, '100')).reserveOf(WETH_RINKEBY)).toThrow(
+        'TOKEN'
+      )
     })
   })
 
@@ -111,8 +109,8 @@ describe('Pair', () => {
   describe('#involvesToken', () => {
     expect(new Pair(new TokenAmount(USDC, '100'), new TokenAmount(DAI, '100')).involvesToken(USDC)).toEqual(true)
     expect(new Pair(new TokenAmount(USDC, '100'), new TokenAmount(DAI, '100')).involvesToken(DAI)).toEqual(true)
-    expect(
-      new Pair(new TokenAmount(USDC, '100'), new TokenAmount(DAI, '100')).involvesToken(WETH_RINKEBY)
-    ).toEqual(false)
+    expect(new Pair(new TokenAmount(USDC, '100'), new TokenAmount(DAI, '100')).involvesToken(WETH_RINKEBY)).toEqual(
+      false
+    )
   })
 })
