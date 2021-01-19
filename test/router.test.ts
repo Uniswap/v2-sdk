@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant'
-import { Chain, CurrencyAmount, ETHER, Pair, Percent, Route, Router, Token, TokenAmount, Trade, WETH, WETH_MAINNET } from '../src'
+import { Chain, CurrencyAmount, ETHER, Pair, Percent, Route, Router, Token, TokenAmount, Trade, WETH_MAINNET } from '../src'
 import JSBI from 'jsbi'
 
 function checkDeadline(deadline: string[] | string): void {

@@ -10,7 +10,6 @@ import {
   TokenAmount,
   Trade,
   TradeType,
-  WETH,
   WETH_MAINNET
 } from '../src'
 
