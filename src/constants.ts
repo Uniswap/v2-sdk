@@ -35,7 +35,7 @@ interface FactoryParams {
   initCode: string
 }
 
-export function getFactory (chainId: ChainId): FactoryParams  {
+export function getFactoryParams (chainId: ChainId): FactoryParams  {
   if (chainId === ChainId.XDAI) {
     return {
       factoryAddress: FACTORY_ADDRESS_XDAI,

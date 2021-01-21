@@ -7,7 +7,7 @@ import { getCreate2Address } from '@ethersproject/address'
 
 import {
   BigintIsh,
-  getFactory,
+  getFactoryParams,
   MINIMUM_LIQUIDITY,
   ZERO,
   ONE,
@@ -29,7 +29,7 @@ export class Pair {
   public static getAddress(tokenA: Token, tokenB: Token): string {
     const tokens = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
 
-    const { factoryAddress, initCode } = getFactory(tokenA.chainId)
+    const { factoryAddress, initCode } = getFactoryParams(tokenA.chainId)
 
 
     if (PAIR_ADDRESS_CACHE?.[tokens[0].address]?.[tokens[1].address] === undefined) {
