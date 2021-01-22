@@ -29,13 +29,12 @@ const INIT_CODE_HASH = '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e
 const FACTORY_ADDRESS_XDAI = '0xA818b4F111Ccac7AA31D0BCc0806d64F2E0737D7'
 const INIT_CODE_HASH_XDAI = '0x3f88503e8580ab941773b59034fb4b2a63e86dbc031b3633a925533ad3ed2b93'
 
-
 interface FactoryParams {
-  factoryAddress: string,
+  factoryAddress: string
   initCode: string
 }
 
-export function getFactoryParams (chainId: ChainId): FactoryParams  {
+export function getFactoryParams(chainId: ChainId): FactoryParams {
   if (chainId === ChainId.XDAI) {
     return {
       factoryAddress: FACTORY_ADDRESS_XDAI,
@@ -48,9 +47,6 @@ export function getFactoryParams (chainId: ChainId): FactoryParams  {
     }
   }
 }
-
-
-
 
 export const MINIMUM_LIQUIDITY = JSBI.BigInt(1000)
 
