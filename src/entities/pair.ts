@@ -25,17 +25,18 @@ let PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: st
 
 const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.MAINNET]: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac',
-  [ChainId.ROPSTEN]: '0xa0d0fE9D587c713e17a6DDB7Eab626fE6Fa0A599',
-  [ChainId.RINKEBY]: '',
-  [ChainId.GÖRLI]: '',
-  [ChainId.KOVAN]: ''
+  [ChainId.ROPSTEN]: '0x0F2e42786489264cA57bDb33B0A7F7D17CD443f7',
+  [ChainId.RINKEBY]: '0x0F2e42786489264cA57bDb33B0A7F7D17CD443f7',
+  [ChainId.GÖRLI]: '0x0F2e42786489264cA57bDb33B0A7F7D17CD443f7',
+  [ChainId.KOVAN]: '0x0F2e42786489264cA57bDb33B0A7F7D17CD443f7'
 }
+
 const INIT_CODE_HASH: { [chainId in ChainId]: string } = {
   [ChainId.MAINNET]: '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303',
-  [ChainId.ROPSTEN]: '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303',
-  [ChainId.RINKEBY]: '',
-  [ChainId.GÖRLI]: '',
-  [ChainId.KOVAN]: ''
+  [ChainId.ROPSTEN]: '0x54133925c45bec962a59f3e2c52a7d507cf9225eb14aa6f0f01a33e997e4fa3c',
+  [ChainId.RINKEBY]: '0x54133925c45bec962a59f3e2c52a7d507cf9225eb14aa6f0f01a33e997e4fa3c',
+  [ChainId.GÖRLI]: '0x54133925c45bec962a59f3e2c52a7d507cf9225eb14aa6f0f01a33e997e4fa3c',
+  [ChainId.KOVAN]: '0x54133925c45bec962a59f3e2c52a7d507cf9225eb14aa6f0f01a33e997e4fa3c'
 }
 
 export class Pair {
