@@ -13,29 +13,15 @@ import {
   FIVE,
   _997,
   _1000,
-  ChainId
+  ChainId,
+  FACTORY_ADDRESS,
+  INIT_CODE_HASH
 } from '../constants'
 import { sqrt, parseBigintIsh } from '../utils'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
 import { Token } from './token'
 
 let PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: string } } = {}
-
-const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
-  [ChainId.MAINNET]: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac',
-  [ChainId.ROPSTEN]: '0xF2Ce6e43f11152a33cE082033ee1514fDf998137',
-  [ChainId.RINKEBY]: '0xF2Ce6e43f11152a33cE082033ee1514fDf998137',
-  [ChainId.GÖRLI]: '0xF2Ce6e43f11152a33cE082033ee1514fDf998137',
-  [ChainId.KOVAN]: '0xF2Ce6e43f11152a33cE082033ee1514fDf998137'
-}
-
-const INIT_CODE_HASH: { [chainId in ChainId]: string } = {
-  [ChainId.MAINNET]: '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303',
-  [ChainId.ROPSTEN]: '0x54133925c45bec962a59f3e2c52a7d507cf9225eb14aa6f0f01a33e997e4fa3c',
-  [ChainId.RINKEBY]: '0x54133925c45bec962a59f3e2c52a7d507cf9225eb14aa6f0f01a33e997e4fa3c',
-  [ChainId.GÖRLI]: '0x54133925c45bec962a59f3e2c52a7d507cf9225eb14aa6f0f01a33e997e4fa3c',
-  [ChainId.KOVAN]: '0x54133925c45bec962a59f3e2c52a7d507cf9225eb14aa6f0f01a33e997e4fa3c'
-}
 
 export class Pair {
   public readonly liquidityToken: Token
