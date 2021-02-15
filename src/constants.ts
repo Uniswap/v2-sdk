@@ -30,6 +30,14 @@ export const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.KOVAN]: '0xF2Ce6e43f11152a33cE082033ee1514fDf998137'
 }
 
+export const ROUTER_ADDRESS: { [chainId in ChainId]: string } = {
+  [ChainId.MAINNET]: '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F',
+  [ChainId.RINKEBY]: '0x600c710979Ad494269ddcc4d94E95344537cd211',
+  [ChainId.ROPSTEN]: '0x600c710979Ad494269ddcc4d94E95344537cd211',
+  [ChainId.GÖRLI]: '0x600c710979Ad494269ddcc4d94E95344537cd211',
+  [ChainId.KOVAN]: '0x600c710979Ad494269ddcc4d94E95344537cd211'
+}
+
 export const INIT_CODE_HASH: { [chainId in ChainId]: string } = {
   [ChainId.MAINNET]: '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303',
   [ChainId.ROPSTEN]: '0x54133925c45bec962a59f3e2c52a7d507cf9225eb14aa6f0f01a33e997e4fa3c',
