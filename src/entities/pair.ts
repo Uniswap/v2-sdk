@@ -7,8 +7,6 @@ import { getCreate2Address } from '@ethersproject/address'
 
 import {
   BigintIsh,
-  // FACTORY_ADDRESS,
-  // INIT_CODE_HASH,
   MINIMUM_LIQUIDITY,
   ZERO,
   ONE,
@@ -25,10 +23,10 @@ let PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: st
 
 const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.MAINNET]: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac',
-  [ChainId.ROPSTEN]: '0x0F2e42786489264cA57bDb33B0A7F7D17CD443f7',
-  [ChainId.RINKEBY]: '0x0F2e42786489264cA57bDb33B0A7F7D17CD443f7',
-  [ChainId.GÖRLI]: '0x0F2e42786489264cA57bDb33B0A7F7D17CD443f7',
-  [ChainId.KOVAN]: '0x0F2e42786489264cA57bDb33B0A7F7D17CD443f7'
+  [ChainId.ROPSTEN]: '0xF2Ce6e43f11152a33cE082033ee1514fDf998137',
+  [ChainId.RINKEBY]: '0xF2Ce6e43f11152a33cE082033ee1514fDf998137',
+  [ChainId.GÖRLI]: '0xF2Ce6e43f11152a33cE082033ee1514fDf998137',
+  [ChainId.KOVAN]: '0xF2Ce6e43f11152a33cE082033ee1514fDf998137'
 }
 
 const INIT_CODE_HASH: { [chainId in ChainId]: string } = {
