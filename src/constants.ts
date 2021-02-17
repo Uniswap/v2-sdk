@@ -32,6 +32,46 @@ export const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
 
 export const INIT_CODE_HASH: string = "0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303"
 
+export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
+  [ChainId.MAINNET]: '0x6B3595068778DD592e39A122f4f5a5cF09C90fE2',
+  [ChainId.ROPSTEN]: '0x63058b298f1d083beDcC2Dd77Aa4667909aC357B',
+  [ChainId.RINKEBY]: '0x63058b298f1d083beDcC2Dd77Aa4667909aC357B',
+  [ChainId.GÖRLI]: '0x63058b298f1d083beDcC2Dd77Aa4667909aC357B',
+  [ChainId.KOVAN]: '0x63058b298f1d083beDcC2Dd77Aa4667909aC357B'
+}
+
+export const MASTERCHEF_ADDRESS: { [chainId in ChainId]: string } = {
+  [ChainId.MAINNET]: '0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd',
+  [ChainId.ROPSTEN]: '0x921f083A931E74ba2A8ba55a4881a3c58f4f271d',
+  [ChainId.RINKEBY]: '0x921f083A931E74ba2A8ba55a4881a3c58f4f271d',
+  [ChainId.GÖRLI]: '0x921f083A931E74ba2A8ba55a4881a3c58f4f271d',
+  [ChainId.KOVAN]: '0x921f083A931E74ba2A8ba55a4881a3c58f4f271d'
+}
+
+export const BAR_ADDRESS: { [chainId in ChainId]: string } = {
+  [ChainId.MAINNET]: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272',
+  [ChainId.ROPSTEN]: '0x86E403D507815138F749DFd5C9680a5178b3fEbC',
+  [ChainId.RINKEBY]: '0x86E403D507815138F749DFd5C9680a5178b3fEbC',
+  [ChainId.GÖRLI]: '0x86E403D507815138F749DFd5C9680a5178b3fEbC',
+  [ChainId.KOVAN]: '0x86E403D507815138F749DFd5C9680a5178b3fEbC'
+}
+
+export const MAKER_ADDRESS: { [chainId in ChainId]: string } = {
+  [ChainId.MAINNET]: '0xE11fc0B43ab98Eb91e9836129d1ee7c3Bc95df50',
+  [ChainId.ROPSTEN]: '0x2dC7d393151D5205610501F2DA11ee52f07c731B',
+  [ChainId.RINKEBY]: '0x2dC7d393151D5205610501F2DA11ee52f07c731B',
+  [ChainId.GÖRLI]: '0x2dC7d393151D5205610501F2DA11ee52f07c731B',
+  [ChainId.KOVAN]: '0x2dC7d393151D5205610501F2DA11ee52f07c731B'
+}
+
+export const TIMELOCK_ADDRESS: { [chainId in ChainId]: string } = {
+  [ChainId.MAINNET]: '0x9a8541Ddf3a932a9A922B607e9CF7301f1d47bD1',
+  [ChainId.ROPSTEN]: '',
+  [ChainId.RINKEBY]: '',
+  [ChainId.GÖRLI]: '',
+  [ChainId.KOVAN]: ''
+}
+
 export const MINIMUM_LIQUIDITY = JSBI.BigInt(1000)
 
 // exports for internal consumption
