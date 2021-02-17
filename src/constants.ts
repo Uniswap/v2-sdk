@@ -22,15 +22,13 @@ export enum Rounding {
   ROUND_UP
 }
 
-export const FACTORY_ADDRESS: string = '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac'
-
-// export const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
-//   [ChainId.MAINNET]: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac',
-//   [ChainId.ROPSTEN]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2',
-//   [ChainId.RINKEBY]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2',
-//   [ChainId.GÖRLI]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2',
-//   [ChainId.KOVAN]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2'
-// }
+export const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
+  [ChainId.MAINNET]: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac',
+  [ChainId.ROPSTEN]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2',
+  [ChainId.RINKEBY]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2',
+  [ChainId.GÖRLI]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2',
+  [ChainId.KOVAN]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2'
+}
 
 export const INIT_CODE_HASH: string = "0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303"
 
