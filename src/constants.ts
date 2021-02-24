@@ -9,10 +9,13 @@ export enum ChainId {
   RINKEBY = 4,
   GÖRLI = 5,
   KOVAN = 42,
-  BSC = 56,
-  BSC_TESTNET = 97,
+  MATIC = 137,
+  MATIC_TESTNET = 80001,
   FANTOM = 250,
   FANTOM_TESTNET = 4002,
+  XDAI = 100,
+  BSC = 56,
+  BSC_TESTNET = 97,
 }
 
 export enum TradeType {
@@ -32,10 +35,13 @@ export const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.RINKEBY]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2',
   [ChainId.GÖRLI]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2',
   [ChainId.KOVAN]: '0xaDe0ad525430cfe17218B679483c46B6c1d63fe2',
-  [ChainId.BSC]: '',
-  [ChainId.BSC_TESTNET]: '0xC4AE81853F39fe1E6474B8848E5f22443A83A988',
   [ChainId.FANTOM]: '',
   [ChainId.FANTOM_TESTNET]: '',
+  [ChainId.MATIC]: '',
+  [ChainId.MATIC_TESTNET]: '',
+  [ChainId.XDAI]: '',
+  [ChainId.BSC]: '',
+  [ChainId.BSC_TESTNET]: '0xC4AE81853F39fe1E6474B8848E5f22443A83A988',
 }
 
 export const INIT_CODE_HASH: string = "0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303"
@@ -46,10 +52,13 @@ export const ROUTER_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.ROPSTEN]: '0x027Bb5f9205360aC628C33508c3f182320A44525',
   [ChainId.GÖRLI]: '0x027Bb5f9205360aC628C33508c3f182320A44525',
   [ChainId.KOVAN]: '0x027Bb5f9205360aC628C33508c3f182320A44525',
-  [ChainId.BSC]: '',
-  [ChainId.BSC_TESTNET]: '0xf7e669D0f1Caf1fBb53Db5A41cB07AdF5d66697d',
   [ChainId.FANTOM]: '',
   [ChainId.FANTOM_TESTNET]: '',
+  [ChainId.MATIC]: '',
+  [ChainId.MATIC_TESTNET]: '',
+  [ChainId.XDAI]: '',
+  [ChainId.BSC]: '',
+  [ChainId.BSC_TESTNET]: '0xf7e669D0f1Caf1fBb53Db5A41cB07AdF5d66697d',
 }
 
 export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
@@ -58,10 +67,13 @@ export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.RINKEBY]: '0x63058b298f1d083beDcC2Dd77Aa4667909aC357B',
   [ChainId.GÖRLI]: '0x63058b298f1d083beDcC2Dd77Aa4667909aC357B',
   [ChainId.KOVAN]: '0x63058b298f1d083beDcC2Dd77Aa4667909aC357B',
-  [ChainId.BSC]: '',
-  [ChainId.BSC_TESTNET]: '',
   [ChainId.FANTOM]: '',
   [ChainId.FANTOM_TESTNET]: '',
+  [ChainId.MATIC]: '',
+  [ChainId.MATIC_TESTNET]: '',
+  [ChainId.XDAI]: '',
+  [ChainId.BSC]: '',
+  [ChainId.BSC_TESTNET]: '',
 }
 
 export const MASTERCHEF_ADDRESS: { [chainId in ChainId]: string } = {
@@ -70,10 +82,13 @@ export const MASTERCHEF_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.RINKEBY]: '0x921f083A931E74ba2A8ba55a4881a3c58f4f271d',
   [ChainId.GÖRLI]: '0x921f083A931E74ba2A8ba55a4881a3c58f4f271d',
   [ChainId.KOVAN]: '0x921f083A931E74ba2A8ba55a4881a3c58f4f271d',
-  [ChainId.BSC]: '',
-  [ChainId.BSC_TESTNET]: '',
   [ChainId.FANTOM]: '',
   [ChainId.FANTOM_TESTNET]: '',
+  [ChainId.MATIC]: '',
+  [ChainId.MATIC_TESTNET]: '',
+  [ChainId.XDAI]: '',
+  [ChainId.BSC]: '',
+  [ChainId.BSC_TESTNET]: '',
 }
 
 export const BAR_ADDRESS: { [chainId in ChainId]: string } = {
@@ -82,10 +97,13 @@ export const BAR_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.RINKEBY]: '0x86E403D507815138F749DFd5C9680a5178b3fEbC',
   [ChainId.GÖRLI]: '0x86E403D507815138F749DFd5C9680a5178b3fEbC',
   [ChainId.KOVAN]: '0x86E403D507815138F749DFd5C9680a5178b3fEbC',
-  [ChainId.BSC]: '',
-  [ChainId.BSC_TESTNET]: '',
   [ChainId.FANTOM]: '',
   [ChainId.FANTOM_TESTNET]: '',
+  [ChainId.MATIC]: '',
+  [ChainId.MATIC_TESTNET]: '',
+  [ChainId.XDAI]: '',
+  [ChainId.BSC]: '',
+  [ChainId.BSC_TESTNET]: '',
 }
 
 export const MAKER_ADDRESS: { [chainId in ChainId]: string } = {
@@ -94,10 +112,13 @@ export const MAKER_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.RINKEBY]: '0x2dC7d393151D5205610501F2DA11ee52f07c731B',
   [ChainId.GÖRLI]: '0x2dC7d393151D5205610501F2DA11ee52f07c731B',
   [ChainId.KOVAN]: '0x2dC7d393151D5205610501F2DA11ee52f07c731B',
-  [ChainId.BSC]: '',
-  [ChainId.BSC_TESTNET]: '',
   [ChainId.FANTOM]: '',
   [ChainId.FANTOM_TESTNET]: '',
+  [ChainId.MATIC]: '',
+  [ChainId.MATIC_TESTNET]: '',
+  [ChainId.XDAI]: '',
+  [ChainId.BSC]: '',
+  [ChainId.BSC_TESTNET]: '',
 }
 
 export const TIMELOCK_ADDRESS: { [chainId in ChainId]: string } = {
@@ -106,10 +127,13 @@ export const TIMELOCK_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.RINKEBY]: '',
   [ChainId.GÖRLI]: '',
   [ChainId.KOVAN]: '',
-  [ChainId.BSC]: '',
-  [ChainId.BSC_TESTNET]: '',
   [ChainId.FANTOM]: '',
   [ChainId.FANTOM_TESTNET]: '',
+  [ChainId.MATIC]: '',
+  [ChainId.MATIC_TESTNET]: '',
+  [ChainId.XDAI]: '',
+  [ChainId.BSC]: '',
+  [ChainId.BSC_TESTNET]: '',
 }
 
 export const MINIMUM_LIQUIDITY = JSBI.BigInt(1000)
