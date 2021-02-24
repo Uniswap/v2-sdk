@@ -1,6 +1,6 @@
 import JSBI from 'jsbi'
 
-import { SolidityType } from '../constants'
+import { ChainId, SolidityType } from '../constants'
 import { validateSolidityTypeInstance } from '../utils'
 
 /**
@@ -13,10 +13,23 @@ export class Currency {
   public readonly symbol?: string
   public readonly name?: string
 
-  /**
-   * The only instance of the base class `Currency`.
-   */
   public static readonly ETHER: Currency = new Currency(18, 'ETH', 'Ether')
+
+  public static readonly BNB: Currency = new Currency(18, 'BNB', 'Binance Coin')
+
+  public static readonly FTM: Currency = new Currency(18, 'FTM', 'Fantom')
+
+  public static readonly NATIVE = {
+    [ChainId.MAINNET]: Currency.ETHER,
+    [ChainId.ROPSTEN]: Currency.ETHER,
+    [ChainId.RINKEBY]: Currency.ETHER,
+    [ChainId.GÖRLI]: Currency.ETHER,
+    [ChainId.KOVAN]: Currency.ETHER,
+    [ChainId.BSC]: Currency.BNB,
+    [ChainId.BSC_TESTNET]: Currency.BNB,
+    [ChainId.FANTOM]: Currency.FTM,
+    [ChainId.FANTOM_TESTNET]: Currency.FTM,
+  }
 
   /**
    * Constructs an instance of the base class `Currency`. The only instance of the base class `Currency` is `Currency.ETHER`.
@@ -31,7 +44,41 @@ export class Currency {
     this.symbol = symbol
     this.name = name
   }
+
+  public static getNativeCurrency(chainId?: ChainId) {
+    if (!chainId) {
+      throw Error(`No chainId ${chainId}`)
+    }
+
+    if (!(chainId in Currency.NATIVE)) {
+      throw Error(`No native currency defined for chainId ${chainId}`)
+    }
+    return Currency.NATIVE[chainId]
+  }
+
+  public static getNativeCurrencySymbol(chainId?: ChainId) {
+    const nativeCurrency = this.getNativeCurrency(chainId);
+    return nativeCurrency.symbol
+  }
+
+  public getSymbol(chainId?: ChainId) {
+
+    if (!chainId) {
+      return this?.symbol
+    }
+
+    if (this?.symbol === 'ETH') {
+      return Currency.getNativeCurrencySymbol(chainId)
+    }
+  
+    if (this?.symbol === 'WETH') {
+      return `W${Currency.getNativeCurrencySymbol(chainId)}`
+    }
+  
+    return this?.symbol
+  }
 }
 
 const ETHER = Currency.ETHER
+
 export { ETHER }
