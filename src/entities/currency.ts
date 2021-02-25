@@ -36,6 +36,7 @@ export class Currency {
     [ChainId.XDAI]: Currency.XDAI,
     [ChainId.BSC]: Currency.BNB,
     [ChainId.BSC_TESTNET]: Currency.BNB,
+    [ChainId.ARBITRUM]: Currency.ETHER,
   }
 
   /**
