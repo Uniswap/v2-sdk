@@ -37,6 +37,7 @@ export class Currency {
     [ChainId.BSC]: Currency.BNB,
     [ChainId.BSC_TESTNET]: Currency.BNB,
     [ChainId.ARBITRUM]: Currency.ETHER,
+    [ChainId.MOONBASE]: Currency.ETHER
   }
 
   /**
@@ -65,12 +66,11 @@ export class Currency {
   }
 
   public static getNativeCurrencySymbol(chainId?: ChainId) {
-    const nativeCurrency = this.getNativeCurrency(chainId);
+    const nativeCurrency = this.getNativeCurrency(chainId)
     return nativeCurrency.symbol
   }
 
   public getSymbol(chainId?: ChainId) {
-
     if (!chainId) {
       return this?.symbol
     }
@@ -78,11 +78,11 @@ export class Currency {
     if (this?.symbol === 'ETH') {
       return Currency.getNativeCurrencySymbol(chainId)
     }
-  
-    if (this?.symbol === 'WETH') {
-      return `W${Currency.getNativeCurrencySymbol(chainId)}`
-    }
-  
+
+    // if (this?.symbol === 'WETH') {
+    //   return `W${Currency.getNativeCurrencySymbol(chainId)}`
+    // }
+
     return this?.symbol
   }
 }
