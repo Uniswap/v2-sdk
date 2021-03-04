@@ -8,7 +8,7 @@
   "files": [
     "dist"
   ],
-  "repository": "https://github.com/Uniswap/uniswap-sdk.git",
+  "repository": "https://github.com/Uniswap/uniswap-v2-sdk.git",
   "keywords": [
     "uniswap",
     "ethereum"
