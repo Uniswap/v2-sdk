@@ -1,8 +1,8 @@
 {
-  "name": "@uniswap/sdk",
+  "name": "@uniswap/v2-sdk",
   "license": "MIT",
-  "version": "3.0.3",
-  "description": "🛠 An SDK for building applications on top of Uniswap.",
+  "version": "1.0.0",
+  "description": "🛠 An SDK for building applications on top of Uniswap V2",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
