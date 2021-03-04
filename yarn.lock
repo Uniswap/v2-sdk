@@ -2020,9 +2020,9 @@ camelcase@^5.0.0, camelcase@^5.3.1:
   integrity sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==
 
 caniuse-lite@^1.0.30001093:
-  version "1.0.30001105"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001105.tgz#d2cb0b31e5cf2f3ce845033b61c5c01566549abf"
-  integrity sha512-JupOe6+dGMr7E20siZHIZQwYqrllxotAhiaej96y6x00b/48rPt42o+SzOSCPbrpsDWvRja40Hwrj0g0q6LZJg==
+  version "1.0.30001196"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001196.tgz"
+  integrity sha512-CPvObjD3ovWrNBaXlAIGWmg2gQQuJ5YhuciUOjPRox6hIQttu8O+b51dx6VIpIY9ESd2d0Vac1RKpICdG4rGUg==
 
 capture-exit@^2.0.0:
   version "2.0.0"
