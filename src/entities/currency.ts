@@ -23,6 +23,8 @@ export class Currency {
 
   public static readonly XDAI: Currency = new Currency(18, 'XDAI', 'xDai')
 
+  public static readonly GLMR: Currency = new Currency(18, 'GLMR', 'Glimmer')
+
   public static readonly NATIVE = {
     [ChainId.MAINNET]: Currency.ETHER,
     [ChainId.ROPSTEN]: Currency.ETHER,
@@ -37,7 +39,7 @@ export class Currency {
     [ChainId.BSC]: Currency.BNB,
     [ChainId.BSC_TESTNET]: Currency.BNB,
     [ChainId.ARBITRUM]: Currency.ETHER,
-    [ChainId.MOONBASE]: Currency.ETHER
+    [ChainId.MOONBASE]: Currency.GLMR
   }
 
   /**
@@ -70,6 +72,11 @@ export class Currency {
     return nativeCurrency.symbol
   }
 
+  public static getNativeCurrencyName(chainId?: ChainId) {
+    const nativeCurrency = this.getNativeCurrency(chainId)
+    return nativeCurrency.name
+  }
+
   public getSymbol(chainId?: ChainId) {
     if (!chainId) {
       return this?.symbol
@@ -84,6 +91,18 @@ export class Currency {
     // }
 
     return this?.symbol
+  }
+
+  public getName(chainId?: ChainId) {
+    if (!chainId) {
+      return this?.name
+    }
+
+    if (this?.name === 'Ether') {
+      return Currency.getNativeCurrencyName(chainId)
+    }
+
+    return this?.name
   }
 }
 
