@@ -1,5 +1,7 @@
+import JSBI from 'jsbi'
 import invariant from 'tiny-invariant'
-import { ChainId, WETH as _WETH, TradeType, Rounding, Token, TokenAmount, Pair, Route, Trade } from '../src'
+import { ChainId, WETH as _WETH, TradeType, Rounding, Token, TokenAmount } from '@uniswap/sdk-core'
+import { Pair, Route, Trade } from '../index'
 
 const ADDRESSES = [
   '0x0000000000000000000000000000000000000001',
@@ -14,8 +16,8 @@ const DECIMAL_PERMUTATIONS: [number, number, number][] = [
   [18, 18, 18]
 ]
 
-function decimalize(amount: number, decimals: number): bigint {
-  return BigInt(amount) * BigInt(10) ** BigInt(decimals)
+function decimalize(amount: number, decimals: number): JSBI {
+  return JSBI.multiply(JSBI.BigInt(amount), JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals)))
 }
 
 describe('entities', () => {
@@ -156,8 +158,10 @@ describe('entities', () => {
                   new TokenAmount(tokens[1], decimalize(1, tokens[1].decimals)),
                   new TokenAmount(
                     WETH,
-                    decimalize(10, WETH.decimals) +
-                      (tokens[1].decimals === 9 ? BigInt('30090280812437312') : BigInt('30090270812437322'))
+                    JSBI.add(
+                      decimalize(10, WETH.decimals),
+                      tokens[1].decimals === 9 ? JSBI.BigInt('30090280812437312') : JSBI.BigInt('30090270812437322')
+                    )
                   )
                 )
               ],

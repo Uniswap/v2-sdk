@@ -1,16 +1,24 @@
+import {
+  ChainId,
+  Currency,
+  CurrencyAmount,
+  currencyEquals,
+  ETHER,
+  Fraction,
+  ONE,
+  Percent,
+  Price,
+  Token,
+  TokenAmount,
+  TradeType,
+  WETH,
+  ZERO
+} from '@uniswap/sdk-core'
 import invariant from 'tiny-invariant'
 
-import { ChainId, ONE, TradeType, ZERO } from '../constants'
 import { sortedInsert } from '../utils'
-import { Currency, ETHER } from './currency'
-import { CurrencyAmount } from './fractions/currencyAmount'
-import { Fraction } from './fractions/fraction'
-import { Percent } from './fractions/percent'
-import { Price } from './fractions/price'
-import { TokenAmount } from './fractions/tokenAmount'
 import { Pair } from './pair'
 import { Route } from './route'
-import { currencyEquals, Token, WETH } from './token'
 
 /**
  * Returns the percent difference between the mid price and the execution price, i.e. price impact.
@@ -194,7 +202,7 @@ export class Trade {
       this.inputAmount.raw,
       this.outputAmount.raw
     )
-    this.nextMidPrice = Price.fromRoute(new Route(nextPairs, route.input))
+    this.nextMidPrice = new Route(nextPairs, route.input).midPrice
     this.priceImpact = computePriceImpact(route.midPrice, this.inputAmount, this.outputAmount)
   }
 

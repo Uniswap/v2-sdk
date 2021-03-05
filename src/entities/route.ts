@@ -1,17 +1,25 @@
-import { ChainId } from '../constants'
+import { ChainId, Currency, ETHER, Price, Token, WETH } from '@uniswap/sdk-core'
 import invariant from 'tiny-invariant'
 
-import { Currency, ETHER } from './currency'
-import { Token, WETH } from './token'
 import { Pair } from './pair'
-import { Price } from './fractions/price'
 
 export class Route {
   public readonly pairs: Pair[]
   public readonly path: Token[]
   public readonly input: Currency
   public readonly output: Currency
-  public readonly midPrice: Price
+
+  public get midPrice(): Price {
+    const prices: Price[] = []
+    for (const [i, pair] of this.pairs.entries()) {
+      prices.push(
+        this.path[i].equals(pair.token0)
+          ? new Price(pair.reserve0.currency, pair.reserve1.currency, pair.reserve0.raw, pair.reserve1.raw)
+          : new Price(pair.reserve1.currency, pair.reserve0.currency, pair.reserve1.raw, pair.reserve0.raw)
+      )
+    }
+    return prices.slice(1).reduce((accumulator, currentValue) => accumulator.multiply(currentValue), prices[0])
+  }
 
   public constructor(pairs: Pair[], input: Currency, output?: Currency) {
     invariant(pairs.length > 0, 'PAIRS')
@@ -41,7 +49,6 @@ export class Route {
 
     this.pairs = pairs
     this.path = path
-    this.midPrice = Price.fromRoute(this)
     this.input = input
     this.output = output ?? path[path.length - 1]
   }
