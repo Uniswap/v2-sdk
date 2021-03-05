@@ -1,4 +1,5 @@
-import { ChainId, WETH, Token, Fetcher } from '../src'
+import { ChainId, WETH, Token } from '@uniswap/sdk-core'
+import { Fetcher } from './fetcher'
 
 // TODO: replace the provider in these tests
 describe.skip('data', () => {

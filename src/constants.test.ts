@@ -1,4 +1,4 @@
-import { INIT_CODE_HASH } from '../src/constants'
+import { INIT_CODE_HASH } from './constants'
 
 import { bytecode } from '@uniswap/v2-core/build/UniswapV2Pair.json'
 import { keccak256 } from '@ethersproject/solidity'
