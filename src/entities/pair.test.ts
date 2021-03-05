@@ -1,4 +1,4 @@
-import { ChainId, Token, TokenAmount, WETH, Price } from '@uniswap/sdk-core'
+import { ChainId, Token, TokenAmount, WETH9, Price } from '@uniswap/sdk-core'
 import { InsufficientInputAmountError } from '../errors'
 import { Pair } from './pair'
 
@@ -8,7 +8,7 @@ describe('Pair', () => {
 
   describe('constructor', () => {
     it('cannot be used for tokens on different chains', () => {
-      expect(() => new Pair(new TokenAmount(USDC, '100'), new TokenAmount(WETH[ChainId.RINKEBY], '100'))).toThrow(
+      expect(() => new Pair(new TokenAmount(USDC, '100'), new TokenAmount(WETH9[ChainId.RINKEBY], '100'))).toThrow(
         'CHAIN_IDS'
       )
     })
@@ -83,7 +83,7 @@ describe('Pair', () => {
     })
 
     it('throws if invalid token', () => {
-      expect(() => pair.priceOf(WETH[ChainId.MAINNET])).toThrow('TOKEN')
+      expect(() => pair.priceOf(WETH9[ChainId.MAINNET])).toThrow('TOKEN')
     })
   })
 
@@ -99,7 +99,7 @@ describe('Pair', () => {
 
     it('throws if not in the pair', () => {
       expect(() =>
-        new Pair(new TokenAmount(DAI, '101'), new TokenAmount(USDC, '100')).reserveOf(WETH[ChainId.MAINNET])
+        new Pair(new TokenAmount(DAI, '101'), new TokenAmount(USDC, '100')).reserveOf(WETH9[ChainId.MAINNET])
       ).toThrow('TOKEN')
     })
   })
@@ -114,7 +114,7 @@ describe('Pair', () => {
     expect(new Pair(new TokenAmount(USDC, '100'), new TokenAmount(DAI, '100')).involvesToken(USDC)).toEqual(true)
     expect(new Pair(new TokenAmount(USDC, '100'), new TokenAmount(DAI, '100')).involvesToken(DAI)).toEqual(true)
     expect(
-      new Pair(new TokenAmount(USDC, '100'), new TokenAmount(DAI, '100')).involvesToken(WETH[ChainId.MAINNET])
+      new Pair(new TokenAmount(USDC, '100'), new TokenAmount(DAI, '100')).involvesToken(WETH9[ChainId.MAINNET])
     ).toEqual(false)
   })
   describe('miscellaneous', () => {
