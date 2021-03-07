@@ -5,7 +5,6 @@ import { pack, keccak256 } from '@ethersproject/solidity'
 import { getCreate2Address } from '@ethersproject/address'
 
 import { FACTORY_ADDRESS, INIT_CODE_HASH, MINIMUM_LIQUIDITY, FIVE, _997, _1000, ONE, ZERO } from '../constants'
-import { parseBigintIsh } from '../utils'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
 
 export class Pair {
@@ -70,7 +69,7 @@ export class Pair {
   /**
    * Returns the chain ID of the tokens in the pair.
    */
-  public get chainId(): ChainId {
+  public get chainId(): ChainId | number {
     return this.token0.chainId
   }
 
@@ -181,7 +180,7 @@ export class Pair {
       totalSupplyAdjusted = totalSupply
     } else {
       invariant(!!kLast, 'K_LAST')
-      const kLastParsed = parseBigintIsh(kLast)
+      const kLastParsed = JSBI.BigInt(kLast)
       if (!JSBI.equal(kLastParsed, ZERO)) {
         const rootK = babylonianSqrt(JSBI.multiply(this.reserve0.raw, this.reserve1.raw))
         const rootKLast = babylonianSqrt(kLastParsed)

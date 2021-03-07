@@ -23,23 +23,27 @@ export class Route {
 
   public constructor(pairs: Pair[], input: Currency, output?: Currency) {
     invariant(pairs.length > 0, 'PAIRS')
+    const chainId: ChainId | number = pairs[0].chainId
     invariant(
-      pairs.every(pair => pair.chainId === pairs[0].chainId),
+      pairs.every(pair => pair.chainId === chainId),
       'CHAIN_IDS'
     )
+
+    const weth: Token | undefined = WETH9[chainId as ChainId]
+
     invariant(
       (input instanceof Token && pairs[0].involvesToken(input)) ||
-        (input === ETHER && pairs[0].involvesToken(WETH9[pairs[0].chainId])),
+        (input === ETHER && weth && pairs[0].involvesToken(weth)),
       'INPUT'
     )
     invariant(
       typeof output === 'undefined' ||
         (output instanceof Token && pairs[pairs.length - 1].involvesToken(output)) ||
-        (output === ETHER && pairs[pairs.length - 1].involvesToken(WETH9[pairs[0].chainId])),
+        (output === ETHER && weth && pairs[pairs.length - 1].involvesToken(weth)),
       'OUTPUT'
     )
 
-    const path: Token[] = [input instanceof Token ? input : WETH9[pairs[0].chainId]]
+    const path: Token[] = [input instanceof Token ? input : weth]
     for (const [i, pair] of pairs.entries()) {
       const currentInput = path[i]
       invariant(currentInput.equals(pair.token0) || currentInput.equals(pair.token1), 'PATH')
@@ -53,7 +57,7 @@ export class Route {
     this.output = output ?? path[path.length - 1]
   }
 
-  public get chainId(): ChainId {
+  public get chainId(): ChainId | number {
     return this.pairs[0].chainId
   }
 }

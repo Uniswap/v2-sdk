@@ -7,6 +7,7 @@ import {
   Fraction,
   Percent,
   Price,
+  sortedInsert,
   Token,
   TokenAmount,
   TradeType,
@@ -15,7 +16,6 @@ import {
 import { ONE, ZERO } from '../constants'
 import invariant from 'tiny-invariant'
 
-import { sortedInsert } from '../utils'
 import { Pair } from './pair'
 import { Route } from './route'
 
