@@ -28,19 +28,11 @@
   },
   "peerDependencies": {
     "@ethersproject/address": "^5.0.0",
-    "@ethersproject/contracts": "^5.0.0"
-  },
-  "optionalDependencies": {
-    "@ethersproject/networks": "^5.0.2",
-    "@ethersproject/providers": "^5.0.5",
-    "@uniswap/v2-core": "^1.0.1"
+    "@ethersproject/solidity": "^5.0.0"
   },
   "devDependencies": {
-    "@ethersproject/address": "^5.0.2",
-    "@ethersproject/contracts": "^5.0.2",
-    "@ethersproject/networks": "^5.0.2",
-    "@ethersproject/providers": "^5.0.5",
-    "@ethersproject/solidity": "^5.0.2",
+    "@ethersproject/address": "^5.0.0",
+    "@ethersproject/solidity": "^5.0.0",
     "@types/big.js": "^4.0.5",
     "@types/jest": "^24.0.25",
     "@uniswap/v2-core": "^1.0.1",
