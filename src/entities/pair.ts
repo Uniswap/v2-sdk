@@ -1,8 +1,9 @@
-import { babylonianSqrt, BigintIsh, ChainId, Price, Token, TokenAmount } from '@uniswap/sdk-core'
+import { BigintIsh, ChainId, Price, Token, TokenAmount } from '@uniswap/sdk-core'
 import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
 import { pack, keccak256 } from '@ethersproject/solidity'
 import { getCreate2Address } from '@ethersproject/address'
+import babylonianSqrt from '../utils/babylonianSqrt'
 
 import { FACTORY_ADDRESS, INIT_CODE_HASH, MINIMUM_LIQUIDITY, FIVE, _997, _1000, ONE, ZERO } from '../constants'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
