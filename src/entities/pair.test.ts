@@ -1,6 +1,20 @@
 import { ChainId, Token, TokenAmount, WETH9, Price } from '@uniswap/sdk-core'
 import { InsufficientInputAmountError } from '../errors'
-import { Pair } from './pair'
+import { computePairAddress, Pair } from './pair'
+
+describe('computePairAddress', () => {
+  it('should correctly compute the pool address', () => {
+    const token0 = new Token(ChainId.MAINNET, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
+    const token1 = new Token(ChainId.MAINNET, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
+    const result = computePairAddress({
+      factoryAddress: '0x1111111111111111111111111111111111111111',
+      token0,
+      token1
+    })
+
+    expect(result).toEqual('0x3d0E3c52b6fD6Ba23cad4A381d30F18020598872')
+  })
+})
 
 describe('Pair', () => {
   const USDC = new Token(ChainId.MAINNET, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')

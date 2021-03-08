@@ -8,18 +8,27 @@ import babylonianSqrt from '../utils/babylonianSqrt'
 import { FACTORY_ADDRESS, INIT_CODE_HASH, MINIMUM_LIQUIDITY, FIVE, _997, _1000, ONE, ZERO } from '../constants'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
 
+export const computePairAddress = ({
+  factoryAddress,
+  token0,
+  token1
+}: {
+  factoryAddress: string
+  token0: Token
+  token1: Token
+}): string =>
+  getCreate2Address(
+    factoryAddress,
+    keccak256(['bytes'], [pack(['address', 'address'], [token0.address, token1.address])]),
+    INIT_CODE_HASH
+  )
 export class Pair {
   public readonly liquidityToken: Token
   private readonly tokenAmounts: [TokenAmount, TokenAmount]
 
   public static getAddress(tokenA: Token, tokenB: Token): string {
-    const tokens = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
-
-    return getCreate2Address(
-      FACTORY_ADDRESS,
-      keccak256(['bytes'], [pack(['address', 'address'], [tokens[0].address, tokens[1].address])]),
-      INIT_CODE_HASH
-    )
+    const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
+    return computePairAddress({ factoryAddress: FACTORY_ADDRESS, token0, token1 })
   }
 
   public constructor(tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) {
