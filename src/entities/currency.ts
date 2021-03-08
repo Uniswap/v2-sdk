@@ -25,6 +25,8 @@ export class Currency {
 
   public static readonly GLMR: Currency = new Currency(18, 'GLMR', 'Glimmer')
 
+  public static readonly AVAX: Currency = new Currency(18, 'AVAX', 'Avalanche')
+
   public static readonly NATIVE = {
     [ChainId.MAINNET]: Currency.ETHER,
     [ChainId.ROPSTEN]: Currency.ETHER,
@@ -39,7 +41,9 @@ export class Currency {
     [ChainId.BSC]: Currency.BNB,
     [ChainId.BSC_TESTNET]: Currency.BNB,
     [ChainId.ARBITRUM]: Currency.ETHER,
-    [ChainId.MOONBASE]: Currency.GLMR
+    [ChainId.MOONBASE]: Currency.GLMR,
+    [ChainId.AVALANCHE]: Currency.AVAX,
+    [ChainId.FUJI]: Currency.AVAX
   }
 
   /**

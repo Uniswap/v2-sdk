@@ -17,7 +17,9 @@ export enum ChainId {
   BSC = 56,
   BSC_TESTNET = 97,
   ARBITRUM = 79377087078960,
-  MOONBASE = 1287
+  MOONBASE = 1287,
+  AVALANCHE = 43114,
+  FUJI = 43113
 }
 
 export enum TradeType {
@@ -47,7 +49,9 @@ export const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.BSC]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
   [ChainId.BSC_TESTNET]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
   [ChainId.ARBITRUM]: '',
-  [ChainId.MOONBASE]: '0x2Ce3F07dD4c62b56a502E223A7cBE38b1d77A1b5'
+  [ChainId.MOONBASE]: '0x2Ce3F07dD4c62b56a502E223A7cBE38b1d77A1b5',
+  [ChainId.AVALANCHE]: '',
+  [ChainId.FUJI]: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c'
 }
 
 export const ROUTER_ADDRESS: { [chainId in ChainId]: string } = {
@@ -64,7 +68,9 @@ export const ROUTER_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.BSC]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
   [ChainId.BSC_TESTNET]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
   [ChainId.ARBITRUM]: '',
-  [ChainId.MOONBASE]: '0xeB5c2BB5E83B51d83F3534Ae21E84336B8B376ef'
+  [ChainId.MOONBASE]: '0xeB5c2BB5E83B51d83F3534Ae21E84336B8B376ef',
+  [ChainId.AVALANCHE]: '',
+  [ChainId.FUJI]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506'
 }
 
 export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
@@ -81,7 +87,9 @@ export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.BSC]: '',
   [ChainId.BSC_TESTNET]: '',
   [ChainId.ARBITRUM]: '',
-  [ChainId.MOONBASE]: ''
+  [ChainId.MOONBASE]: '',
+  [ChainId.AVALANCHE]: '',
+  [ChainId.FUJI]: ''
 }
 
 export const MASTERCHEF_ADDRESS: { [chainId in ChainId]: string } = {
@@ -98,7 +106,9 @@ export const MASTERCHEF_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.BSC]: '',
   [ChainId.BSC_TESTNET]: '',
   [ChainId.ARBITRUM]: '',
-  [ChainId.MOONBASE]: ''
+  [ChainId.MOONBASE]: '',
+  [ChainId.AVALANCHE]: '',
+  [ChainId.FUJI]: ''
 }
 
 export const BAR_ADDRESS: { [chainId in ChainId]: string } = {
@@ -115,7 +125,9 @@ export const BAR_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.BSC]: '',
   [ChainId.BSC_TESTNET]: '',
   [ChainId.ARBITRUM]: '',
-  [ChainId.MOONBASE]: ''
+  [ChainId.MOONBASE]: '',
+  [ChainId.AVALANCHE]: '',
+  [ChainId.FUJI]: ''
 }
 
 export const MAKER_ADDRESS: { [chainId in ChainId]: string } = {
@@ -132,7 +144,9 @@ export const MAKER_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.BSC]: '',
   [ChainId.BSC_TESTNET]: '',
   [ChainId.ARBITRUM]: '',
-  [ChainId.MOONBASE]: ''
+  [ChainId.MOONBASE]: '',
+  [ChainId.AVALANCHE]: '',
+  [ChainId.FUJI]: ''
 }
 
 export const TIMELOCK_ADDRESS: { [chainId in ChainId]: string } = {
@@ -149,7 +163,9 @@ export const TIMELOCK_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.BSC]: '',
   [ChainId.BSC_TESTNET]: '',
   [ChainId.ARBITRUM]: '',
-  [ChainId.MOONBASE]: ''
+  [ChainId.MOONBASE]: '',
+  [ChainId.AVALANCHE]: '',
+  [ChainId.FUJI]: ''
 }
 
 export const MINIMUM_LIQUIDITY = JSBI.BigInt(1000)
