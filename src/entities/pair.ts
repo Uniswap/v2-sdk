@@ -10,25 +10,26 @@ import { InsufficientReservesError, InsufficientInputAmountError } from '../erro
 
 export const computePairAddress = ({
   factoryAddress,
-  token0,
-  token1
+  tokenA,
+  tokenB
 }: {
   factoryAddress: string
-  token0: Token
-  token1: Token
-}): string =>
-  getCreate2Address(
+  tokenA: Token
+  tokenB: Token
+}): string => {
+  const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
+  return getCreate2Address(
     factoryAddress,
     keccak256(['bytes'], [pack(['address', 'address'], [token0.address, token1.address])]),
     INIT_CODE_HASH
   )
+}
 export class Pair {
   public readonly liquidityToken: Token
   private readonly tokenAmounts: [TokenAmount, TokenAmount]
 
   public static getAddress(tokenA: Token, tokenB: Token): string {
-    const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
-    return computePairAddress({ factoryAddress: FACTORY_ADDRESS, token0, token1 })
+    return computePairAddress({ factoryAddress: FACTORY_ADDRESS, tokenA, tokenB })
   }
 
   public constructor(tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) {
