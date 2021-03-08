@@ -134,5 +134,13 @@ export const WETH = {
     'WAVAX',
     'Wrapped AVAX'
   ),
-  [ChainId.FUJI]: new Token(ChainId.FUJI, '0xd00ae08403B9bbb9124bB305C09058E32C39A48c', 18, 'WAVAX', 'Wrapped AVAX')
+  [ChainId.FUJI]: new Token(ChainId.FUJI, '0xd00ae08403B9bbb9124bB305C09058E32C39A48c', 18, 'WAVAX', 'Wrapped AVAX'),
+  [ChainId.HECO]: new Token(ChainId.HECO, '0x5545153CCFcA01fbd7Dd11C0b23ba694D9509A6F', 18, 'WHT', 'Wrapped HT'),
+  [ChainId.HECO_TESTNET]: new Token(
+    ChainId.HECO_TESTNET,
+    '0x5B2DA6F42CA09C77D577a12BeaD0446148830687',
+    18,
+    'WHT',
+    'Wrapped HT'
+  )
 }

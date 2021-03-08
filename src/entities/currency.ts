@@ -27,6 +27,8 @@ export class Currency {
 
   public static readonly AVAX: Currency = new Currency(18, 'AVAX', 'Avalanche')
 
+  public static readonly HT: Currency = new Currency(18, 'HT', 'Heco Token')
+
   public static readonly NATIVE = {
     [ChainId.MAINNET]: Currency.ETHER,
     [ChainId.ROPSTEN]: Currency.ETHER,
@@ -43,7 +45,9 @@ export class Currency {
     [ChainId.ARBITRUM]: Currency.ETHER,
     [ChainId.MOONBASE]: Currency.GLMR,
     [ChainId.AVALANCHE]: Currency.AVAX,
-    [ChainId.FUJI]: Currency.AVAX
+    [ChainId.FUJI]: Currency.AVAX,
+    [ChainId.HECO]: Currency.HT,
+    [ChainId.HECO_TESTNET]: Currency.HT
   }
 
   /**
