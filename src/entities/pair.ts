@@ -1,9 +1,8 @@
-import { BigintIsh, ChainId, Price, Token, TokenAmount } from '@uniswap/sdk-core'
+import { BigintIsh, ChainId, Price, sqrt, Token, TokenAmount } from '@uniswap/sdk-core'
 import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
 import { pack, keccak256 } from '@ethersproject/solidity'
 import { getCreate2Address } from '@ethersproject/address'
-import babylonianSqrt from '../utils/babylonianSqrt'
 
 import { FACTORY_ADDRESS, INIT_CODE_HASH, MINIMUM_LIQUIDITY, FIVE, _997, _1000, ONE, ZERO } from '../constants'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
@@ -159,10 +158,7 @@ export class Pair {
 
     let liquidity: JSBI
     if (JSBI.equal(totalSupply.raw, ZERO)) {
-      liquidity = JSBI.subtract(
-        babylonianSqrt(JSBI.multiply(tokenAmounts[0].raw, tokenAmounts[1].raw)),
-        MINIMUM_LIQUIDITY
-      )
+      liquidity = JSBI.subtract(sqrt(JSBI.multiply(tokenAmounts[0].raw, tokenAmounts[1].raw)), MINIMUM_LIQUIDITY)
     } else {
       const amount0 = JSBI.divide(JSBI.multiply(tokenAmounts[0].raw, totalSupply.raw), this.reserve0.raw)
       const amount1 = JSBI.divide(JSBI.multiply(tokenAmounts[1].raw, totalSupply.raw), this.reserve1.raw)
@@ -193,8 +189,8 @@ export class Pair {
       invariant(!!kLast, 'K_LAST')
       const kLastParsed = JSBI.BigInt(kLast)
       if (!JSBI.equal(kLastParsed, ZERO)) {
-        const rootK = babylonianSqrt(JSBI.multiply(this.reserve0.raw, this.reserve1.raw))
-        const rootKLast = babylonianSqrt(kLastParsed)
+        const rootK = sqrt(JSBI.multiply(this.reserve0.raw, this.reserve1.raw))
+        const rootKLast = sqrt(kLastParsed)
         if (JSBI.greaterThan(rootK, rootKLast)) {
           const numerator = JSBI.multiply(totalSupply.raw, JSBI.subtract(rootK, rootKLast))
           const denominator = JSBI.add(JSBI.multiply(rootK, FIVE), rootKLast)
