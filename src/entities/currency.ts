@@ -29,6 +29,8 @@ export class Currency {
 
   public static readonly HT: Currency = new Currency(18, 'HT', 'Heco Token')
 
+  public static readonly ONE: Currency = new Currency(18, 'ONE', 'Harmony')
+
   public static readonly NATIVE = {
     [ChainId.MAINNET]: Currency.ETHER,
     [ChainId.ROPSTEN]: Currency.ETHER,
@@ -47,7 +49,9 @@ export class Currency {
     [ChainId.AVALANCHE]: Currency.AVAX,
     [ChainId.FUJI]: Currency.AVAX,
     [ChainId.HECO]: Currency.HT,
-    [ChainId.HECO_TESTNET]: Currency.HT
+    [ChainId.HECO_TESTNET]: Currency.HT,
+    [ChainId.HARMONY]: Currency.ONE,
+    [ChainId.HARMONY_TESTNET]: Currency.ONE
   }
 
   /**

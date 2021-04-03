@@ -142,5 +142,19 @@ export const WETH = {
     18,
     'WHT',
     'Wrapped HT'
+  ),
+  [ChainId.HARMONY]: new Token(
+    ChainId.HARMONY,
+    '0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a',
+    18,
+    'WONE',
+    'Wrapped ONE'
+  ),
+  [ChainId.HARMONY_TESTNET]: new Token(
+    ChainId.HARMONY_TESTNET,
+    '0x7a2afac38517d512E55C0bCe3b6805c10a04D60F',
+    18,
+    'WONE',
+    'Wrapped ONE'
   )
 }
