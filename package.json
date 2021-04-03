@@ -1,7 +1,7 @@
 {
   "name": "@sushiswap/sdk",
   "license": "MIT",
-  "version": "5.0.0-canary.5",
+  "version": "5.0.0-canary.6",
   "description": "🛠 An SDK for building applications on top of Sushiswap.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
