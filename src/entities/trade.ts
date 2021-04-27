@@ -328,6 +328,19 @@ export class Trade {
   }
 
   /**
+   * Return the execution price after accounting for slippage tolerance
+   * @param slippageTolerance the allowed tolerated slippage
+   */
+  public worstExecutionPrice(slippageTolerance: Percent): Price {
+    return new Price(
+      this.inputAmount.currency,
+      this.outputAmount.currency,
+      this.maximumAmountIn(slippageTolerance).raw,
+      this.minimumAmountOut(slippageTolerance).raw
+    )
+  }
+
+  /**
    * similar to the above method but instead targets a fixed output amount
    * given a list of pairs, and a fixed amount out, returns the top `maxNumResults` trades that go from an input token
    * to an output token amount, making at most `maxHops` hops

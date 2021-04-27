@@ -2,7 +2,7 @@ import { Pair } from './pair'
 import { Route } from './route'
 import { Trade } from './trade'
 import JSBI from 'jsbi'
-import { ChainId, ETHER, CurrencyAmount, Percent, Token, TokenAmount, TradeType, WETH9 } from '@uniswap/sdk-core'
+import { ChainId, ETHER, CurrencyAmount, Percent, Token, TokenAmount, TradeType, WETH9, Price } from '@uniswap/sdk-core'
 
 describe('Trade', () => {
   const token0 = new Token(ChainId.MAINNET, '0x0000000000000000000000000000000000000001', 18, 't0')
@@ -276,6 +276,46 @@ describe('Trade', () => {
         expect(exactOut.minimumAmountOut(new Percent(JSBI.BigInt(200), JSBI.BigInt(100)))).toEqual(
           new TokenAmount(token2, JSBI.BigInt(100))
         )
+      })
+    })
+  })
+
+  describe('#worstExecutionPrice', () => {
+    describe('tradeType = EXACT_INPUT', () => {
+      const exactIn = new Trade(
+        new Route([pair_0_1, pair_1_2], token0),
+        new TokenAmount(token0, 100),
+        TradeType.EXACT_INPUT
+      )
+      it('throws if less than 0', () => {
+        expect(() => exactIn.minimumAmountOut(new Percent(-1, 100))).toThrow('SLIPPAGE_TOLERANCE')
+      })
+      it('returns exact if 0', () => {
+        expect(exactIn.worstExecutionPrice(new Percent(0, 100))).toEqual(exactIn.executionPrice)
+      })
+      it('returns exact if nonzero', () => {
+        expect(exactIn.worstExecutionPrice(new Percent(0, 100))).toEqual(new Price(token0, token2, 100, 69))
+        expect(exactIn.worstExecutionPrice(new Percent(5, 100))).toEqual(new Price(token0, token2, 100, 65))
+        expect(exactIn.worstExecutionPrice(new Percent(200, 100))).toEqual(new Price(token0, token2, 100, 23))
+      })
+    })
+    describe('tradeType = EXACT_OUTPUT', () => {
+      const exactOut = new Trade(
+        new Route([pair_0_1, pair_1_2], token0),
+        new TokenAmount(token2, 100),
+        TradeType.EXACT_OUTPUT
+      )
+
+      it('throws if less than 0', () => {
+        expect(() => exactOut.worstExecutionPrice(new Percent(-1, 100))).toThrow('SLIPPAGE_TOLERANCE')
+      })
+      it('returns exact if 0', () => {
+        expect(exactOut.worstExecutionPrice(new Percent(0, 100))).toEqual(exactOut.executionPrice)
+      })
+      it('returns slippage amount if nonzero', () => {
+        expect(exactOut.worstExecutionPrice(new Percent(0, 100))).toEqual(new Price(token0, token2, 156, 100))
+        expect(exactOut.worstExecutionPrice(new Percent(5, 100))).toEqual(new Price(token0, token2, 163, 100))
+        expect(exactOut.worstExecutionPrice(new Percent(200, 100))).toEqual(new Price(token0, token2, 468, 100))
       })
     })
   })
