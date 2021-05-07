@@ -37,7 +37,7 @@ export class Route {
     )
     invariant(
       typeof output === 'undefined' ||
-        (output?.isToken && pairs[pairs.length - 1].involvesToken(output)) ||
+        (output.isToken && pairs[pairs.length - 1].involvesToken(output)) ||
         (output === ETHER && weth && pairs[pairs.length - 1].involvesToken(weth)),
       'OUTPUT'
     )
