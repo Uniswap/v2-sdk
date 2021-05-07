@@ -32,18 +32,17 @@ export class Route {
     const weth: Token | undefined = WETH9[chainId as ChainId]
 
     invariant(
-      (input instanceof Token && pairs[0].involvesToken(input)) ||
-        (input === ETHER && weth && pairs[0].involvesToken(weth)),
+      (input.isToken && pairs[0].involvesToken(input)) || (input === ETHER && weth && pairs[0].involvesToken(weth)),
       'INPUT'
     )
     invariant(
       typeof output === 'undefined' ||
-        (output instanceof Token && pairs[pairs.length - 1].involvesToken(output)) ||
+        (output.isToken && pairs[pairs.length - 1].involvesToken(output)) ||
         (output === ETHER && weth && pairs[pairs.length - 1].involvesToken(weth)),
       'OUTPUT'
     )
 
-    const path: Token[] = [input instanceof Token ? input : weth]
+    const path: Token[] = [input.isToken ? input : weth]
     for (const [i, pair] of pairs.entries()) {
       const currentInput = path[i]
       invariant(currentInput.equals(pair.token0) || currentInput.equals(pair.token1), 'PATH')
