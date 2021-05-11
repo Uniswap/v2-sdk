@@ -23,7 +23,9 @@ export enum ChainId {
   HECO = 128,
   HECO_TESTNET = 256,
   HARMONY = 1666600000,
-  HARMONY_TESTNET = 1666700000
+  HARMONY_TESTNET = 1666700000,
+  OKEX = 66,
+  OKEX_TESTNET = 65
 }
 
 export enum TradeType {
@@ -59,7 +61,9 @@ export const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HECO]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
   [ChainId.HECO_TESTNET]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
   [ChainId.HARMONY]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
-  [ChainId.HARMONY_TESTNET]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4'
+  [ChainId.HARMONY_TESTNET]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
+  [ChainId.OKEX]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
+  [ChainId.OKEX_TESTNET]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4'
 }
 
 export const ROUTER_ADDRESS: { [chainId in ChainId]: string } = {
@@ -82,7 +86,9 @@ export const ROUTER_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HECO]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
   [ChainId.HECO_TESTNET]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
   [ChainId.HARMONY]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
-  [ChainId.HARMONY_TESTNET]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506'
+  [ChainId.HARMONY_TESTNET]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
+  [ChainId.OKEX]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
+  [ChainId.OKEX_TESTNET]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506'
 }
 
 export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
@@ -105,7 +111,9 @@ export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HECO]: '',
   [ChainId.HECO_TESTNET]: '',
   [ChainId.HARMONY]: '',
-  [ChainId.HARMONY_TESTNET]: ''
+  [ChainId.HARMONY_TESTNET]: '',
+  [ChainId.OKEX]: '',
+  [ChainId.OKEX_TESTNET]: ''
 }
 
 export const MASTERCHEF_ADDRESS: { [chainId in ChainId]: string } = {
@@ -128,7 +136,9 @@ export const MASTERCHEF_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HECO]: '',
   [ChainId.HECO_TESTNET]: '',
   [ChainId.HARMONY]: '',
-  [ChainId.HARMONY_TESTNET]: ''
+  [ChainId.HARMONY_TESTNET]: '',
+  [ChainId.OKEX]: '',
+  [ChainId.OKEX_TESTNET]: ''
 }
 
 export const BAR_ADDRESS: { [chainId in ChainId]: string } = {
@@ -151,7 +161,9 @@ export const BAR_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HECO]: '',
   [ChainId.HECO_TESTNET]: '',
   [ChainId.HARMONY]: '',
-  [ChainId.HARMONY_TESTNET]: ''
+  [ChainId.HARMONY_TESTNET]: '',
+  [ChainId.OKEX]: '',
+  [ChainId.OKEX_TESTNET]: ''
 }
 
 export const MAKER_ADDRESS: { [chainId in ChainId]: string } = {
@@ -174,7 +186,9 @@ export const MAKER_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HECO]: '',
   [ChainId.HECO_TESTNET]: '',
   [ChainId.HARMONY]: '',
-  [ChainId.HARMONY_TESTNET]: ''
+  [ChainId.HARMONY_TESTNET]: '',
+  [ChainId.OKEX]: '',
+  [ChainId.OKEX_TESTNET]: ''
 }
 
 export const TIMELOCK_ADDRESS: { [chainId in ChainId]: string } = {
@@ -197,7 +211,9 @@ export const TIMELOCK_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HECO]: '',
   [ChainId.HECO_TESTNET]: '',
   [ChainId.HARMONY]: '',
-  [ChainId.HARMONY_TESTNET]: ''
+  [ChainId.HARMONY_TESTNET]: '',
+  [ChainId.OKEX]: '',
+  [ChainId.OKEX_TESTNET]: ''
 }
 
 export const MINIMUM_LIQUIDITY = JSBI.BigInt(1000)

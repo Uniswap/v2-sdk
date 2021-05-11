@@ -226,3 +226,51 @@ export class Pair {
     )
   }
 }
+
+let PANCAKE_V1_PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: string } } = {}
+
+export class PancakeV1Pair extends Pair {
+  public static getAddress(tokenA: Token, tokenB: Token): string {
+    const tokens = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
+
+    if (PANCAKE_V1_PAIR_ADDRESS_CACHE?.[tokens[0].address]?.[tokens[1].address] === undefined) {
+      PANCAKE_V1_PAIR_ADDRESS_CACHE = {
+        ...PANCAKE_V1_PAIR_ADDRESS_CACHE,
+        [tokens[0].address]: {
+          ...PANCAKE_V1_PAIR_ADDRESS_CACHE?.[tokens[0].address],
+          [tokens[1].address]: getCreate2Address(
+            '0xBCfCcbde45cE874adCB698cC183deBcF17952812',
+            keccak256(['bytes'], [pack(['address', 'address'], [tokens[0].address, tokens[1].address])]),
+            '0xd0d4c4cd0848c93cb4fd1f498d7013ee6bfb25783ea21593d5834f5d250ece66'
+          )
+        }
+      }
+    }
+
+    return PANCAKE_V1_PAIR_ADDRESS_CACHE[tokens[0].address][tokens[1].address]
+  }
+}
+
+let PANCAKE_V2_PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: string } } = {}
+
+export class PancakeV2Pair extends PancakeV1Pair {
+  public static getAddress(tokenA: Token, tokenB: Token): string {
+    const tokens = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
+
+    if (PANCAKE_V2_PAIR_ADDRESS_CACHE?.[tokens[0].address]?.[tokens[1].address] === undefined) {
+      PANCAKE_V2_PAIR_ADDRESS_CACHE = {
+        ...PANCAKE_V2_PAIR_ADDRESS_CACHE,
+        [tokens[0].address]: {
+          ...PANCAKE_V2_PAIR_ADDRESS_CACHE?.[tokens[0].address],
+          [tokens[1].address]: getCreate2Address(
+            '0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73',
+            keccak256(['bytes'], [pack(['address', 'address'], [tokens[0].address, tokens[1].address])]),
+            '0x00fb7f630766e6a796048ea87d01acd3068e8ff67d078148a3fa3f4a84f69bd5'
+          )
+        }
+      }
+    }
+
+    return PANCAKE_V2_PAIR_ADDRESS_CACHE[tokens[0].address][tokens[1].address]
+  }
+}

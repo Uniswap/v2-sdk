@@ -1,7 +1,7 @@
-import invariant from 'tiny-invariant'
 import { ChainId } from '../constants'
-import { validateAndParseAddress } from '../utils'
 import { Currency } from './currency'
+import invariant from 'tiny-invariant'
+import { validateAndParseAddress } from '../utils'
 
 /**
  * Represents an ERC20 token with a unique address and some metadata.
@@ -156,5 +156,19 @@ export const WETH = {
     18,
     'WONE',
     'Wrapped ONE'
+  ),
+  [ChainId.OKEX]: new Token(
+    ChainId.OKEX,
+    '0x8F8526dbfd6E38E3D8307702cA8469Bae6C56C15',
+    18,
+    'WOKT',
+    'Wrapped OKExChain'
+  ),
+  [ChainId.OKEX_TESTNET]: new Token(
+    ChainId.OKEX_TESTNET,
+    '0x2219845942d28716c0F7C605765fABDcA1a7d9E0',
+    18,
+    'WOKT',
+    'Wrapped OKExChain'
   )
 }
