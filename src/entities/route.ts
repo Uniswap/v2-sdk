@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant'
-import { ChainId, Currency, Price, Token, wrappedCurrency } from '@uniswap/sdk-core'
+import { Currency, Price, Token } from '@uniswap/sdk-core'
 
 import { Pair } from './pair'
 
@@ -11,18 +11,15 @@ export class Route<TInput extends Currency, TOutput extends Currency> {
 
   public constructor(pairs: Pair[], input: TInput, output: TOutput) {
     invariant(pairs.length > 0, 'PAIRS')
-    const chainId: ChainId | number = pairs[0].chainId
+    const chainId: number = pairs[0].chainId
     invariant(
       pairs.every(pair => pair.chainId === chainId),
       'CHAIN_IDS'
     )
 
-    const wrappedInput = wrappedCurrency(input, chainId)
+    const wrappedInput = input.wrapped
     invariant(pairs[0].involvesToken(wrappedInput), 'INPUT')
-    invariant(
-      typeof output === 'undefined' || pairs[pairs.length - 1].involvesToken(wrappedCurrency(output, chainId)),
-      'OUTPUT'
-    )
+    invariant(typeof output === 'undefined' || pairs[pairs.length - 1].involvesToken(output.wrapped), 'OUTPUT')
 
     const path: Token[] = [wrappedInput]
     for (const [i, pair] of pairs.entries()) {
@@ -54,7 +51,7 @@ export class Route<TInput extends Currency, TOutput extends Currency> {
     return (this._midPrice = new Price(this.input, this.output, reduced.denominator, reduced.numerator))
   }
 
-  public get chainId(): ChainId | number {
+  public get chainId(): number {
     return this.pairs[0].chainId
   }
 }

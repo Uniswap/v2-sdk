@@ -1,16 +1,4 @@
-import {
-  ChainId,
-  Currency,
-  CurrencyAmount,
-  currencyEquals,
-  Fraction,
-  Percent,
-  Price,
-  sortedInsert,
-  wrappedCurrency,
-  TradeType,
-  wrappedCurrencyAmount
-} from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Fraction, Percent, Price, sortedInsert, TradeType } from '@uniswap/sdk-core'
 import { computePriceImpact, Token } from '../../../../sdk-core'
 import { ONE, ZERO } from '../constants'
 import invariant from 'tiny-invariant'
@@ -31,8 +19,8 @@ export function inputOutputComparator<TInput extends Currency, TOutput extends C
   b: InputOutput<TInput, TOutput>
 ): number {
   // must have same input and output token for comparison
-  invariant(currencyEquals(a.inputAmount.currency, b.inputAmount.currency), 'INPUT_CURRENCY')
-  invariant(currencyEquals(a.outputAmount.currency, b.outputAmount.currency), 'OUTPUT_CURRENCY')
+  invariant(a.inputAmount.currency.equals(b.inputAmount.currency), 'INPUT_CURRENCY')
+  invariant(a.outputAmount.currency.equals(b.outputAmount.currency), 'OUTPUT_CURRENCY')
   if (a.outputAmount.equalTo(b.outputAmount)) {
     if (a.inputAmount.equalTo(b.inputAmount)) {
       return 0
@@ -145,8 +133,8 @@ export class Trade<TInput extends Currency, TOutput extends Currency, TTradeType
 
     const tokenAmounts: CurrencyAmount<Token>[] = new Array(route.path.length)
     if (tradeType === TradeType.EXACT_INPUT) {
-      invariant(currencyEquals(amount.currency, route.input), 'INPUT')
-      tokenAmounts[0] = wrappedCurrencyAmount(amount, route.chainId)
+      invariant(amount.currency.equals(route.input), 'INPUT')
+      tokenAmounts[0] = amount.wrapped
       for (let i = 0; i < route.path.length - 1; i++) {
         const pair = route.pairs[i]
         const [outputAmount] = pair.getOutputAmount(tokenAmounts[i])
@@ -159,8 +147,8 @@ export class Trade<TInput extends Currency, TOutput extends Currency, TTradeType
         tokenAmounts[tokenAmounts.length - 1].denominator
       )
     } else {
-      invariant(currencyEquals(amount.currency, route.output), 'OUTPUT')
-      tokenAmounts[tokenAmounts.length - 1] = wrappedCurrencyAmount(amount, route.chainId)
+      invariant(amount.currency.equals(route.output), 'OUTPUT')
+      tokenAmounts[tokenAmounts.length - 1] = amount.wrapped
       for (let i = route.path.length - 1; i > 0; i--) {
         const pair = route.pairs[i - 1]
         const [inputAmount] = pair.getInputAmount(tokenAmounts[i])
@@ -241,20 +229,13 @@ export class Trade<TInput extends Currency, TOutput extends Currency, TTradeType
     invariant(pairs.length > 0, 'PAIRS')
     invariant(maxHops > 0, 'MAX_HOPS')
     invariant(currencyAmountIn === nextAmountIn || currentPairs.length > 0, 'INVALID_RECURSION')
-    const chainId: ChainId | undefined = nextAmountIn.currency.isToken
-      ? nextAmountIn.currency.chainId
-      : currencyOut.isToken
-      ? (currencyOut as Token).chainId
-      : undefined
 
-    invariant(chainId !== undefined, 'CHAIN_ID')
-
-    const amountIn = wrappedCurrencyAmount(nextAmountIn, chainId)
-    const tokenOut = wrappedCurrency(currencyOut, chainId)
+    const amountIn = nextAmountIn.wrapped
+    const tokenOut = currencyOut.wrapped
     for (let i = 0; i < pairs.length; i++) {
       const pair = pairs[i]
       // pair irrelevant
-      if (!currencyEquals(pair.token0, amountIn.currency) && !currencyEquals(pair.token1, amountIn.currency)) continue
+      if (!pair.token0.equals(amountIn.currency) && !pair.token1.equals(amountIn.currency)) continue
       if (pair.reserve0.equalTo(ZERO) || pair.reserve1.equalTo(ZERO)) continue
 
       let amountOut: CurrencyAmount<Token>
@@ -268,7 +249,7 @@ export class Trade<TInput extends Currency, TOutput extends Currency, TTradeType
         throw error
       }
       // we have arrived at the output token, so this is the final trade of one of the paths
-      if (currencyEquals(amountOut.currency, tokenOut)) {
+      if (amountOut.currency.equals(tokenOut)) {
         sortedInsert(
           bestTrades,
           new Trade(
@@ -342,19 +323,13 @@ export class Trade<TInput extends Currency, TOutput extends Currency, TTradeType
     invariant(pairs.length > 0, 'PAIRS')
     invariant(maxHops > 0, 'MAX_HOPS')
     invariant(currencyAmountOut === nextAmountOut || currentPairs.length > 0, 'INVALID_RECURSION')
-    const chainId: ChainId | undefined = nextAmountOut.currency.isToken
-      ? nextAmountOut.currency.chainId
-      : currencyIn.isToken
-      ? (currencyIn as Token).chainId
-      : undefined
-    invariant(chainId !== undefined, 'CHAIN_ID')
 
-    const amountOut = wrappedCurrencyAmount(nextAmountOut, chainId)
-    const tokenIn = wrappedCurrency(currencyIn, chainId)
+    const amountOut = nextAmountOut.wrapped
+    const tokenIn = currencyIn.wrapped
     for (let i = 0; i < pairs.length; i++) {
       const pair = pairs[i]
       // pair irrelevant
-      if (!currencyEquals(pair.token0, amountOut.currency) && !currencyEquals(pair.token1, amountOut.currency)) continue
+      if (!pair.token0.equals(amountOut.currency) && !pair.token1.equals(amountOut.currency)) continue
       if (pair.reserve0.equalTo(ZERO) || pair.reserve1.equalTo(ZERO)) continue
 
       let amountIn: CurrencyAmount<Token>
@@ -368,7 +343,7 @@ export class Trade<TInput extends Currency, TOutput extends Currency, TTradeType
         throw error
       }
       // we have arrived at the input token, so this is the first trade of one of the paths
-      if (currencyEquals(amountIn.currency, tokenIn)) {
+      if (amountIn.currency.equals(tokenIn)) {
         sortedInsert(
           bestTrades,
           new Trade(

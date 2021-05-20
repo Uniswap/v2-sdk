@@ -77,8 +77,8 @@ export abstract class Router {
     trade: Trade<Currency, Currency, TradeType>,
     options: TradeOptions | TradeOptionsDeadline
   ): SwapParameters {
-    const etherIn = trade.inputAmount.currency.isEther
-    const etherOut = trade.outputAmount.currency.isEther
+    const etherIn = trade.inputAmount.currency.isNative
+    const etherOut = trade.outputAmount.currency.isNative
     // the router does not support both ether in and out
     invariant(!(etherIn && etherOut), 'ETHER_IN_OUT')
     invariant(!('ttl' in options) || options.ttl > 0, 'TTL')
