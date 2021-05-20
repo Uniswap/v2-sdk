@@ -1,7 +1,6 @@
-import { Currency, CurrencyAmount, Percent, TradeType, validateAndParseAddress } from '@uniswap/sdk-core'
+import { Token, Currency, CurrencyAmount, Percent, TradeType, validateAndParseAddress } from '@uniswap/sdk-core'
 import { Trade } from 'entities'
 import invariant from 'tiny-invariant'
-import { Token } from '../../../sdk-core'
 
 /**
  * Options for producing the arguments to send call to the router.
