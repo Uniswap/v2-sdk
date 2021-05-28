@@ -113,15 +113,15 @@ export const WETH = {
     'WBNB',
     'Wrapped BNB'
   ),
-  [ChainId.ARBITRUM]: new Token(
-    ChainId.ARBITRUM,
+  [ChainId.ARBITRUM_TESTNET]: new Token(
+    ChainId.ARBITRUM_TESTNET,
     '0xf8456e5e6A225C2C1D74D8C9a4cB2B1d5dc1153b',
     18,
     'WETH',
     'Wrapped Ether'
   ),
-  [ChainId.MOONBASE]: new Token(
-    ChainId.MOONBASE,
+  [ChainId.MOONBEAM_TESTNET]: new Token(
+    ChainId.MOONBEAM_TESTNET,
     '0xe73763DB808ecCDC0E36bC8E32510ED126910394',
     18,
     'WETH',
@@ -134,7 +134,13 @@ export const WETH = {
     'WAVAX',
     'Wrapped AVAX'
   ),
-  [ChainId.FUJI]: new Token(ChainId.FUJI, '0xd00ae08403B9bbb9124bB305C09058E32C39A48c', 18, 'WAVAX', 'Wrapped AVAX'),
+  [ChainId.AVALANCHE_TESTNET]: new Token(
+    ChainId.AVALANCHE_TESTNET,
+    '0xd00ae08403B9bbb9124bB305C09058E32C39A48c',
+    18,
+    'WAVAX',
+    'Wrapped AVAX'
+  ),
   [ChainId.HECO]: new Token(ChainId.HECO, '0x5545153CCFcA01fbd7Dd11C0b23ba694D9509A6F', 18, 'WHT', 'Wrapped HT'),
   [ChainId.HECO_TESTNET]: new Token(
     ChainId.HECO_TESTNET,

@@ -1,25 +1,25 @@
-import { Price } from './fractions/price'
-import { TokenAmount } from './fractions/tokenAmount'
-import invariant from 'tiny-invariant'
-import JSBI from 'jsbi'
-import { pack, keccak256 } from '@ethersproject/solidity'
-import { getCreate2Address } from '@ethersproject/address'
-
 import {
   BigintIsh,
-  MINIMUM_LIQUIDITY,
-  ZERO,
-  ONE,
-  FIVE,
-  _997,
-  _1000,
   ChainId,
   FACTORY_ADDRESS,
-  INIT_CODE_HASH
+  FIVE,
+  INIT_CODE_HASH,
+  MINIMUM_LIQUIDITY,
+  ONE,
+  ZERO,
+  _1000,
+  _997
 } from '../constants'
-import { sqrt, parseBigintIsh } from '../utils'
-import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
+import { InsufficientInputAmountError, InsufficientReservesError } from '../errors'
+import { keccak256, pack } from '@ethersproject/solidity'
+import { parseBigintIsh, sqrt } from '../utils'
+
+import JSBI from 'jsbi'
+import { Price } from './fractions/price'
 import { Token } from './token'
+import { TokenAmount } from './fractions/tokenAmount'
+import { getCreate2Address } from '@ethersproject/address'
+import invariant from 'tiny-invariant'
 
 let PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: string } } = {}
 
@@ -253,7 +253,7 @@ export class PancakeV1Pair extends Pair {
 
 let PANCAKE_V2_PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: string } } = {}
 
-export class PancakeV2Pair extends PancakeV1Pair {
+export class PancakeV2Pair extends Pair {
   public static getAddress(tokenA: Token, tokenB: Token): string {
     const tokens = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
 
@@ -272,5 +272,81 @@ export class PancakeV2Pair extends PancakeV1Pair {
     }
 
     return PANCAKE_V2_PAIR_ADDRESS_CACHE[tokens[0].address][tokens[1].address]
+  }
+}
+
+let QUICKSWAP_V2_PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: string } } = {}
+
+export class QuickSwapPair extends Pair {
+  public readonly liquidityToken: Token
+  public constructor(tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) {
+    super(tokenAmountA, tokenAmountB)
+    const tokenAmounts = tokenAmountA.token.sortsBefore(tokenAmountB.token) // does safety checks
+      ? [tokenAmountA, tokenAmountB]
+      : [tokenAmountB, tokenAmountA]
+    this.liquidityToken = new Token(
+      tokenAmounts[0].token.chainId,
+      QuickSwapPair.getAddress(tokenAmounts[0].token, tokenAmounts[1].token),
+      18,
+      'UNI-V2',
+      'QuickSwap'
+    )
+  }
+  public static getAddress(tokenA: Token, tokenB: Token): string {
+    const tokens = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
+
+    if (QUICKSWAP_V2_PAIR_ADDRESS_CACHE?.[tokens[0].address]?.[tokens[1].address] === undefined) {
+      QUICKSWAP_V2_PAIR_ADDRESS_CACHE = {
+        ...QUICKSWAP_V2_PAIR_ADDRESS_CACHE,
+        [tokens[0].address]: {
+          ...QUICKSWAP_V2_PAIR_ADDRESS_CACHE?.[tokens[0].address],
+          [tokens[1].address]: getCreate2Address(
+            '0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32',
+            keccak256(['bytes'], [pack(['address', 'address'], [tokens[0].address, tokens[1].address])]),
+            '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'
+          )
+        }
+      }
+    }
+
+    return QUICKSWAP_V2_PAIR_ADDRESS_CACHE[tokens[0].address][tokens[1].address]
+  }
+}
+
+let STEAK_PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: string } } = {}
+
+export class SteakPair extends Pair {
+  public readonly liquidityToken: Token
+  public constructor(tokenAmountA: TokenAmount, tokenAmountB: TokenAmount) {
+    super(tokenAmountA, tokenAmountB)
+    const tokenAmounts = tokenAmountA.token.sortsBefore(tokenAmountB.token) // does safety checks
+      ? [tokenAmountA, tokenAmountB]
+      : [tokenAmountB, tokenAmountA]
+    this.liquidityToken = new Token(
+      tokenAmounts[0].token.chainId,
+      SteakPair.getAddress(tokenAmounts[0].token, tokenAmounts[1].token),
+      18,
+      'UNI-V2',
+      'SteakHouse'
+    )
+  }
+  public static getAddress(tokenA: Token, tokenB: Token): string {
+    const tokens = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
+
+    if (STEAK_PAIR_ADDRESS_CACHE?.[tokens[0].address]?.[tokens[1].address] === undefined) {
+      STEAK_PAIR_ADDRESS_CACHE = {
+        ...STEAK_PAIR_ADDRESS_CACHE,
+        [tokens[0].address]: {
+          ...STEAK_PAIR_ADDRESS_CACHE?.[tokens[0].address],
+          [tokens[1].address]: getCreate2Address(
+            '0x42E635D36913c94a340567761Ec8383b9932906a',
+            keccak256(['bytes'], [pack(['address', 'address'], [tokens[0].address, tokens[1].address])]),
+            '0xf3b5a34c555acc53d3752e3ebdf18213c054cacd59908e54c992bd24d4e005ab'
+          )
+        }
+      }
+    }
+
+    return STEAK_PAIR_ADDRESS_CACHE[tokens[0].address][tokens[1].address]
   }
 }

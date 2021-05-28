@@ -13,6 +13,8 @@ export class Currency {
   public readonly symbol?: string
   public readonly name?: string
 
+  public readonly usd?: string
+
   public static readonly ETHER: Currency = new Currency(18, 'ETH', 'Ether')
 
   public static readonly BNB: Currency = new Currency(18, 'BNB', 'Binance Coin')
@@ -46,10 +48,10 @@ export class Currency {
     [ChainId.XDAI]: Currency.XDAI,
     [ChainId.BSC]: Currency.BNB,
     [ChainId.BSC_TESTNET]: Currency.BNB,
-    [ChainId.ARBITRUM]: Currency.ETHER,
-    [ChainId.MOONBASE]: Currency.GLMR,
+    [ChainId.ARBITRUM_TESTNET]: Currency.ETHER,
+    [ChainId.MOONBEAM_TESTNET]: Currency.GLMR,
     [ChainId.AVALANCHE]: Currency.AVAX,
-    [ChainId.FUJI]: Currency.AVAX,
+    [ChainId.AVALANCHE_TESTNET]: Currency.AVAX,
     [ChainId.HECO]: Currency.HT,
     [ChainId.HECO_TESTNET]: Currency.HT,
     [ChainId.HARMONY]: Currency.ONE,
@@ -102,10 +104,6 @@ export class Currency {
       return Currency.getNativeCurrencySymbol(chainId)
     }
 
-    // if (this?.symbol === 'WETH') {
-    //   return `W${Currency.getNativeCurrencySymbol(chainId)}`
-    // }
-
     return this?.symbol
   }
 
@@ -122,7 +120,7 @@ export class Currency {
   }
 }
 
-const ETHER = Currency.ETHER
+const NATIVE = Currency.ETHER
 
 // const NATIVE_CURRENCY = {
 //   [ChainId.MAINNET]: Currency.ETHER,
@@ -137,14 +135,14 @@ const ETHER = Currency.ETHER
 //   [ChainId.XDAI]: Currency.XDAI,
 //   [ChainId.BSC]: Currency.BNB,
 //   [ChainId.BSC_TESTNET]: Currency.BNB,
-//   [ChainId.ARBITRUM]: Currency.ETHER,
-//   [ChainId.MOONBASE]: Currency.GLMR,
+//   [ChainId.ARBITRUM_TESTNET]: Currency.ETHER,
+//   [ChainId.MOONBEAM_TESTNET]: Currency.GLMR,
 //   [ChainId.AVALANCHE]: Currency.AVAX,
-//   [ChainId.FUJI]: Currency.AVAX,
+//   [ChainId.AVALANCHE_TESTNET]: Currency.AVAX,
 //   [ChainId.HECO]: Currency.HT,
 //   [ChainId.HECO_TESTNET]: Currency.HT,
 //   [ChainId.HARMONY]: Currency.ONE,
 //   [ChainId.HARMONY_TESTNET]: Currency.ONE
 // }
 
-export { ETHER }
+export { NATIVE }
