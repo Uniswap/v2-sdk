@@ -48,6 +48,7 @@ export class Currency {
     [ChainId.XDAI]: Currency.XDAI,
     [ChainId.BSC]: Currency.BNB,
     [ChainId.BSC_TESTNET]: Currency.BNB,
+    [ChainId.ARBITRUM]: Currency.ETHER,
     [ChainId.ARBITRUM_TESTNET]: Currency.ETHER,
     [ChainId.MOONBEAM_TESTNET]: Currency.GLMR,
     [ChainId.AVALANCHE]: Currency.AVAX,

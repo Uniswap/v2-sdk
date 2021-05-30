@@ -113,6 +113,13 @@ export const WETH = {
     'WBNB',
     'Wrapped BNB'
   ),
+  [ChainId.ARBITRUM]: new Token(
+    ChainId.ARBITRUM,
+    '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
   [ChainId.ARBITRUM_TESTNET]: new Token(
     ChainId.ARBITRUM_TESTNET,
     '0xf8456e5e6A225C2C1D74D8C9a4cB2B1d5dc1153b',
