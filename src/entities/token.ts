@@ -102,8 +102,6 @@ export const WETH9: { [chainId: number]: Token } = {
   )
 }
 
-// In reality this is a map of the wrapped version of the native token for a given network.
-// TODO: Rename to WNATIVE for sanity
 export const WNATIVE = {
   [ChainId.MAINNET]: WETH9[ChainId.MAINNET],
   [ChainId.ROPSTEN]: WETH9[ChainId.ROPSTEN],
