@@ -56,32 +56,60 @@ export function currencyEquals(currencyA: Currency, currencyB: Currency): boolea
   }
 }
 
-// In reality this is a map of the wrapped version of the native token for a given network.
-// TODO: Rename to WNATIVE for sanity
-export const WETH = {
+export const WETH9: { [chainId: number]: Token } = {
   [ChainId.MAINNET]: new Token(
     ChainId.MAINNET,
     '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
     18,
-    'WETH',
+    'WETH9',
     'Wrapped Ether'
   ),
   [ChainId.ROPSTEN]: new Token(
     ChainId.ROPSTEN,
     '0xc778417E063141139Fce010982780140Aa0cD5Ab',
     18,
-    'WETH',
+    'WETH9',
     'Wrapped Ether'
   ),
   [ChainId.RINKEBY]: new Token(
     ChainId.RINKEBY,
     '0xc778417E063141139Fce010982780140Aa0cD5Ab',
     18,
-    'WETH',
+    'WETH9',
     'Wrapped Ether'
   ),
-  [ChainId.GÖRLI]: new Token(ChainId.GÖRLI, '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6', 18, 'WETH', 'Wrapped Ether'),
-  [ChainId.KOVAN]: new Token(ChainId.KOVAN, '0xd0A1E359811322d97991E03f863a0C30C2cF029C', 18, 'WETH', 'Wrapped Ether'),
+  [ChainId.GÖRLI]: new Token(ChainId.GÖRLI, '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6', 18, 'WETH9', 'Wrapped Ether'),
+  [ChainId.RINKEBY]: new Token(
+    ChainId.RINKEBY,
+    '0xd0A1E359811322d97991E03f863a0C30C2cF029C',
+    18,
+    'WETH9',
+    'Wrapped Ether'
+  ),
+  [ChainId.ARBITRUM]: new Token(
+    ChainId.ARBITRUM,
+    '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+    18,
+    'WETH9',
+    'Wrapped Ether'
+  ),
+  [ChainId.ARBITRUM_TESTNET]: new Token(
+    ChainId.ARBITRUM_TESTNET,
+    '0xf8456e5e6A225C2C1D74D8C9a4cB2B1d5dc1153b',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  )
+}
+
+// In reality this is a map of the wrapped version of the native token for a given network.
+// TODO: Rename to WNATIVE for sanity
+export const WETH = {
+  [ChainId.MAINNET]: WETH9[ChainId.MAINNET],
+  [ChainId.ROPSTEN]: WETH9[ChainId.ROPSTEN],
+  [ChainId.RINKEBY]: WETH9[ChainId.RINKEBY],
+  [ChainId.GÖRLI]: WETH9[ChainId.GÖRLI],
+  [ChainId.KOVAN]: WETH9[ChainId.KOVAN],
   [ChainId.FANTOM]: new Token(ChainId.FANTOM, '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83', 18, 'WFTM', 'Wrapped FTM'),
   [ChainId.FANTOM_TESTNET]: new Token(
     ChainId.FANTOM_TESTNET,
@@ -113,20 +141,8 @@ export const WETH = {
     'WBNB',
     'Wrapped BNB'
   ),
-  [ChainId.ARBITRUM]: new Token(
-    ChainId.ARBITRUM,
-    '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
-  [ChainId.ARBITRUM_TESTNET]: new Token(
-    ChainId.ARBITRUM_TESTNET,
-    '0xf8456e5e6A225C2C1D74D8C9a4cB2B1d5dc1153b',
-    18,
-    'WETH',
-    'Wrapped Ether'
-  ),
+  [ChainId.ARBITRUM]: WETH9[ChainId.ARBITRUM],
+  [ChainId.ARBITRUM_TESTNET]: WETH9[ChainId.ARBITRUM_TESTNET],
   [ChainId.MOONBEAM_TESTNET]: new Token(
     ChainId.MOONBEAM_TESTNET,
     '0xe73763DB808ecCDC0E36bC8E32510ED126910394',
