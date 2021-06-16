@@ -10,7 +10,9 @@ import { validateSolidityTypeInstance } from '../utils'
  */
 export class Currency {
   public readonly decimals: number
+
   public readonly symbol?: string
+
   public readonly name?: string
 
   public readonly usd?: string
@@ -35,6 +37,8 @@ export class Currency {
 
   public static readonly OKT: Currency = new Currency(18, 'OKT', 'OKExChain')
 
+  public static readonly CELO: Currency = new Currency(18, 'CELO', 'Celo')
+
   public static readonly NATIVE = {
     [ChainId.MAINNET]: Currency.ETHER,
     [ChainId.ROPSTEN]: Currency.ETHER,
@@ -58,7 +62,8 @@ export class Currency {
     [ChainId.HARMONY]: Currency.ONE,
     [ChainId.HARMONY_TESTNET]: Currency.ONE,
     [ChainId.OKEX]: Currency.OKT,
-    [ChainId.OKEX_TESTNET]: Currency.OKT
+    [ChainId.OKEX_TESTNET]: Currency.OKT,
+    [ChainId.CELO]: Currency.CELO
   }
 
   /**

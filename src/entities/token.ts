@@ -102,7 +102,7 @@ export const WETH9: { [chainId: number]: Token } = {
   )
 }
 
-export const WNATIVE = {
+export const WETH = {
   [ChainId.MAINNET]: WETH9[ChainId.MAINNET],
   [ChainId.ROPSTEN]: WETH9[ChainId.ROPSTEN],
   [ChainId.RINKEBY]: WETH9[ChainId.RINKEBY],
@@ -197,5 +197,6 @@ export const WNATIVE = {
     18,
     'WOKT',
     'Wrapped OKExChain'
-  )
+  ),
+  [ChainId.CELO]: new Token(ChainId.CELO, '0x471EcE3750Da237f93B8E339c536989b8978a438', 18, 'CELO', 'Celo')
 }

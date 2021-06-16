@@ -15,6 +15,15 @@ export class CurrencyAmount extends Fraction {
   public readonly currency: Currency
 
   /**
+   * Returns a new currency amount instance from the unitless amount of token, i.e. the raw amount
+   * @param currency the currency in the amount
+   * @param rawAmount the raw token or ether amount
+   */
+  public static fromRawAmount(currency: Currency, rawAmount: BigintIsh): CurrencyAmount {
+    return new CurrencyAmount(currency, rawAmount)
+  }
+
+  /**
    * Helper that calls the constructor with the NATIVE currency
    * @param amount ether amount in wei
    */
