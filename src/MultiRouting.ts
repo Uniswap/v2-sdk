@@ -174,12 +174,12 @@ function revert(from: number, to: number, f: (x:number)=>number) {
     return function x(y: number): number {
         let n = 2;
         if (y <= f(from)) {
-            console.log(1);
+            //console.log(1);
             
             return from;
         }
         if (y >= f(to)) {
-            console.log(2);
+           // console.log(2);
             
             return to;
         }
@@ -188,14 +188,14 @@ function revert(from: number, to: number, f: (x:number)=>number) {
         {
             const x0: number = (x1+x2)/2;
             if (x0 == x1 || x0 == x2) {
-                console.log(n);
+               // console.log(n);
                 
                 return x0;
             }
             const y0 = f(x0);
             ++n;
             if (y == y0) {
-                console.log(n);
+               // console.log(n);
                 
                 return x0;
             }
@@ -204,7 +204,7 @@ function revert(from: number, to: number, f: (x:number)=>number) {
             else
                 x1=x0;
         }
-        console.log(n);
+        //console.log(n);
         
         return 0;
     }
@@ -319,20 +319,26 @@ interface PoolsVariantData {
 
 function findBestDistributionParams(
     amountIn: number,
-    pools: Pool[], 
-    legPriceInTokenOut: number, 
-    minPrice: number,
-    maxPrice: number
+    pools: Pool[],
+    minPrice: number
 ): PoolsVariantData {
     // TODO: not binary search - but better? 1.01?
+    let maxPrice;
+    //let n = 1;
+    for (maxPrice = minPrice*2; calcInputByPriceTotal(pools, maxPrice) < amountIn; maxPrice *=2)
+        //++n;
+        //console.log("qq", n, minPrice, maxPrice);
+    minPrice = maxPrice/2;
     while((maxPrice/minPrice - 1) > 1e-12) {
         const price:number = (maxPrice+minPrice)/2;
         const input = calcInputByPriceTotal(pools, price);
+        //++n;
         if (input >= amountIn)   //!!!
             maxPrice = price;
         else
             minPrice = price;
     }
+    
     const price:number = (maxPrice+minPrice)/2;
 
     let distribution = pools.map(pool => Math.max(calcInputByPrice4(pool, price), 0));
@@ -365,10 +371,20 @@ function findBestDistribution(
     for (maxPrice *= 10; calcInputByPriceTotal(pools, legPriceInTokenOut, maxPrice) == 0;)
         maxPrice *= 10
     minPrice = maxPrice/10;*/
-    const minPrice = 1e-7;
-    const maxPrice = 1e+12;
+    let minPrice = calcPrice(pools[0], 0);
+    //console.log('mp', 0, minPrice);
     
-    const params = findBestDistributionParams(amountIn, pools, legPriceInTokenOut, minPrice, maxPrice);
+    for (let i = 1; i < pools.length; ++i) {
+        const pr = calcPrice(pools[i], 0);
+        //console.log('mp', i, pr);
+        minPrice = Math.min(pr, minPrice);
+    }
+    
+    //minPrice = 1e-7;
+    const maxPrice = 1e+12;
+
+    const params = findBestDistributionParams(amountIn, pools, minPrice);
+    
     //console.log(minPrice, maxPrice, params.priceEffective, params.amountOut);
 
     const distrSorted = params.distribution.map((v, i) => [i, v]).sort((a,b) => b[1] - a[1]);
@@ -381,7 +397,7 @@ function findBestDistribution(
     let bestParams = params;
     for (let i = pools.length-1; i >= 1; --i) {
         const shortPoolList = poolsSorted.slice(0, i);
-        const p = findBestDistributionParams(amountIn, shortPoolList, legPriceInTokenOut, minPrice, maxPrice);
+        const p = findBestDistributionParams(amountIn, shortPoolList, minPrice);
         const out = p.amountOut - i*legPriceInTokenOut;
         //console.log('a', i, p.priceEffective, p.amountOut, amountIn);
         
@@ -396,29 +412,6 @@ function findBestDistribution(
         }
     }
     const finalDistribution = bestParams.distribution.map((v, i) => [distrSorted[i][0], v]);
-   /* if (amountIn >= 999) {
-        //console.log(finalDistribution.map(p => calcPriceEffective(amountIn*p[1], pools[p[0]])));
-        console.log(finalDistribution.map(d => {
-            const inn = amountIn*d[1];
-            const out = calcOutByIn(pools[d[0]], inn);
-            const pr = out/inn;
-            d.push(out);
-            d.push(pr);
-            return d;
-        }));
-    }*/
-    //console.log(amountIn, finalDistribution);
-    
-   /* binarySearch(
-        1, 
-        pools.length,
-        (n:number) => findBestDistribution2(amountIn, poolsSorted.slice(0, n), legPriceInTokenOut, minPrice, maxPrice),
-        (a, b) => { // a is better then b
-            const [n1, sum1] = a;
-            const [n2, sum2] = b;
-            return sum1-n1*legPriceInTokenOut > sum2-n2*legPriceInTokenOut;
-        }
-    )*/
     
     const checkedOut = calcOut(amountIn, pools, finalDistribution, tokenOutPriceBase, gasPriceGWeiBase);
     return [checkedOut, finalDistribution];
@@ -491,6 +484,64 @@ function findBestDistribution3 (
     //        console.assert(flagDown == false, "flagDown at " + amountIn);
             bestOut = out;
             bestGroup = group.map(([n, v]) => [n, v/sum]);
+        } else {
+            flagDown = true;
+           // break;
+        }
+    }
+        
+    const checkedOut = calcOut(amountIn, pools, bestGroup, tokenOutPriceBase, gasPriceGWeiBase);
+    return [checkedOut, bestGroup];
+}
+
+function findBestDistribution4Pools(
+    amountIn: number,
+    pools: Pool[]       // maybe use initial distribution?
+): [number, number[]] {
+
+    let distr = pools.map(p => Math.max(calcOutByIn(p, amountIn/pools.length), 0));
+    
+    for(let i = 0; i < 3; ++i) {
+        const sum = distr.reduce((a, b) => a+b, 0);
+        console.assert(sum > 0, "508 " + sum);
+        
+        const prices = distr.map((d, j) => 1/calcPrice(pools[j], amountIn*d/sum))
+        const pr = prices.reduce((a, b) => Math.max(a, b), 0);
+        
+        distr = pools.map(p => calcInputByPrice4(p, pr));        
+    }
+
+    const sum = distr.reduce((a, b) => a + b, 0);
+    distr = distr.map(d => d/sum);
+    const out = distr.map((p, i) => calcOutByIn(pools[i], p*amountIn)).reduce((a, b) => a+b, 0);
+
+    return [out, distr];
+}
+
+function findBestDistribution4(
+    amountIn: number,
+    pools: Pool[],
+    tokenInPriceBase: number,
+    tokenOutPriceBase: number,
+    gasPriceGWeiBase: number
+): Route  | [number, number[][]]{
+    const legPriceInTokenOut = LegGasConsuming*gasPriceGWeiBase*1e-9/tokenOutPriceBase;
+
+    let [bestOut, distr] = findBestDistribution4Pools(amountIn, pools);
+    bestOut -= legPriceInTokenOut*pools.length;
+    let bestGroup = distr.map((d, i) => [i, d]).sort((a,b) => b[1] - a[1]);
+    
+    let flagDown = false;
+    const poolsSorted = bestGroup.map(a => pools[a[0]]);    
+    for (let i = pools.length-1; i >= 1; --i) {
+        const group = poolsSorted.slice(0, i);
+        let [out, distr] = findBestDistribution4Pools(amountIn, group);
+        out -= legPriceInTokenOut*i;
+        
+        if (out > bestOut) {
+            console.assert(flagDown == false, "flagDown at " + amountIn);
+            bestOut = out;
+            bestGroup = distr.map((d, i) => [bestGroup[i][0], d]);
         } else {
             flagDown = true;
            // break;
@@ -593,17 +644,17 @@ function testEnvironment() {
 
 var env0 = testEnvironment();
 
-// const legPriceInTokenOut = LegGasConsuming*200*1e-9/env0.tokenOutPriceBase;
-// const start = Date.now();
-// for (let i = 0; i < 1000; ++i)
-//     findBestDistribution(999.01,  env0.testPools, env0.tokenInPriceBase, env0.tokenOutPriceBase, 200); // 100 ms -> 2ms
+const legPriceInTokenOut = LegGasConsuming*200*1e-9/env0.tokenOutPriceBase;
+const start = Date.now();
+for (let i = 0; i < 100000; ++i)
+     findBestDistribution4(999000,  env0.testPools, env0.tokenInPriceBase, env0.tokenOutPriceBase, 200); // 100 ms -> 35mks
 // // //    findBestDistributionParams(999, env0.testPools, legPriceInTokenOut, 1e-7, 1e12);   // 20ms for 5 pools -> 420mks
 // //   findBestDistributionParams(999, env0.testPools, legPriceInTokenOut, 1e-1, 1e1);    // 12ms for 5  -> 250mks
 // // for (let i = 0; i < 100_000_000; ++i)
 // //     calcInputByPrice4(env0.testPools[2], legPriceInTokenOut, 1.1); // 7ns for product, 26ns for mean, 180mks for hybrid
 // //console.log(calcInputByPrice4(env0.testPools[4], legPriceInTokenOut, 122));
-// const finish = Date.now();
-// console.log(finish-start);
+const finish = Date.now();
+console.log(finish-start);
 
  //const res2 = findBestDistribution3(999.01, env0.testPools, env0.tokenInPriceBase, env0.tokenOutPriceBase, 200);
 
