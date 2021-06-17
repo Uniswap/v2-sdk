@@ -111,17 +111,7 @@ function calcOutByIn(pool:Pool, amountIn: number): number {
         case PoolType.Hybrid: {
             const xNew = pool.reserve0 + amountIn;
             const yNew = HybridgetY(pool, xNew);
-
-            // const D = HybridComputeLiquidity(pool);
-            // const A = HybridParamsFromData(pool.data);
-            // const x = pool.reserve0 + amountIn;
-            // const b = 4*A*x + D - 4*A*D;
-            // const Ds = Math.sqrt(b*b + 4*A*D*D*D/x);
-            // const yNew2 =  -(x/2+D/8/A-D/2) + Ds/8/A;
-            // console.log(yNew, yNew2);
-            
-
-            const dy = (pool.reserve1 - yNew)*(1-pool.fee); // TODO: почему у остальных комиссии берут вначале, а тут - в конце ?
+            const dy = (pool.reserve1 - yNew)*(1-pool.fee); // TODO: Why other pools take fees at the beginning, and this one - at the end?
             return dy;
         }
     }
@@ -148,73 +138,32 @@ function calcPrice(pool:Pool, amountIn: number): number {
             const ac4 = D*D*D/x;
             const Ds = Math.sqrt(b*b + 4*A*ac4);
             const res = (0.5 - (2*b-ac4/x)/Ds/4)*(1-pool.fee);
-            // const res2 = derivativeD(x => calcOutByIn(pool, x), 0.01)(amountIn); // TODO: change to analytic
-            // //console.log(amountIn, res, res2);
-            // if (res !==0 || res2 !== 0)
-            //     console.assert(Math.abs(res/res2-1) < 1e-4 || Math.abs(res-res2) < 1e-4, "140 " + amountIn + " " + res + " " + res2);
             return res;
-            //return res2;
         }
     }
     return 0;
 }
 
-function calcPriceEffective(amountIn: number, pool: Pool) {
-    const out = calcOutByIn(pool, amountIn);
-    return amountIn/out;
-}
-
-function derivativeD(f: (x:number)=>number, dif = 1e-7) {
-    return function y(x: number) {
-        return (f(x+dif) - f(x))/dif;
-    }
-}
-
 function revert(from: number, to: number, f: (x:number)=>number) {
     return function x(y: number): number {
         let n = 2;
-        if (y <= f(from)) {
-            //console.log(1);
-            
-            return from;
-        }
-        if (y >= f(to)) {
-           // console.log(2);
-            
-            return to;
-        }
+        if (y <= f(from)) return from;
+        if (y >= f(to)) return to;
         let x1 = from, x2 = to;
         while(1)
         {
             const x0: number = (x1+x2)/2;
-            if (x0 == x1 || x0 == x2) {
-               // console.log(n);
-                
-                return x0;
-            }
+            if (x0 == x1 || x0 == x2) return x0;
             const y0 = f(x0);
-            ++n;
-            if (y == y0) {
-               // console.log(n);
-                
-                return x0;
-            }
+            if (y == y0) return x0;
             if (y < y0) 
                 x2=x0;
             else
                 x1=x0;
         }
-        //console.log(n);
-        
         return 0;
     }
 }
-
-// function calcInputByPrice3(pool: Pool, legPriceInTokenOut: number, priceEffective: number): number {
-//     let res =  revert(0.0000001, 1e8, (x:number) => 1/calcPrice(pool, x))(priceEffective);
-//     res = res > 0.0000001 ? res : 0;
-//     return res;
-// }
 
 function calcInputByPriceConstantMean(pool:Pool, price:number) {
     const w = ConstantMeanParamsFromData(pool.data);
@@ -228,80 +177,23 @@ function calcInputByPrice4(pool: Pool, priceEffective: number): number {
         case PoolType.ConstantProduct: {
             const x = pool.reserve0/(1-pool.fee);
             const res =  Math.sqrt(pool.reserve1*x*priceEffective) - x;
-            // if (res > 0.0000001) {
-            //     const res2 = calcInputByPrice3(pool, legPriceInTokenOut, priceEffective);
-            //     console.assert(Math.abs(res/res2-1) < 1e-6, "179 " + res + " " + res2);
-            // }
             return res;
         } 
         case PoolType.ConstantMean: {
             const res = calcInputByPriceConstantMean(pool, priceEffective);
-            // if (res > 0.0000001) {
-            //     const res2 = calcInputByPrice3(pool, legPriceInTokenOut, priceEffective);
-            //     console.assert(Math.abs(res/res2-1) < 1e-6, "190 " + res + " " + res2);
-            // }
             return res;
         } 
         case PoolType.Hybrid: {
             let res =  revert(0.0000001, 1e8, (x:number) => 1/calcPrice(pool, x))(priceEffective);
             res = res > 0.0000001 ? res : 0;
             return res;
-            //return calcInputByPrice3(pool, legPriceInTokenOut, priceEffective);
         }
     }
 }
 
-// function calcInputByPrice(pool: Pool, legPriceInTokenOut: number, priceEffective: number): number {
-//     /*switch(pool.type) {
-//         case PoolType.ConstantProduct: {
-//             return priceEffective*pool.reserve1-pool.reserve0/(1-pool.fee);
-//         }
-//     }*/
-    
-//     let res =  revert(0.0000001, 1e40, (x:number) => x/calcOutByIn(pool, x))(priceEffective);
-//     res = res > 0.0000001 ? res : 0;
-
-//     if (pool.type == PoolType.ConstantProduct) {
-//         let assumed = priceEffective * pool.reserve1 - pool.reserve0/(1-pool.fee);
-//         assumed = assumed > 0.0000001 ? assumed : 0;
-//         if (assumed > 0.0000001) {
-//             if (Math.abs(res/assumed - 1) >= 1e-6)
-//                 console.assert(Math.abs(res/assumed - 1) < 1e-6, '161: ' + assumed + res);
-//         } else
-//             if (res != 0)
-//                 console.assert(res == 0, '151');
-            
-//     }
-//     return res;
-// }
-
-// function calcInputByPrice2(pool: Pool, legPriceInTokenOut: number, priceEffective: number): number {
-//     /*switch(pool.type) {
-//         case PoolType.ConstantProduct: {
-//             return priceEffective*pool.reserve1-pool.reserve0/(1-pool.fee);
-//         }
-//     }*/
-    
-//     let res =  revert(100000000000, 0.0000001, (x:number) => calcOutByIn(pool, x)/x)(priceEffective);
-//     res = res > 0.0000001 ? res : 0;
-
-//     if (pool.type == PoolType.ConstantProduct) {
-//         let assumed = pool.reserve1/priceEffective - pool.reserve0/(1-pool.fee);
-//         assumed = assumed > 0.0000001 ? assumed : 0;
-//         if (assumed > 0.0000001) {
-//             if (Math.abs(res/assumed - 1) >= 1e-6)
-//                 console.assert(Math.abs(res/assumed - 1) < 1e-6, '161: ' + assumed + " " + res);
-//         } else
-//             if (res)
-//                 console.assert(res == 0, '151');
-            
-//     }
-//     return res;
-// }
-
 function calcInputByPriceTotal(pools: Pool[], priceEffective: number): number {
     let res = 0;
-    // если при большей цене кто-то из пулов уже отключился - на меньших можно уже не проверять )
+    // TODO: if pools are sorted by effectivity and one of them is less 0 => may avoid to check others
     pools.forEach(pool => {
         const input = calcInputByPrice4(pool, priceEffective);
         if (input > 0)
@@ -324,16 +216,12 @@ function findBestDistributionParams(
 ): PoolsVariantData {
     // TODO: not binary search - but better? 1.01?
     let maxPrice;
-    //let n = 1;
-    for (maxPrice = minPrice*2; calcInputByPriceTotal(pools, maxPrice) < amountIn; maxPrice *=2)
-        //++n;
-        //console.log("qq", n, minPrice, maxPrice);
+    for (maxPrice = minPrice*2; calcInputByPriceTotal(pools, maxPrice) < amountIn; maxPrice *=2);
     minPrice = maxPrice/2;
     while((maxPrice/minPrice - 1) > 1e-12) {
         const price:number = (maxPrice+minPrice)/2;
         const input = calcInputByPriceTotal(pools, price);
-        //++n;
-        if (input >= amountIn)   //!!!
+        if (input >= amountIn) 
             maxPrice = price;
         else
             minPrice = price;
@@ -364,34 +252,18 @@ function findBestDistribution(
 ): Route  | [number, number[][]]{
     const legPriceInTokenOut = LegGasConsuming*gasPriceGWeiBase*1e-9/tokenOutPriceBase;
 
-    //TODO: optimize max calculation. 1.5?
-/*    let minPrice:number, maxPrice = tokenOutPriceBase/tokenInPriceBase;
-    if (calcInputByPriceTotal(pools, legPriceInTokenOut, maxPrice) != 0)
-        console.assert(calcInputByPriceTotal(pools, legPriceInTokenOut, maxPrice) == 0, "Internal Error 90");
-    for (maxPrice *= 10; calcInputByPriceTotal(pools, legPriceInTokenOut, maxPrice) == 0;)
-        maxPrice *= 10
-    minPrice = maxPrice/10;*/
     let minPrice = calcPrice(pools[0], 0);
-    //console.log('mp', 0, minPrice);
-    
     for (let i = 1; i < pools.length; ++i) {
         const pr = calcPrice(pools[i], 0);
-        //console.log('mp', i, pr);
         minPrice = Math.min(pr, minPrice);
     }
-    
-    //minPrice = 1e-7;
-    const maxPrice = 1e+12;
 
     const params = findBestDistributionParams(amountIn, pools, minPrice);
-    
-    //console.log(minPrice, maxPrice, params.priceEffective, params.amountOut);
-
     const distrSorted = params.distribution.map((v, i) => [i, v]).sort((a,b) => b[1] - a[1]);
     params.distribution = distrSorted.map(a => a[1]);
     const poolsSorted = distrSorted.map(a => pools[a[0]]);    
 
-    // Use more fast search instead
+    // TODO: Use more fast search instead
     let bestPoolNumber = pools.length;
     let bestOut = params.amountOut - pools.length*legPriceInTokenOut;
     let bestParams = params;
@@ -399,13 +271,9 @@ function findBestDistribution(
         const shortPoolList = poolsSorted.slice(0, i);
         const p = findBestDistributionParams(amountIn, shortPoolList, minPrice);
         const out = p.amountOut - i*legPriceInTokenOut;
-        //console.log('a', i, p.priceEffective, p.amountOut, amountIn);
-        
-        
-        //console.log(i, out);
-        if (out < bestOut)
-        {;} //break;
-        else {
+        if (out < bestOut){
+            //break;        // TODO: uncomment?
+        } else {
             bestPoolNumber = i;
             bestOut = out;
             bestParams = p;
@@ -433,15 +301,12 @@ function findBestDistribution2 (
     let bestGroup = order;
     let bestOut = -legPriceInTokenOut*pools.length*2;
     let flagDown = false;
-    // console.log(amountIn);
-    // console.log(order);
      
     
     for (let i = pools.length; i >= 1; --i) {
         const group = order.slice(0, i);
         const sum = group.reduce((a, b) => a+b[1], 0);
         const out = group.map(p => calcOutByIn(pools[p[0]], p[1]/sum*amountIn)).reduce((a, b) => a+b, 0) - legPriceInTokenOut*i;
-        // console.log(i, out);
         
         if (out > bestOut) {
             console.assert(flagDown == false, "flagDown at " + amountIn);
@@ -449,7 +314,7 @@ function findBestDistribution2 (
             bestGroup = group.map(([n, v]) => [n, v/sum]);
         } else {
             flagDown = true;
-           // break;
+           // break;        // TODO: unconmment?
         }
     }
     
@@ -481,12 +346,13 @@ function findBestDistribution3 (
         const out = group.map(p => calcOutByIn(pools[p[0]], p[1]/sum*amountIn)).reduce((a, b) => a+b, 0) - legPriceInTokenOut*i;
         
         if (out > bestOut) {
-    //        console.assert(flagDown == false, "flagDown at " + amountIn);
+            // commented because assertion triggers too often
+            // console.assert(flagDown == false, "flagDown at " + amountIn);
             bestOut = out;
             bestGroup = group.map(([n, v]) => [n, v/sum]);
         } else {
             flagDown = true;
-           // break;
+           // break;        // TODO: unconmment?
         }
     }
         
@@ -496,7 +362,7 @@ function findBestDistribution3 (
 
 function findBestDistribution4Pools(
     amountIn: number,
-    pools: Pool[]       // maybe use initial distribution?
+    pools: Pool[]       // TODO: maybe use initial distribution?
 ): [number, number[]] {
 
     let distr = pools.map(p => Math.max(calcOutByIn(p, amountIn/pools.length), 0));
@@ -544,7 +410,7 @@ function findBestDistribution4(
             bestGroup = distr.map((d, i) => [bestGroup[i][0], d]);
         } else {
             flagDown = true;
-           // break;
+           // break;            // TODO: uncomment for speed up ???
         }
     }
         
@@ -562,8 +428,7 @@ function calcOut(
     const legPriceInTokenOut = LegGasConsuming*gasPriceGWeiBase*1e-9/tokenOutPriceBase;  
     const sum = distribution.reduce((a, b) => a + b[1], 0);
     const out = distribution.map(p => calcOutByIn(pools[p[0]], p[1]/sum*amountIn)).reduce((a, b) => a+b, 0);
-   /* let outCheck = 0, inCheck = 0;
-    console.log(amountIn, sum, out);
+   /* console.log(amountIn, sum, out);
     console.log(distribution.map(d => {
         const inn = amountIn*d[1]/sum;
         inCheck += inn;
@@ -573,10 +438,7 @@ function calcOut(
         d.push(out);
         d.push(pr);
         return d;
-    }));*/
-    //console.log("Check out: ", outCheck);
-    //console.log("Check in: ", inCheck);
-    
+    }));*/    
     
     return out - legPriceInTokenOut*distribution.length;
 }
@@ -633,44 +495,19 @@ function testEnvironment() {
     if (price1In0 == 1)
         testPools.push(testPool5);
 
-    var testPoolsCPOnly = [testPool1, testPool2, testPool4]
     return {
-        testPools,//: testPoolsCPOnly,
+        testPools,
         tokenInPriceBase,
         tokenOutPriceBase,
         price1In0
     }
 }
 
-var env0 = testEnvironment();
+// var env0 = testEnvironment();
+// const legPriceInTokenOut = LegGasConsuming*200*1e-9/env0.tokenOutPriceBase;
+// const start = Date.now();
+// for (let i = 0; i < 100000; ++i)
+//      findBestDistribution4(999000,  env0.testPools, env0.tokenInPriceBase, env0.tokenOutPriceBase, 200); // 31mks
+// const finish = Date.now();
+// console.log(finish-start);
 
-const legPriceInTokenOut = LegGasConsuming*200*1e-9/env0.tokenOutPriceBase;
-const start = Date.now();
-for (let i = 0; i < 100000; ++i)
-     findBestDistribution4(999000,  env0.testPools, env0.tokenInPriceBase, env0.tokenOutPriceBase, 200); // 100 ms -> 35mks
-// // //    findBestDistributionParams(999, env0.testPools, legPriceInTokenOut, 1e-7, 1e12);   // 20ms for 5 pools -> 420mks
-// //   findBestDistributionParams(999, env0.testPools, legPriceInTokenOut, 1e-1, 1e1);    // 12ms for 5  -> 250mks
-// // for (let i = 0; i < 100_000_000; ++i)
-// //     calcInputByPrice4(env0.testPools[2], legPriceInTokenOut, 1.1); // 7ns for product, 26ns for mean, 180mks for hybrid
-// //console.log(calcInputByPrice4(env0.testPools[4], legPriceInTokenOut, 122));
-const finish = Date.now();
-console.log(finish-start);
-
- //const res2 = findBestDistribution3(999.01, env0.testPools, env0.tokenInPriceBase, env0.tokenOutPriceBase, 200);
-
-/*calcOut(666, env0.testPools,
-    [
-        [2, 0.26], //[2, 0.2501168033445149],
-        [3, 0.25],
-        //[4, 0.25],
-        // [0, 0.24992981838432382]
-    ], env0.tokenOutPriceBase, 200);
-
-    calcOut(666, env0.testPools,
-        [
-            [2, 0.27], //[2, 0.2501168033445149],
-            [3, 0.24],
-            //[4, 0.25],
-            // [0, 0.24992981838432382]
-        ], env0.tokenOutPriceBase, 200);
-*/
