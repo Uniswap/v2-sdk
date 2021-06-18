@@ -172,7 +172,7 @@ function calcInputByPriceConstantMean(pool:Pool, price:number) {
     return (Math.pow(t, 1/(weightRatio+1)) - pool.reserve0)/(1-pool.fee);
 }
 
-function calcInputByPrice4(pool: Pool, priceEffective: number): number {
+function calcInputByPrice(pool: Pool, priceEffective: number): number {
     switch(pool.type) {
         case PoolType.ConstantProduct: {
             const x = pool.reserve0/(1-pool.fee);
@@ -195,7 +195,7 @@ function calcInputByPriceTotal(pools: Pool[], priceEffective: number): number {
     let res = 0;
     // TODO: if pools are sorted by effectivity and one of them is less 0 => may avoid to check others
     pools.forEach(pool => {
-        const input = calcInputByPrice4(pool, priceEffective);
+        const input = calcInputByPrice(pool, priceEffective);
         if (input > 0)
         res += input;
     })
@@ -209,7 +209,7 @@ interface PoolsVariantData {
     distribution: number[];
 }
 
-function findBestDistributionParams(
+function findBestDistributionIdealParams(
     amountIn: number,
     pools: Pool[],
     minPrice: number
@@ -229,7 +229,7 @@ function findBestDistributionParams(
     
     const price:number = (maxPrice+minPrice)/2;
 
-    let distribution = pools.map(pool => Math.max(calcInputByPrice4(pool, price), 0));
+    let distribution = pools.map(pool => Math.max(calcInputByPrice(pool, price), 0));
 
     const sum = distribution.reduce((a,b) => a+b, 0);
     if (Math.abs(sum/amountIn - 1) >= 0.1)
@@ -243,7 +243,7 @@ function findBestDistributionParams(
     }
 }
 
-function findBestDistribution(
+function findBestDistributionIdeal(
     amountIn: number,
     pools: Pool[],
     tokenInPriceBase: number,
@@ -258,7 +258,7 @@ function findBestDistribution(
         minPrice = Math.min(pr, minPrice);
     }
 
-    const params = findBestDistributionParams(amountIn, pools, minPrice);
+    const params = findBestDistributionIdealParams(amountIn, pools, minPrice);
     const distrSorted = params.distribution.map((v, i) => [i, v]).sort((a,b) => b[1] - a[1]);
     params.distribution = distrSorted.map(a => a[1]);
     const poolsSorted = distrSorted.map(a => pools[a[0]]);    
@@ -269,7 +269,7 @@ function findBestDistribution(
     let bestParams = params;
     for (let i = pools.length-1; i >= 1; --i) {
         const shortPoolList = poolsSorted.slice(0, i);
-        const p = findBestDistributionParams(amountIn, shortPoolList, minPrice);
+        const p = findBestDistributionIdealParams(amountIn, shortPoolList, minPrice);
         const out = p.amountOut - i*legPriceInTokenOut;
         if (out < bestOut){
             //break;        // TODO: uncomment?
@@ -360,21 +360,21 @@ function findBestDistribution3 (
     return [checkedOut, bestGroup];
 }
 
-function findBestDistribution4Pools(
+function findBestDistributionPools(
     amountIn: number,
     pools: Pool[]       // TODO: maybe use initial distribution?
 ): [number, number[]] {
 
     let distr = pools.map(p => Math.max(calcOutByIn(p, amountIn/pools.length), 0));
     
-    for(let i = 0; i < 3; ++i) {
+    for(let i = 0; i < 5; ++i) {
         const sum = distr.reduce((a, b) => a+b, 0);
         console.assert(sum > 0, "508 " + sum);
         
         const prices = distr.map((d, j) => 1/calcPrice(pools[j], amountIn*d/sum))
         const pr = prices.reduce((a, b) => Math.max(a, b), 0);
         
-        distr = pools.map(p => calcInputByPrice4(p, pr));        
+        distr = pools.map(p => calcInputByPrice(p, pr));        
     }
 
     const sum = distr.reduce((a, b) => a + b, 0);
@@ -384,7 +384,7 @@ function findBestDistribution4Pools(
     return [out, distr];
 }
 
-function findBestDistribution4(
+function findBestDistribution(
     amountIn: number,
     pools: Pool[],
     tokenInPriceBase: number,
@@ -393,7 +393,7 @@ function findBestDistribution4(
 ): Route  | [number, number[][]]{
     const legPriceInTokenOut = LegGasConsuming*gasPriceGWeiBase*1e-9/tokenOutPriceBase;
 
-    let [bestOut, distr] = findBestDistribution4Pools(amountIn, pools);
+    let [bestOut, distr] = findBestDistributionPools(amountIn, pools);
     bestOut -= legPriceInTokenOut*pools.length;
     let bestGroup = distr.map((d, i) => [i, d]).sort((a,b) => b[1] - a[1]);
     
@@ -401,11 +401,11 @@ function findBestDistribution4(
     const poolsSorted = bestGroup.map(a => pools[a[0]]);    
     for (let i = pools.length-1; i >= 1; --i) {
         const group = poolsSorted.slice(0, i);
-        let [out, distr] = findBestDistribution4Pools(amountIn, group);
+        let [out, distr] = findBestDistributionPools(amountIn, group);
         out -= legPriceInTokenOut*i;
         
         if (out > bestOut) {
-            console.assert(flagDown == false, "flagDown at " + amountIn);
+            console.assert(flagDown == false, "408 flagDown at " + amountIn);
             bestOut = out;
             bestGroup = distr.map((d, i) => [bestGroup[i][0], d]);
         } else {
