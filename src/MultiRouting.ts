@@ -144,23 +144,35 @@ function calcPrice(pool:Pool, amountIn: number): number {
     return 0;
 }
 
-function revert(from: number, to: number, f: (x:number)=>number) {
-    return function x(y: number): number {
-        let n = 2;
-        if (y <= f(from)) return from;
-        if (y >= f(to)) return to;
-        let x1 = from, x2 = to;
-        while(1)
-        {
-            const x0: number = (x1+x2)/2;
-            if (x0 == x1 || x0 == x2) return x0;
-            const y0 = f(x0);
-            if (y == y0) return x0;
-            if (y < y0) 
-                x2=x0;
-            else
-                x1=x0;
+// returns such x > 0 that f(x) = out or 0 if there is no such x or f defined not everywhere
+// hint - approximation of x to spead up the algorithm
+// f assumed to be continues monotone growth function defined everywhere
+function revertPositive(f: (x:number)=>number, out: number, hint = 1) {
+    try {
+        if (out <= f(0)) return 0;
+        let min, max;
+        if (f(hint) > out) {
+            min = hint/2;
+            while (f(min) > out) min /= 2;
+            max = min*2;
+        } else {
+            max = hint*2;
+            while (f(max) < out) max *= 2;
+            min = max/2;
         }
+        
+        while((max/min - 1) > 1e-4)
+        {
+            const x0: number = (min+max)/2;
+            const y0 = f(x0);
+            if (out == y0) return x0;
+            if (out < y0) 
+                max=x0;
+            else
+                min=x0;
+        }
+        return (min+max)/2;
+    } catch (e) {
         return 0;
     }
 }
@@ -172,7 +184,7 @@ function calcInputByPriceConstantMean(pool:Pool, price:number) {
     return (Math.pow(t, 1/(weightRatio+1)) - pool.reserve0)/(1-pool.fee);
 }
 
-function calcInputByPrice(pool: Pool, priceEffective: number): number {
+function calcInputByPrice(pool: Pool, priceEffective: number, hint = 1): number {
     switch(pool.type) {
         case PoolType.ConstantProduct: {
             const x = pool.reserve0/(1-pool.fee);
@@ -184,9 +196,7 @@ function calcInputByPrice(pool: Pool, priceEffective: number): number {
             return res;
         } 
         case PoolType.Hybrid: {
-            let res =  revert(0.0000001, 1e8, (x:number) => 1/calcPrice(pool, x))(priceEffective);
-            res = res > 0.0000001 ? res : 0;
-            return res;
+            return revertPositive( (x:number) => 1/calcPrice(pool, x), priceEffective, hint);
         }
     }
 }
@@ -360,10 +370,14 @@ function findBestDistribution3 (
     return [checkedOut, bestGroup];
 }
 
-function findBestDistributionPools(
+function findBestDistributionWithoutTransactionCost(
     amountIn: number,
     pools: Pool[]       // TODO: maybe use initial distribution?
 ): [number, number[]] {
+
+    if (pools.length == 1) {
+        return [calcOutByIn(pools[0], amountIn), [1]];
+    }
 
     let distr = pools.map(p => Math.max(calcOutByIn(p, amountIn/pools.length), 0));
     
@@ -374,7 +388,7 @@ function findBestDistributionPools(
         const prices = distr.map((d, j) => 1/calcPrice(pools[j], amountIn*d/sum))
         const pr = prices.reduce((a, b) => Math.max(a, b), 0);
         
-        distr = pools.map(p => calcInputByPrice(p, pr));        
+        distr = pools.map((p, i) => calcInputByPrice(p, pr, distr[i]));        
     }
 
     const sum = distr.reduce((a, b) => a + b, 0);
@@ -393,7 +407,7 @@ function findBestDistribution(
 ): Route  | [number, number[][]]{
     const legPriceInTokenOut = LegGasConsuming*gasPriceGWeiBase*1e-9/tokenOutPriceBase;
 
-    let [bestOut, distr] = findBestDistributionPools(amountIn, pools);
+    let [bestOut, distr] = findBestDistributionWithoutTransactionCost(amountIn, pools);
     bestOut -= legPriceInTokenOut*pools.length;
     let bestGroup = distr.map((d, i) => [i, d]).sort((a,b) => b[1] - a[1]);
     
@@ -401,7 +415,7 @@ function findBestDistribution(
     const poolsSorted = bestGroup.map(a => pools[a[0]]);    
     for (let i = pools.length-1; i >= 1; --i) {
         const group = poolsSorted.slice(0, i);
-        let [out, distr] = findBestDistributionPools(amountIn, group);
+        let [out, distr] = findBestDistributionWithoutTransactionCost(amountIn, group);
         out -= legPriceInTokenOut*i;
         
         if (out > bestOut) {
@@ -503,11 +517,11 @@ function testEnvironment() {
     }
 }
 
-// var env0 = testEnvironment();
+// const env0 = testEnvironment();
 // const legPriceInTokenOut = LegGasConsuming*200*1e-9/env0.tokenOutPriceBase;
 // const start = Date.now();
 // for (let i = 0; i < 100000; ++i)
-//      findBestDistribution4(999000,  env0.testPools, env0.tokenInPriceBase, env0.tokenOutPriceBase, 200); // 31mks
+//     findBestDistribution(999,  env0.testPools, env0.tokenInPriceBase, env0.tokenOutPriceBase, 200); // 34mks
 // const finish = Date.now();
 // console.log(finish-start);
 
