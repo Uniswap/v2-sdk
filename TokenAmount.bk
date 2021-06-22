@@ -1,7 +1,7 @@
-import { BigintIsh } from '../../constants'
-import { CurrencyAmount } from './currencyAmount'
+import { BigintIsh } from './src/constants'
+import { CurrencyAmount } from './src/entities/CurrencyAmount'
 import JSBI from 'jsbi'
-import { Token } from '../token'
+import { Token } from './src/entities/Token'
 import invariant from 'tiny-invariant'
 
 export class TokenAmount extends CurrencyAmount {

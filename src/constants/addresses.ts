@@ -1,47 +1,4 @@
-import JSBI from 'jsbi'
-
-// exports for external consumption
-export type BigintIsh = JSBI | bigint | string
-
-export enum ChainId {
-  MAINNET = 1,
-  ROPSTEN = 3,
-  RINKEBY = 4,
-  GÖRLI = 5,
-  KOVAN = 42,
-  MATIC = 137,
-  MATIC_TESTNET = 80001,
-  FANTOM = 250,
-  FANTOM_TESTNET = 4002,
-  XDAI = 100,
-  BSC = 56,
-  BSC_TESTNET = 97,
-  ARBITRUM = 42161,
-  ARBITRUM_TESTNET = 79377087078960,
-  MOONBEAM_TESTNET = 1287,
-  AVALANCHE = 43114,
-  AVALANCHE_TESTNET = 43113,
-  HECO = 128,
-  HECO_TESTNET = 256,
-  HARMONY = 1666600000,
-  HARMONY_TESTNET = 1666700000,
-  OKEX = 66,
-  OKEX_TESTNET = 65,
-  CELO = 42220
-}
-
-export enum TradeType {
-  EXACT_INPUT,
-  EXACT_OUTPUT
-}
-
-export enum Rounding {
-  ROUND_DOWN,
-  ROUND_HALF_UP,
-  ROUND_UP
-}
-
-export const INIT_CODE_HASH: string = '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303'
+import { ChainId } from '../enums/ChainId'
 
 export const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.MAINNET]: '0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac',
@@ -94,7 +51,7 @@ export const ROUTER_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HARMONY_TESTNET]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
   [ChainId.OKEX]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
   [ChainId.OKEX_TESTNET]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
-  [ChainId.CELO]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506'
+  [ChainId.CELO]: '0x1421bDe4B10e8dd459b3BCb598810B1337D56842'
 }
 
 export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
@@ -410,27 +367,4 @@ export const BORING_HELPER_ADDRESS = {
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
   [ChainId.CELO]: ''
-}
-
-export const MINIMUM_LIQUIDITY = JSBI.BigInt(1000)
-
-// exports for internal consumption
-export const ZERO = JSBI.BigInt(0)
-export const ONE = JSBI.BigInt(1)
-export const TWO = JSBI.BigInt(2)
-export const THREE = JSBI.BigInt(3)
-export const FIVE = JSBI.BigInt(5)
-export const TEN = JSBI.BigInt(10)
-export const _100 = JSBI.BigInt(100)
-export const _997 = JSBI.BigInt(997)
-export const _1000 = JSBI.BigInt(1000)
-
-export enum SolidityType {
-  uint8 = 'uint8',
-  uint256 = 'uint256'
-}
-
-export const SOLIDITY_TYPE_MAXIMA = {
-  [SolidityType.uint8]: JSBI.BigInt('0xff'),
-  [SolidityType.uint256]: JSBI.BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
 }

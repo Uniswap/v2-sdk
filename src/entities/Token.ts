@@ -1,17 +1,26 @@
-import { ChainId } from '../constants'
-import { Currency } from './currency'
+import { AbstractCurrency } from './AbstractCurrency'
+import { ChainId } from '../enums'
+import { Currency } from './Currency'
 import invariant from 'tiny-invariant'
-import { validateAndParseAddress } from '../utils'
-
+import { validateAndParseAddress } from '../functions/validateAndParseAddress'
 /**
  * Represents an ERC20 token with a unique address and some metadata.
  */
-export class Token extends Currency {
+export class Token extends AbstractCurrency {
   public readonly chainId: ChainId
   public readonly address: string
 
-  public constructor(chainId: ChainId, address: string, decimals: number, symbol?: string, name?: string) {
-    super(decimals, symbol, name)
+  public readonly isNative: false = false
+  public readonly isToken: true = true
+
+  public constructor(
+    chainId: ChainId,
+    address: string,
+    decimals: number,
+    symbol?: string,
+    name?: string
+  ) {
+    super(chainId, decimals, symbol, name)
     this.chainId = chainId
     this.address = validateAndParseAddress(address)
   }
@@ -20,12 +29,12 @@ export class Token extends Currency {
    * Returns true if the two tokens are equivalent, i.e. have the same chainId and address.
    * @param other other token to compare
    */
-  public equals(other: Token): boolean {
-    // short circuit on reference equality
-    if (this === other) {
-      return true
-    }
-    return this.chainId === other.chainId && this.address === other.address
+  public equals(other: Currency): boolean {
+    return (
+      other.isToken &&
+      this.chainId === other.chainId &&
+      this.address === other.address
+    )
   }
 
   /**
@@ -39,12 +48,22 @@ export class Token extends Currency {
     invariant(this.address !== other.address, 'ADDRESSES')
     return this.address.toLowerCase() < other.address.toLowerCase()
   }
+
+  /**
+   * Return this token, which does not need to be wrapped
+   */
+  public get wrapped(): Token {
+    return this
+  }
 }
 
 /**
  * Compares two currencies for equality
  */
-export function currencyEquals(currencyA: Currency, currencyB: Currency): boolean {
+export function currencyEquals(
+  currencyA: Currency,
+  currencyB: Currency
+): boolean {
   if (currencyA instanceof Token && currencyB instanceof Token) {
     return currencyA.equals(currencyB)
   } else if (currencyA instanceof Token) {
@@ -78,7 +97,13 @@ export const WETH9: { [chainId: number]: Token } = {
     'WETH9',
     'Wrapped Ether'
   ),
-  [ChainId.GÖRLI]: new Token(ChainId.GÖRLI, '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6', 18, 'WETH9', 'Wrapped Ether'),
+  [ChainId.GÖRLI]: new Token(
+    ChainId.GÖRLI,
+    '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
+    18,
+    'WETH9',
+    'Wrapped Ether'
+  ),
   [ChainId.RINKEBY]: new Token(
     ChainId.RINKEBY,
     '0xd0A1E359811322d97991E03f863a0C30C2cF029C',
@@ -99,16 +124,86 @@ export const WETH9: { [chainId: number]: Token } = {
     18,
     'WETH',
     'Wrapped Ether'
-  )
+  ),
+
+  [ChainId.BSC]: new Token(
+    ChainId.BSC,
+    '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
+
+  [ChainId.FANTOM]: new Token(
+    ChainId.FANTOM,
+    '0x74b23882a30290451A17c44f4F05243b6b58C76d',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
+
+  [ChainId.MATIC]: new Token(
+    ChainId.MATIC,
+    '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
+
+  [ChainId.OKEX]: new Token(
+    ChainId.OKEX,
+    '0x2170Ed0880ac9A755fd29B2688956BD959F933F8',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
+
+  [ChainId.HECO]: new Token(
+    ChainId.HECO,
+    '0x64FF637fB478863B7468bc97D30a5bF3A428a1fD',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
+
+  [ChainId.HARMONY]: new Token(
+    ChainId.HARMONY,
+    '0x6983D1E6DEf3690C4d616b13597A09e6193EA013',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
+
+  [ChainId.XDAI]: new Token(
+    ChainId.XDAI,
+    '0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
+
+  [ChainId.AVALANCHE]: new Token(
+    ChainId.AVALANCHE,
+    '0xf20d962a6c8f70c731bd838a3a388D7d48fA6e15',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
 }
 
-export const WETH = {
+export const WNATIVE: { [chainId: number]: Token } = {
   [ChainId.MAINNET]: WETH9[ChainId.MAINNET],
   [ChainId.ROPSTEN]: WETH9[ChainId.ROPSTEN],
   [ChainId.RINKEBY]: WETH9[ChainId.RINKEBY],
   [ChainId.GÖRLI]: WETH9[ChainId.GÖRLI],
   [ChainId.KOVAN]: WETH9[ChainId.KOVAN],
-  [ChainId.FANTOM]: new Token(ChainId.FANTOM, '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83', 18, 'WFTM', 'Wrapped FTM'),
+  [ChainId.FANTOM]: new Token(
+    ChainId.FANTOM,
+    '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',
+    18,
+    'WFTM',
+    'Wrapped FTM'
+  ),
   [ChainId.FANTOM_TESTNET]: new Token(
     ChainId.FANTOM_TESTNET,
     '0xf1277d1Ed8AD466beddF92ef448A132661956621',
@@ -130,8 +225,20 @@ export const WETH = {
     'WMATIC',
     'Wrapped Matic'
   ),
-  [ChainId.XDAI]: new Token(ChainId.XDAI, '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d', 18, 'WXDAI', 'Wrapped xDai'),
-  [ChainId.BSC]: new Token(ChainId.BSC, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', 18, 'WBNB', 'Wrapped BNB'),
+  [ChainId.XDAI]: new Token(
+    ChainId.XDAI,
+    '0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d',
+    18,
+    'WXDAI',
+    'Wrapped xDai'
+  ),
+  [ChainId.BSC]: new Token(
+    ChainId.BSC,
+    '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+    18,
+    'WBNB',
+    'Wrapped BNB'
+  ),
   [ChainId.BSC_TESTNET]: new Token(
     ChainId.BSC_TESTNET,
     '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
@@ -162,7 +269,13 @@ export const WETH = {
     'WAVAX',
     'Wrapped AVAX'
   ),
-  [ChainId.HECO]: new Token(ChainId.HECO, '0x5545153CCFcA01fbd7Dd11C0b23ba694D9509A6F', 18, 'WHT', 'Wrapped HT'),
+  [ChainId.HECO]: new Token(
+    ChainId.HECO,
+    '0x5545153CCFcA01fbd7Dd11C0b23ba694D9509A6F',
+    18,
+    'WHT',
+    'Wrapped HT'
+  ),
   [ChainId.HECO_TESTNET]: new Token(
     ChainId.HECO_TESTNET,
     '0x5B2DA6F42CA09C77D577a12BeaD0446148830687',
@@ -198,5 +311,11 @@ export const WETH = {
     'WOKT',
     'Wrapped OKExChain'
   ),
-  [ChainId.CELO]: new Token(ChainId.CELO, '0x471EcE3750Da237f93B8E339c536989b8978a438', 18, 'CELO', 'Celo')
+  [ChainId.CELO]: new Token(
+    ChainId.CELO,
+    '0x471EcE3750Da237f93B8E339c536989b8978a438',
+    18,
+    'CELO',
+    'Celo'
+  ),
 }
