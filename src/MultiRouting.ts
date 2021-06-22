@@ -118,6 +118,10 @@ function calcOutByIn(pool:Pool, amountIn: number): number {
     return 0;
 }
 
+function calcPoolChainOutByIn(pools:Pool[], amountIn: number): number {
+    return pools.reduce((input, p) => calcOutByIn(p, input), amountIn);
+}
+
 function calcPrice(pool:Pool, amountIn: number): number {
     switch(pool.type) {
         case PoolType.ConstantProduct: {
@@ -142,6 +146,23 @@ function calcPrice(pool:Pool, amountIn: number): number {
         }
     }
     return 0;
+}
+
+function calcPoolChainPrice(pools:Pool[], amountIn: number): number {
+    let out = amountIn, derivative = 1;
+    const last = pools.length - 1;
+    for (let i = 0; i < last; ++i) {
+        derivative *= calcPrice(pools[i], out);
+        out = calcOutByIn(pools[i], out);
+    }
+    const res = derivative * calcPrice(pools[last], out);
+
+    // TODO: to delete
+    const res2 = (calcPoolChainOutByIn(pools, amountIn + 0.01) - calcPoolChainOutByIn(pools, amountIn))/0.01;
+    if (Math.abs(res/res2-1) > 1e-5)
+        console.error("163 " + res + " " + res2 + " " + Math.abs(res/res2-1));
+
+    return res;
 }
 
 // returns such x > 0 that f(x) = out or 0 if there is no such x or f defined not everywhere
@@ -201,7 +222,14 @@ function calcInputByPrice(pool: Pool, priceEffective: number, hint = 1): number 
     }
 }
 
-function calcInputByPriceTotal(pools: Pool[], priceEffective: number): number {
+function calcPoolChainInputByPrice(pools:Pool[], priceEffective: number, hint = 1): number {
+    if (pools.length == 1)
+        return calcInputByPrice(pools[0], priceEffective, hint);
+
+    return revertPositive( (x:number) => 1/calcPoolChainPrice(pools, x), priceEffective, hint);
+}
+
+function calcInputByPriceParallel(pools: Pool[], priceEffective: number): number {
     let res = 0;
     // TODO: if pools are sorted by effectivity and one of them is less 0 => may avoid to check others
     pools.forEach(pool => {
@@ -226,11 +254,11 @@ function findBestDistributionIdealParams(
 ): PoolsVariantData {
     // TODO: not binary search - but better? 1.01?
     let maxPrice;
-    for (maxPrice = minPrice*2; calcInputByPriceTotal(pools, maxPrice) < amountIn; maxPrice *=2);
+    for (maxPrice = minPrice*2; calcInputByPriceParallel(pools, maxPrice) < amountIn; maxPrice *=2);
     minPrice = maxPrice/2;
     while((maxPrice/minPrice - 1) > 1e-12) {
         const price:number = (maxPrice+minPrice)/2;
-        const input = calcInputByPriceTotal(pools, price);
+        const input = calcInputByPriceParallel(pools, price);
         if (input >= amountIn) 
             maxPrice = price;
         else
@@ -432,6 +460,74 @@ function findBestDistribution(
     return [checkedOut, bestGroup];
 }
 
+function findBesChaintDistributionWithoutTransactionCost(
+    amountIn: number,
+    poolChains: Pool[][]       // TODO: maybe use initial distribution?
+): [number, number[]] {
+
+    if (poolChains.length == 1) {
+        return [calcPoolChainOutByIn(poolChains[0], amountIn), [1]];
+    }
+
+    let distr = poolChains.map(p => Math.max(calcPoolChainOutByIn(p, amountIn/poolChains.length), 0));
+    
+    for(let i = 0; i < 5; ++i) {
+        const sum = distr.reduce((a, b) => a+b, 0);
+        console.assert(sum > 0, "508 " + sum);
+        
+        const prices = distr.map((d, j) => 1/calcPoolChainPrice(poolChains[j], amountIn*d/sum))
+        const pr = prices.reduce((a, b) => Math.max(a, b), 0);
+        
+        distr = poolChains.map((p, i) => calcPoolChainInputByPrice(p, pr, distr[i]));        
+    }
+
+    const sum = distr.reduce((a, b) => a + b, 0);
+    distr = distr.map(d => d/sum);
+    const out = distr.map((p, i) => calcPoolChainOutByIn(poolChains[i], p*amountIn)).reduce((a, b) => a+b, 0);
+
+    return [out, distr];
+}
+
+function findBestChainDistribution(
+    amountIn: number,
+    poolChains: Pool[][],
+    tokenInPriceBase: number,
+    tokenOutPriceBase: number,
+    gasPriceGWeiBase: number
+): Route  | [number, number[][]]{
+    const legPriceInTokenOut = LegGasConsuming*gasPriceGWeiBase*1e-9/tokenOutPriceBase;
+
+    let [bestOut, distr] = findBesChaintDistributionWithoutTransactionCost(amountIn, poolChains);
+    let bestGroup = distr.map((d, i) => [i, d]).sort((a,b) => b[1] - a[1]);
+    let totalJumps = 0;
+    const poolNumber:number[] = [];
+    for (let i = 0; i < poolChains.length; ++i) {
+        totalJumps += poolChains[bestGroup[i][0]].length;
+        poolNumber[i] = totalJumps;
+    }
+    bestOut -= legPriceInTokenOut*totalJumps;
+    
+    let flagDown = false;
+    const poolsSorted = bestGroup.map(a => poolChains[a[0]]);    
+    for (let i = poolChains.length-1; i >= 1; --i) {
+        const group = poolsSorted.slice(0, i);
+        let [out, distr] = findBesChaintDistributionWithoutTransactionCost(amountIn, group);
+        out -= legPriceInTokenOut*poolNumber[i-1];
+        
+        if (out > bestOut) {
+            console.assert(flagDown == false, "408 flagDown at " + amountIn);
+            bestOut = out;
+            bestGroup = distr.map((d, i) => [bestGroup[i][0], d]);
+        } else {
+            flagDown = true;
+           // break;            // TODO: uncomment for speed up ???
+        }
+    }
+        
+    const checkedOut = calcPoolChainOut(amountIn, poolChains, bestGroup, tokenOutPriceBase, gasPriceGWeiBase);
+    return [checkedOut, bestGroup];
+}
+
 function calcOut(
     amountIn: number,
     pools: Pool[],
@@ -455,6 +551,31 @@ function calcOut(
     }));*/    
     
     return out - legPriceInTokenOut*distribution.length;
+}
+
+function calcPoolChainOut(
+    amountIn: number,
+    poolChains: Pool[][],
+    distribution: number[][],
+    tokenOutPriceBase: number,
+    gasPriceGWeiBase: number
+): number {
+    const legPriceInTokenOut = LegGasConsuming*gasPriceGWeiBase*1e-9/tokenOutPriceBase;  
+    const sum = distribution.reduce((a, b) => a + b[1], 0);
+    const out = distribution.map(p => calcPoolChainOutByIn(poolChains[p[0]], p[1]/sum*amountIn)).reduce((a, b) => a+b, 0);
+    let totalJumps = distribution.reduce((a, p) => a += poolChains[p[0]].length, 0);
+   /* console.log(amountIn, sum, out);
+    console.log(distribution.map(d => {
+        const inn = amountIn*d[1]/sum;
+        inCheck += inn;
+        const out = calcOutByIn(pools[d[0]], inn);
+        outCheck += out;
+        const pr = calcPrice(pools[d[0]], inn);
+        d.push(out);
+        d.push(pr);
+        return d;
+    }));*/    
+    return out - legPriceInTokenOut*totalJumps;
 }
 
 function testEnvironment() {
@@ -517,6 +638,47 @@ function testEnvironment() {
     }
 }
 
+function testEnvironment2() {
+    const price1In0 = 1;
+    const reserve = [1_000_000, 1_000_000, 1_000_000];
+    const tokenInPriceBase = 1;
+    const tokenOutPriceBase = tokenInPriceBase*price1In0;
+
+    var testPool1 = {
+        address: "xxx",
+        type: PoolType.ConstantProduct,
+        reserve0: reserve[0],
+        reserve1: reserve[0],
+        data: new ArrayBuffer(16),
+        fee: 0.003
+    };
+    var testPool2 = {
+        address: "xxx",
+        type: PoolType.ConstantProduct,
+        reserve0: reserve[1],
+        reserve1: reserve[1],
+        data: new ArrayBuffer(16),
+        fee: 0.003
+    };
+    var testPool3 = {
+        address: "xxx",
+        type: PoolType.ConstantProduct,
+        reserve0: reserve[2],
+        reserve1: reserve[2],
+        data: new ArrayBuffer(16),
+        fee: 0.003
+    };
+
+    var testPools = [[testPool1, testPool2, testPool3], [testPool3]];
+
+    return {
+        testPools,
+        tokenInPriceBase,
+        tokenOutPriceBase,
+        price1In0
+    }
+}
+
 // const env0 = testEnvironment();
 // const legPriceInTokenOut = LegGasConsuming*200*1e-9/env0.tokenOutPriceBase;
 // const start = Date.now();
@@ -525,3 +687,5 @@ function testEnvironment() {
 // const finish = Date.now();
 // console.log(finish-start);
 
+// const env2 = testEnvironment2();
+// console.log(findBestChainDistribution(100000, env2.testPools, env2.tokenInPriceBase, env2.tokenOutPriceBase, 200));
