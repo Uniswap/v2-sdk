@@ -1,7 +1,7 @@
 {
   "name": "@sushiswap/sdk",
   "license": "MIT",
-  "version": "5.0.0-canary.21",
+  "version": "5.0.0-canary.22",
   "description": "🛠 An SDK for building applications on top of Sushiswap.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -35,7 +35,7 @@
     "@ethersproject/address": "^5.3.0",
     "@ethersproject/contracts": "^5.3.0",
     "@ethersproject/networks": "^5.3.0",
-    "@ethersproject/providers":"^5.3.0",
+    "@ethersproject/providers": "^5.3.0",
     "@ethersproject/solidity": "^5.3.0"
   },
   "devDependencies": {
