@@ -284,7 +284,6 @@ function findBestDistributionIdealParams(
 function findBestDistributionIdeal(
     amountIn: number,
     pools: Pool[],
-    tokenInPriceBase: number,
     tokenOutPriceBase: number,
     gasPriceGWeiBase: number
 ): Route  | [number, number[][]]{
@@ -302,7 +301,6 @@ function findBestDistributionIdeal(
     const poolsSorted = distrSorted.map(a => pools[a[0]]);    
 
     // TODO: Use more fast search instead
-    let bestPoolNumber = pools.length;
     let bestOut = params.amountOut - pools.length*legPriceInTokenOut;
     let bestParams = params;
     for (let i = pools.length-1; i >= 1; --i) {
@@ -312,7 +310,6 @@ function findBestDistributionIdeal(
         if (out < bestOut){
             //break;        // TODO: uncomment?
         } else {
-            bestPoolNumber = i;
             bestOut = out;
             bestParams = p;
         }
@@ -326,7 +323,6 @@ function findBestDistributionIdeal(
 function findBestDistribution2 (
     amountIn: number,
     pools: Pool[],
-    tokenInPriceBase: number,
     tokenOutPriceBase: number,
     gasPriceGWeiBase: number
 ): Route  | [number, number[][]]{
@@ -363,7 +359,6 @@ function findBestDistribution2 (
 function findBestDistribution3 (
     amountIn: number,
     pools: Pool[],
-    tokenInPriceBase: number,
     tokenOutPriceBase: number,
     gasPriceGWeiBase: number
 ): Route  | [number, number[][]]{
@@ -374,9 +369,7 @@ function findBestDistribution3 (
     const order = out.map((o, i) => [i, o/sum]).sort((a,b) => b[1] - a[1]);
     
     let bestGroup = order;
-    let bestOut = -legPriceInTokenOut*pools.length*2;
-    let flagDown = false;
-     
+    let bestOut = -legPriceInTokenOut*pools.length*2;     
     
     for (let i = pools.length; i >= 1; --i) {
         const group = order.slice(0, i);
@@ -384,12 +377,9 @@ function findBestDistribution3 (
         const out = group.map(p => calcOutByIn(pools[p[0]], p[1]/sum*amountIn)).reduce((a, b) => a+b, 0) - legPriceInTokenOut*i;
         
         if (out > bestOut) {
-            // commented because assertion triggers too often
-            // console.assert(flagDown == false, "flagDown at " + amountIn);
             bestOut = out;
             bestGroup = group.map(([n, v]) => [n, v/sum]);
         } else {
-            flagDown = true;
            // break;        // TODO: unconmment?
         }
     }
@@ -429,7 +419,6 @@ function findBestDistributionWithoutTransactionCost(
 function findBestDistribution(
     amountIn: number,
     pools: Pool[],
-    tokenInPriceBase: number,
     tokenOutPriceBase: number,
     gasPriceGWeiBase: number
 ): Route  | [number, number[][]]{
@@ -491,7 +480,6 @@ function findBesChaintDistributionWithoutTransactionCost(
 function findBestChainDistribution(
     amountIn: number,
     poolChains: Pool[][],
-    tokenInPriceBase: number,
     tokenOutPriceBase: number,
     gasPriceGWeiBase: number
 ): Route  | [number, number[][]]{
