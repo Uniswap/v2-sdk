@@ -1,6 +1,6 @@
 //import { Price, Token } from "entities";
 
-const LegGasConsuming = 40_000;
+export const LegGasConsuming = 40_000;
 
 enum PoolType {
     ConstantProduct = 'ConstantProduct',
