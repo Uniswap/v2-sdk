@@ -1,6 +1,4 @@
 
-const LegGasConsuming = 40_000;
-
 enum PoolType {
     ConstantProduct = 'ConstantProduct',
     ConstantMean = 'ConstantMean',
@@ -17,12 +15,13 @@ interface Pool {
 }
 
 abstract class MultiRouter {
-    abstract calcOutByIn(amountIn: number): number;
+    abstract calcOutByIn(amountIn: number): [number, number];
     abstract calcPrice(amountIn: number): number;
     abstract calcInputByPrice(price: number, hint: number): number;
 }
 
 class MultiRouterConstantProduct extends MultiRouter {
+    readonly GasConsumption = 40_000;
     pool: Pool;
 
     constructor(_pool: Pool) {
@@ -32,9 +31,9 @@ class MultiRouterConstantProduct extends MultiRouter {
         this.pool = _pool;
     }
 
-    calcOutByIn(amountIn: number): number {
+    calcOutByIn(amountIn: number): [number, number] {
         const pool = this.pool;
-        return pool.reserve1*amountIn/(pool.reserve0/(1-pool.fee) + amountIn);
+        return [pool.reserve1*amountIn/(pool.reserve0/(1-pool.fee) + amountIn), this.GasConsumption];
     }
 
     calcPrice(amountIn: number): number {
@@ -52,6 +51,7 @@ class MultiRouterConstantProduct extends MultiRouter {
 }
 
 class MultiRouterConstantMean extends MultiRouter {
+    readonly GasConsumption = 40_000;
     pool: Pool;
 
     constructor(_pool: Pool) {
@@ -74,12 +74,12 @@ class MultiRouterConstantMean extends MultiRouter {
         this.pool.data = data;
     }
 
-    calcOutByIn(amountIn: number): number {
+    calcOutByIn(amountIn: number): [number, number] {
         const pool = this.pool;
         const [weight0, weight1] = this.getWeights();
         const weightRatio = weight0/weight1;
         const actualIn = amountIn*(1-pool.fee);
-        return pool.reserve1*(1-Math.pow(pool.reserve0/(pool.reserve0+actualIn), weightRatio));
+        return [pool.reserve1*(1-Math.pow(pool.reserve0/(pool.reserve0+actualIn), weightRatio)), this.GasConsumption];
     }
 
     calcPrice(amountIn: number): number {
@@ -100,6 +100,7 @@ class MultiRouterConstantMean extends MultiRouter {
 }
 
 class MultiRouterHybrid extends MultiRouter {
+    readonly GasConsumption = 40_000;
     pool: Pool;
     HybridD?: number;
 
@@ -157,12 +158,12 @@ class MultiRouterHybrid extends MultiRouter {
         return calcSquareEquation(16*A*x, 16*A*x*x + 4*D*x - 16*A*D*x, -D*D*D)[1];
     }
 
-    calcOutByIn(amountIn: number): number {
+    calcOutByIn(amountIn: number): [number, number] {
         const pool = this.pool;
         const xNew = pool.reserve0 + amountIn;
         const yNew = this.computeY(xNew);
         const dy = (pool.reserve1 - yNew)*(1-pool.fee); // TODO: Why other pools take fees at the beginning, and this one - at the end?
-        return dy;
+        return [dy, this.GasConsumption];
     }
 
     calcPrice(amountIn: number): number {
@@ -175,6 +176,97 @@ class MultiRouterHybrid extends MultiRouter {
         const Ds = Math.sqrt(b*b + 4*A*ac4);
         const res = (0.5 - (2*b-ac4/x)/Ds/4)*(1-pool.fee);
         return res;
+    }
+
+    calcInputByPrice(price: number, hint = 1): number {
+        return revertPositive( (x:number) => 1/this.calcPrice(x), price, hint);
+    }
+}
+
+class MultiRouterParallel extends MultiRouter {
+    subRouters: MultiRouter[];
+    gasPriceInOutToken: number;
+
+    constructor(_sub: MultiRouter[], _gasPriceInOutToken: number) {
+        super();
+        this.subRouters = _sub;
+        this.gasPriceInOutToken = _gasPriceInOutToken;
+    }
+        
+    findBestDistributionWithoutTransactionCost(
+        amountIn: number,
+        subRouters: MultiRouter[]       // TODO: maybe use initial distribution?
+    ): [number, number, number[]] {
+
+        if (subRouters.length == 1) {
+            const [out, gas] = subRouters[0].calcOutByIn(amountIn);
+            return [out, gas, [1]];
+        }
+
+        let distr = subRouters.map(p => Math.max(p.calcOutByIn(amountIn/subRouters.length)[0], 0));
+        
+        for(let i = 0; i < 5; ++i) {
+            const sum = distr.reduce((a, b) => a+b, 0);
+            console.assert(sum > 0, "Error 508 " + sum);
+            
+            const prices = distr.map((d, j) => 1/subRouters[j].calcPrice(amountIn*d/sum))
+            const pr = prices.reduce((a, b) => Math.max(a, b), 0);
+            
+            distr = subRouters.map((p, i) => p.calcInputByPrice(pr, distr[i]));        
+        }
+
+        const sum = distr.reduce((a, b) => a + b, 0);
+        distr = distr.map(d => d/sum);
+
+        let out = 0, gas = 0;
+        for (let i = 0; i < subRouters.length; ++i) {
+            const [out0, gas0] = subRouters[i].calcOutByIn(distr[i]*amountIn);
+            out += out0;
+            gas += gas0;
+        }
+
+        return [out, gas, distr];
+    }
+
+    findBestDistribution(
+        amountIn: number,
+        gasPriceInOutToken: number
+    ): [number, number, number[][]] {
+        let [bestOut, bestGas, distr] = this.findBestDistributionWithoutTransactionCost(amountIn, this.subRouters);
+        bestOut -= bestGas*gasPriceInOutToken;
+        let bestGroup = distr.map((d, i) => [i, d]).sort((a,b) => b[1] - a[1]);
+        
+        let flagDown = false;
+        const poolsSorted = bestGroup.map(a => this.subRouters[a[0]]);    
+        for (let i = this.subRouters.length-1; i >= 1; --i) {
+            const group = poolsSorted.slice(0, i);
+            let [out, gas, distr] = this.findBestDistributionWithoutTransactionCost(amountIn, group);
+            out -= gas*gasPriceInOutToken;
+            
+            if (out > bestOut) {
+                console.assert(flagDown == false, "408 flagDown at " + amountIn);
+                bestOut = out;
+                bestGas = gas;
+                bestGroup = distr.map((d, i) => [bestGroup[i][0], d]);
+            } else {
+                flagDown = true;
+            // break;            // TODO: uncomment for speed up ???
+            }
+        }
+
+        return [bestOut + bestGas*gasPriceInOutToken, bestGas, bestGroup];
+    }
+
+
+    calcOutByIn(amountIn: number): [number, number] {
+        const [bestOut, bestGas] = this.findBestDistribution(amountIn, this.gasPriceInOutToken);
+        return [bestOut, bestGas];
+    }
+
+    calcPrice(amountIn: number): number {
+        const [_1, _2, distr] = this.findBestDistribution(amountIn, this.gasPriceInOutToken);
+        const sub = this.subRouters[distr[0][0]];
+        return sub.calcPrice(amountIn*distr[0][1]);
     }
 
     calcInputByPrice(price: number, hint = 1): number {
