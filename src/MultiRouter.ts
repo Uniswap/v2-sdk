@@ -198,6 +198,10 @@ class MultiRouterParallel extends MultiRouter {
         subRouters: MultiRouter[]       // TODO: maybe use initial distribution?
     ): [number, number, number[]] {
 
+        if (amountIn == 0) {
+            return [0, 0, [1]];
+        }
+
         if (subRouters.length == 1) {
             const [out, gas] = subRouters[0].calcOutByIn(amountIn);
             return [out, gas, [1]];
@@ -207,7 +211,7 @@ class MultiRouterParallel extends MultiRouter {
         
         for(let i = 0; i < 5; ++i) {
             const sum = distr.reduce((a, b) => a+b, 0);
-            console.assert(sum > 0, "Error 508 " + sum);
+            console.assert(sum > 0, "Error 508 " + sum + " " + i + " " + amountIn);
             
             const prices = distr.map((d, j) => 1/subRouters[j].calcPrice(amountIn*d/sum))
             const pr = prices.reduce((a, b) => Math.max(a, b), 0);
@@ -257,20 +261,23 @@ class MultiRouterParallel extends MultiRouter {
         return [bestOut + bestGas*gasPriceInOutToken, bestGas, bestGroup];
     }
 
-
     calcOutByIn(amountIn: number): [number, number] {
         const [bestOut, bestGas] = this.findBestDistribution(amountIn, this.gasPriceInOutToken);
         return [bestOut, bestGas];
     }
 
     calcPrice(amountIn: number): number {
-        const [_1, _2, distr] = this.findBestDistribution(amountIn, this.gasPriceInOutToken);
+        const distr = this.findBestDistribution(amountIn, this.gasPriceInOutToken)[2];
         const sub = this.subRouters[distr[0][0]];
         return sub.calcPrice(amountIn*distr[0][1]);
     }
 
     calcInputByPrice(price: number, hint = 1): number {
         return revertPositive( (x:number) => 1/this.calcPrice(x), price, hint);
+    }
+
+    getDistrib(amountIn: number): number[][] {
+        return this.findBestDistribution(amountIn, this.gasPriceInOutToken)[2];
     }
 }
 
