@@ -281,6 +281,48 @@ class MultiRouterParallel extends MultiRouter {
     }
 }
 
+class MultiRouterSerial extends MultiRouter {
+    subRouters: MultiRouter[];
+
+    constructor(_sub: MultiRouter[]) {
+        super();
+        this.subRouters = _sub;
+    }
+
+    calcOutByIn(amountIn: number): [number, number] {
+        let out = amountIn, gas = 0;
+        for (let i = 0; i < this.subRouters.length; ++i) {
+            const [o, g] = this.subRouters[i].calcOutByIn(out);
+            out = o;
+            gas += g;
+        }
+        return [out, gas];
+    }
+
+    calcPrice(amountIn: number): number {
+        let out = amountIn, derivative = 1;
+        const last = this.subRouters.length - 1;
+        for (let i = 0; i < last; ++i) {
+            derivative *= this.subRouters[i].calcPrice(out);
+            out = this.subRouters[i].calcOutByIn(out)[0];
+        }
+        const res = derivative * this.subRouters[last].calcPrice(out);
+    
+        // TODO: to delete
+        const res2 = (this.calcOutByIn( amountIn + 0.01)[0] - this.calcOutByIn(amountIn)[0])/0.01;
+        if (Math.abs(res/res2-1) > 1e-1)
+            console.error("316 " + res + " " + res2 + " " + Math.abs(res/res2-1));
+    
+        return res;
+    }
+
+    calcInputByPrice(price: number, hint = 1): number {
+        if (this.subRouters.length == 1)
+            return this.subRouters[0].calcInputByPrice(price, hint);
+
+        return revertPositive( (x:number) => 1/this.calcPrice(x), price, hint);
+    }
+}
 
 function calcSquareEquation(a:number, b:number, c:number): [number, number] {
     const D = b*b-4*a*c;
