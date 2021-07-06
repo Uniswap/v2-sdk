@@ -1,5 +1,5 @@
 
-enum PoolType {
+export enum PoolType {
     ConstantProduct = 'ConstantProduct',
     ConstantMean = 'ConstantMean',
     Hybrid = 'Hybrid'
