@@ -170,13 +170,12 @@ class Edge {
                 console.assert(out > amountIn);
             } else {
                 out = calcOutByIn(pool, this.amountInPrevious + amountIn) - this.amountOutPrevious;
-                console.assert(out < amountIn && out > 0);
-                
+                console.assert(out < amountIn && out >= 0);
             }
         } else {
             if (this.direction) {
                 out = calcOutByIn(pool, this.amountInPrevious + amountIn) - this.amountOutPrevious;
-                console.assert(out < amountIn && out > 0);
+                console.assert(out < amountIn && out >= 0);
             } else {
                 if (amountIn < this.amountOutPrevious) {
                     out = this.amountInPrevious - calcInByOut(pool, this.amountOutPrevious - amountIn);
@@ -187,10 +186,7 @@ class Edge {
             }
         }
 
-        if (this.amountInPrevious == 0)
-            out -= v.token.gasPrice*this.GasConsumption;
-
-        return out;
+        return [out, this.amountInPrevious? 0 : this.GasConsumption];   // ???? sometimes -this.GasConsumption
     }
 }
 
@@ -199,13 +195,19 @@ class Vertice {
     edges: Edge[];
 
     bestIncome: number;         // temp data used for findBestPath algorithm
-    bestSource?: Vertice;     // temp data used for findBestPath algorithm
+    bestSource?: Edge;     // temp data used for findBestPath algorithm
 
     constructor(t:Token) {
         this.token = t;
         this.edges = [];
         this.bestIncome = 0;
         this.bestSource = undefined;
+    }
+
+    getNeibour(e?: Edge) {
+        if (!e)
+            return;
+        return e.vert0 == this? e.vert1 : e.vert0;
     }
 }
 
@@ -224,6 +226,7 @@ class Graph {
             const edge = new Edge(p, v0, v1);
             v0.edges.push(edge);
             v1.edges.push(edge);
+            this.edges.push(edge);
         })
     }
 
@@ -262,9 +265,9 @@ class Graph {
                 return;
             if (closestVert == finish) {
                 const bestPath = [];
-                for (let v: Vertice = finish; v != finish; v = v.bestSource as Vertice)
-                    bestPath.unshift(v);
-                bestPath.unshift(start);    // ???
+                for (let v: Vertice | undefined = finish; v?.bestSource; v = v.getNeibour(v.bestSource)) {
+                    bestPath.unshift(v.bestSource);
+                }
                 return bestPath;
             }
             nextVertList.splice(closestPosition, 1);
@@ -273,12 +276,13 @@ class Graph {
                 const v2 = closestVert == e.vert0 ? e.vert1 : e.vert0;
                 if (processedVert.has(v2))
                     return;
-                const newIncome = e.calcOutput((closestVert as Vertice), amountIn);
+                let [newIncome, gas] = e.calcOutput((closestVert as Vertice), amountIn);
+                newIncome -= gas*to.gasPrice;
                 if (!v2.bestSource)
                     nextVertList.push(v2);
                 if (!v2.bestSource || newIncome > v2.bestIncome) {
                     v2.bestIncome = newIncome;
-                    v2.bestSource = closestVert;
+                    v2.bestSource = e;
                 }
             })
             processedVert.add(closestVert);
@@ -294,11 +298,11 @@ function testEnvironment() {
 
     const T1 = {
         name: "1",
-        gasPrice: 1
+        gasPrice: 1*200*1e-9
     }
     const T2 = {
         name: "2",
-        gasPrice: 1
+        gasPrice: 1*200*1e-9
     }
 
     var testPool1 = {
@@ -365,10 +369,11 @@ function testEnvironment() {
     }
 }
 
-function test1() {
+function test1(pool: number, amountIn: number) {
     const env = testEnvironment();
-    const g = new Graph([env.testPools[0]]);
-    console.log(g.findBestPath(env.tokens[0], env.tokens[1], 1000));
+    const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
+    const p = g.findBestPath(env.tokens[0], env.tokens[1], amountIn) as Edge[];
+    return [p, p[0].vert1.bestIncome];
 }
 
-test1();
+console.log(test1(0, 100));

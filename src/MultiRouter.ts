@@ -1,13 +1,13 @@
 
-export enum PoolType {
+enum PoolType2 {
     ConstantProduct = 'ConstantProduct',
     ConstantMean = 'ConstantMean',
     Hybrid = 'Hybrid'
 }
 
-interface Pool {
+interface Pool2 {
     address: string;
-    type: PoolType;
+    type: PoolType2;
     reserve0: number;
     reserve1: number;
     data: ArrayBuffer;
@@ -22,12 +22,12 @@ abstract class MultiRouter {
 
 class MultiRouterConstantProduct extends MultiRouter {
     readonly GasConsumption = 40_000;
-    pool: Pool;
+    pool: Pool2;
 
-    constructor(_pool: Pool) {
+    constructor(_pool: Pool2) {
         super();
-        console.assert(_pool.type == PoolType.ConstantProduct, 
-            "Wrong pool type " + _pool.type + " != " + PoolType.ConstantProduct);
+        console.assert(_pool.type == PoolType2.ConstantProduct, 
+            "Wrong pool type " + _pool.type + " != " + PoolType2.ConstantProduct);
         this.pool = _pool;
     }
 
@@ -52,12 +52,12 @@ class MultiRouterConstantProduct extends MultiRouter {
 
 class MultiRouterConstantMean extends MultiRouter {
     readonly GasConsumption = 40_000;
-    pool: Pool;
+    pool: Pool2;
 
-    constructor(_pool: Pool) {
+    constructor(_pool: Pool2) {
         super();
-        console.assert(_pool.type == PoolType.ConstantMean, 
-            "Wrong pool type " + _pool.type + " != " + PoolType.ConstantMean);
+        console.assert(_pool.type == PoolType2.ConstantMean, 
+            "Wrong pool type " + _pool.type + " != " + PoolType2.ConstantMean);
         this.pool = _pool;
     }
 
@@ -101,13 +101,13 @@ class MultiRouterConstantMean extends MultiRouter {
 
 class MultiRouterHybrid extends MultiRouter {
     readonly GasConsumption = 40_000;
-    pool: Pool;
+    pool: Pool2;
     HybridD?: number;
 
-    constructor(_pool: Pool) {
+    constructor(_pool: Pool2) {
         super();
-        console.assert(_pool.type == PoolType.Hybrid, 
-            "Wrong pool type " + _pool.type + " != " + PoolType.Hybrid);
+        console.assert(_pool.type == PoolType2.Hybrid, 
+            "Wrong pool type " + _pool.type + " != " + PoolType2.Hybrid);
         this.pool = _pool;
     }
 
@@ -155,7 +155,7 @@ class MultiRouterHybrid extends MultiRouter {
     computeY(x: number): number {
         const D = this.computeLiquidity();
         const A = this.getA();
-        return calcSquareEquation(16*A*x, 16*A*x*x + 4*D*x - 16*A*D*x, -D*D*D)[1];
+        return calcSquareEquation2(16*A*x, 16*A*x*x + 4*D*x - 16*A*D*x, -D*D*D)[1];
     }
 
     calcOutByIn(amountIn: number): [number, number] {
@@ -324,7 +324,7 @@ class MultiRouterSerial extends MultiRouter {
     }
 }
 
-function calcSquareEquation(a:number, b:number, c:number): [number, number] {
+function calcSquareEquation2(a:number, b:number, c:number): [number, number] {
     const D = b*b-4*a*c;
     console.assert(D >= 0, `Discriminant is negative! ${a} ${b} ${c}`);
     const sqrtD = Math.sqrt(D);
