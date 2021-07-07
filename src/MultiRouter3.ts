@@ -1,4 +1,12 @@
 
+function ASSERT(f: () => boolean, t: string) {
+    if (!f())
+        console.error(t);
+}
+
+function closeValues(a: number, b: number, accuracy: number): boolean {
+    return Math.abs(a/b-1) < accuracy;
+}
 interface Token {
     name: string;
     gasPrice: number;
@@ -88,50 +96,54 @@ function HybridgetY(pool: Pool, x: number): number {
     return calcSquareEquation(16*A*x, 16*A*x*x + 4*D*x - 16*A*D*x, -D*D*D)[1];
 }
 
-function calcOutByIn(pool:Pool, amountIn: number): number {
+function calcOutByIn(pool:Pool, amountIn: number, direction: boolean): number {
+    const x = direction ? pool.reserve0 : pool.reserve1;
+    const y = direction ? pool.reserve1 : pool.reserve0;
     switch(pool.type) {
         case PoolType.ConstantProduct: {
-            return pool.reserve1*amountIn/(pool.reserve0/(1-pool.fee) + amountIn);
+            return y*amountIn/(x/(1-pool.fee) + amountIn);
         } 
         case PoolType.ConstantMean: {
             const [weight0, weight1] = ConstantMeanParamsFromData(pool.data);
-            const weightRatio = weight0/weight1;
+            const weightRatio = direction ? weight0/weight1 : weight1/weight0;
             const actualIn = amountIn*(1-pool.fee);
-            return pool.reserve1*(1-Math.pow(pool.reserve0/(pool.reserve0+actualIn), weightRatio));
+            return y*(1-Math.pow(x/(x+actualIn), weightRatio));
         } 
         case PoolType.Hybrid: {
-            const xNew = pool.reserve0 + amountIn;
+            const xNew = x + amountIn;
             const yNew = HybridgetY(pool, xNew);
-            const dy = (pool.reserve1 - yNew)*(1-pool.fee); // TODO: Why other pools take fees at the beginning, and this one - at the end?
+            const dy = (y - yNew)*(1-pool.fee); // TODO: Why other pools take fees at the beginning, and this one - at the end?
             return dy;
         }
     }
     console.error('Unknown pool type');
 }
 
-function calcInByOut(pool:Pool, amountOut: number): number {
+function calcInByOut(pool:Pool, amountOut: number, direction: boolean): number {
     let input = 0;
+    const x = direction ? pool.reserve0 : pool.reserve1;
+    const y = direction ? pool.reserve1 : pool.reserve0;
     switch(pool.type) {
         case PoolType.ConstantProduct: {
-            input = pool.reserve0*amountOut/(1-pool.fee)/(pool.reserve1 - amountOut);
+            input = x*amountOut/(1-pool.fee)/(y - amountOut);
             break;
         } 
         case PoolType.ConstantMean: {
             const [weight0, weight1] = ConstantMeanParamsFromData(pool.data);
-            const weightRatio = weight1/weight0;
-            input = pool.reserve0*(1-pool.fee)*(Math.pow(1-amountOut/pool.reserve1, -weightRatio) - 1);
+            const weightRatio = direction ? weight1/weight0 : weight1/weight0;
+            input = x*(1-pool.fee)*(Math.pow(1-amountOut/y, -weightRatio) - 1);
             break;
         } 
         case PoolType.Hybrid: {
-            const yNew = pool.reserve1 - amountOut/(1-pool.fee);
+            const yNew = y - amountOut/(1-pool.fee);
             const xNew = HybridgetY(pool, yNew);
-            input = (pool.reserve0 - xNew);
+            input = (x - xNew);
             break;
         }
         default:
             console.error('Unknown pool type');
     }
-    console.assert(Math.abs(amountOut/calcOutByIn(pool, input)-1) < 1e-6);
+    ASSERT(() => Math.abs(amountOut/calcOutByIn(pool, input, direction)-1) < 1e-6, "Error 138");
     return input;
 }
 
@@ -156,37 +168,69 @@ class Edge {
     }
 
     calcOutput(v: Vertice, amountIn: number) {
-        const pool = {...this.pool};
-        let out;
+        const pool = this.pool;
+        let out, gas = this.amountInPrevious ? 0 : this.GasConsumption;
         if (v == this.vert1) {
-            pool.reserve0 = this.pool.reserve1;
-            pool.reserve1 = this.pool.reserve0;
             if (this.direction) {
-                if (amountIn < this.amountOutPrevious) {    // TODO: reduce gas fee if this.amountOutPrevious == amountIn ?
-                    out = this.amountInPrevious - calcInByOut(pool, this.amountOutPrevious - amountIn);
+                if (amountIn < this.amountOutPrevious) {
+                    out = this.amountInPrevious - calcInByOut(pool, this.amountOutPrevious - amountIn, false);
                 } else {
-                    out = calcOutByIn(pool, amountIn - this.amountOutPrevious) + this.amountInPrevious;
+                    out = calcOutByIn(pool, amountIn - this.amountOutPrevious, false) + this.amountInPrevious;
                 }
-                console.assert(out > amountIn);
+                if (amountIn == this.amountOutPrevious) // TODO: accuracy?
+                    gas = -this.GasConsumption;
             } else {
-                out = calcOutByIn(pool, this.amountInPrevious + amountIn) - this.amountOutPrevious;
+                out = calcOutByIn(pool, this.amountInPrevious + amountIn, false) - this.amountOutPrevious;
                 console.assert(out < amountIn && out >= 0);
             }
         } else {
             if (this.direction) {
-                out = calcOutByIn(pool, this.amountInPrevious + amountIn) - this.amountOutPrevious;
+                out = calcOutByIn(pool, this.amountInPrevious + amountIn, true) - this.amountOutPrevious;
                 console.assert(out < amountIn && out >= 0);
             } else {
+                if (amountIn == this.amountOutPrevious) // TODO: accuracy?
+                    gas = -this.GasConsumption;
                 if (amountIn < this.amountOutPrevious) {
-                    out = this.amountInPrevious - calcInByOut(pool, this.amountOutPrevious - amountIn);
+                    out = this.amountInPrevious - calcInByOut(pool, this.amountOutPrevious - amountIn, true);
                 } else {
-                    out = calcOutByIn(pool, amountIn - this.amountOutPrevious) + this.amountInPrevious;
+                    out = calcOutByIn(pool, amountIn - this.amountOutPrevious, true) + this.amountInPrevious;
                 }
-                console.assert(out > amountIn);
             }
         }
 
-        return [out, this.amountInPrevious? 0 : this.GasConsumption];   // ???? sometimes -this.GasConsumption
+        return [out, gas];
+    }
+
+    applySwap(from: Vertice) {
+        console.assert(this.amountInPrevious*this.amountOutPrevious >= 0);
+        const inPrev = this.direction ? this.amountInPrevious : -this.amountOutPrevious;
+        const outPrev = this.direction ? this.amountOutPrevious : -this.amountInPrevious;
+        const to = from.getNeibour(this);
+        if (to) {
+            const inInc = from == this.vert0 ? from.bestIncome : -to.bestIncome;
+            const outInc = from == this.vert0 ? to.bestIncome : -from.bestIncome;
+            const inNew = inPrev + inInc;
+            const outNew = outPrev + outInc;
+            console.assert(inNew*outNew >= 0);
+            if (inNew >= 0) {
+                this.direction = true;
+                this.amountInPrevious = inNew;
+                this.amountOutPrevious = outNew;
+            } else {
+                this.direction = false;
+                this.amountInPrevious = -inNew;
+                this.amountOutPrevious = -outNew;
+            } 
+        } else
+            console.error("Error 221");
+
+        ASSERT(() => {
+            if (this.direction)
+                return closeValues(this.amountOutPrevious, calcOutByIn(this.pool, this.amountInPrevious, this.direction), 1e-6);
+            else {
+                return closeValues(this.amountInPrevious, calcOutByIn(this.pool, this.amountOutPrevious, this.direction), 1e-6);
+            }
+        }, "Error 225")
     }
 }
 
@@ -239,13 +283,14 @@ class Graph {
         return vert;
     }
 
-    findBestPath(from: Token, to: Token, amountIn: number) {
+    findBestPath(from: Token, to: Token, amountIn: number): Edge[] | undefined {
         const start = this.tokens.get(from);
         const finish = this.tokens.get(to);
         if (!start || !finish)
             return;
         
         this.vertices.forEach(v => {v.bestIncome = 0; v.bestSource = undefined});
+        start.bestIncome = amountIn;
         const processedVert = new Set<Vertice>();
         const nextVertList = [start];               // TODO: Use sorted Set!
 
@@ -276,7 +321,7 @@ class Graph {
                 const v2 = closestVert == e.vert0 ? e.vert1 : e.vert0;
                 if (processedVert.has(v2))
                     return;
-                let [newIncome, gas] = e.calcOutput((closestVert as Vertice), amountIn);
+                let [newIncome, gas] = e.calcOutput((closestVert as Vertice), (closestVert as Vertice).bestIncome);
                 newIncome -= gas*to.gasPrice;
                 if (!v2.bestSource)
                     nextVertList.push(v2);
@@ -287,7 +332,17 @@ class Graph {
             })
             processedVert.add(closestVert);
         }
+    }
 
+    addPath(from: Vertice | undefined, path: Edge[]) {
+        path.forEach(e => {
+            if (from) {
+                e.applySwap(from);
+                from = from.getNeibour(e);
+            } else {
+                console.error("Unexpected 315");
+            }
+        })
     }
 }
 
@@ -376,4 +431,10 @@ function test1(pool: number, amountIn: number) {
     return [p, p[0].vert1.bestIncome];
 }
 
-console.log(test1(0, 100));
+function test2(pool: number, amountIn: number) {
+    const env = testEnvironment();
+    const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
+    const p = g.findBestPath(env.tokens[1], env.tokens[0], amountIn) as Edge[];
+    return [p, p[0].vert0.bestIncome];
+}
+
