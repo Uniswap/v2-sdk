@@ -238,13 +238,17 @@ class Vertice {
     token: Token;
     edges: Edge[];
 
-    bestIncome: number;         // temp data used for findBestPath algorithm
+    bestIncome: number;    // temp data used for findBestPath algorithm
+    gasSpent: number;      // temp data used for findBestPath algorithm
+    bestTotal: number;     // temp data used for findBestPath algorithm
     bestSource?: Edge;     // temp data used for findBestPath algorithm
 
     constructor(t:Token) {
         this.token = t;
         this.edges = [];
         this.bestIncome = 0;
+        this.gasSpent = 0;
+        this.bestTotal = 0;
         this.bestSource = undefined;
     }
 
@@ -279,28 +283,40 @@ class Graph {
         if (vert)
             return vert;
         vert = new Vertice(token);
+        this.vertices.push(vert);
         this.tokens.set(token, vert);
         return vert;
     }
 
-    findBestPath(from: Token, to: Token, amountIn: number): Edge[] | undefined {
+    findBestPath(from: Token, to: Token, amountIn: number): {
+        path: Edge[];
+        output: number;
+        gasSpent: number;
+        totalOutput: number
+     } | undefined {
         const start = this.tokens.get(from);
         const finish = this.tokens.get(to);
         if (!start || !finish)
             return;
         
-        this.vertices.forEach(v => {v.bestIncome = 0; v.bestSource = undefined});
+        this.vertices.forEach(v => {
+            v.bestIncome = 0;
+            v.gasSpent = 0;
+            v.bestTotal = 0;
+            v.bestSource = undefined;
+        });
         start.bestIncome = amountIn;
+        start.bestTotal = amountIn;
         const processedVert = new Set<Vertice>();
         const nextVertList = [start];               // TODO: Use sorted Set!
 
         for(;;) {
             let closestVert: Vertice | undefined;
-            let closestIncome = -1;
+            let closestTotal = -1;
             let closestPosition = 0;
             nextVertList.forEach((v, i) => {
-                if (v.bestIncome > closestIncome) {
-                    closestIncome = v.bestIncome;
+                if (v.bestTotal > closestTotal) {
+                    closestTotal = v.bestTotal;
                     closestVert = v;
                     closestPosition = i;
                 }
@@ -313,7 +329,12 @@ class Graph {
                 for (let v: Vertice | undefined = finish; v?.bestSource; v = v.getNeibour(v.bestSource)) {
                     bestPath.unshift(v.bestSource);
                 }
-                return bestPath;
+                return {
+                    path: bestPath, 
+                    output: finish.bestIncome, 
+                    gasSpent: finish.gasSpent,
+                    totalOutput: finish.bestTotal
+                };
             }
             nextVertList.splice(closestPosition, 1);
 
@@ -321,12 +342,14 @@ class Graph {
                 const v2 = closestVert == e.vert0 ? e.vert1 : e.vert0;
                 if (processedVert.has(v2))
                     return;
-                let [newIncome, gas] = e.calcOutput((closestVert as Vertice), (closestVert as Vertice).bestIncome);
-                newIncome -= gas*to.gasPrice;
+                const [newIncome, gas] = e.calcOutput((closestVert as Vertice), (closestVert as Vertice).bestIncome);
+                const newTotal = newIncome - gas*to.gasPrice;
                 if (!v2.bestSource)
                     nextVertList.push(v2);
-                if (!v2.bestSource || newIncome > v2.bestIncome) {
+                if (!v2.bestSource || newTotal > v2.bestTotal) {
                     v2.bestIncome = newIncome;
+                    v2.gasSpent += gas;
+                    v2.bestTotal = newTotal;
                     v2.bestSource = e;
                 }
             })
@@ -344,6 +367,35 @@ class Graph {
             }
         })
     }
+
+    findBestMultiPath(from: Token, to: Token, amountIn: number, steps = 100): {
+        output: number;
+        gasSpent: number;
+        totalOutput: number
+     } | undefined {
+        this.edges.forEach(e => {
+            e.amountInPrevious = 0;
+            e.amountOutPrevious = 0;
+            e.direction = true;
+        });
+        let output = 0;
+        let gasSpent = 0;
+        let totalOutput = 0;
+        for (let step = 0; step < steps; ++step) {
+            const p = this.findBestPath(from, to, amountIn/steps);
+            if (!p) {
+                return;
+            } else {
+                output += p.output;
+                gasSpent += p.gasSpent;
+                totalOutput += p.totalOutput;
+                //console.log(p.output, p.gasSpent, p.totalOutput);
+                this.addPath(this.tokens.get(from), p.path);
+            }
+        }
+        return {output, gasSpent, totalOutput};
+    }
+    
 }
 
 
@@ -427,14 +479,22 @@ function testEnvironment() {
 function test1(pool: number, amountIn: number) {
     const env = testEnvironment();
     const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
-    const p = g.findBestPath(env.tokens[0], env.tokens[1], amountIn) as Edge[];
-    return [p, p[0].vert1.bestIncome];
+    const p = g.findBestPath(env.tokens[0], env.tokens[1], amountIn);
+    return p;
 }
 
 function test2(pool: number, amountIn: number) {
     const env = testEnvironment();
     const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
-    const p = g.findBestPath(env.tokens[1], env.tokens[0], amountIn) as Edge[];
-    return [p, p[0].vert0.bestIncome];
+    const p = g.findBestPath(env.tokens[1], env.tokens[0], amountIn);
+    return p;
 }
 
+function test3(pool: number, amountIn: number, steps: number) {
+    const env = testEnvironment();
+    const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
+    const res = g.findBestMultiPath(env.tokens[0], env.tokens[1], amountIn, steps);
+    return res;
+}
+
+console.log(test3(0, 100, 1));
