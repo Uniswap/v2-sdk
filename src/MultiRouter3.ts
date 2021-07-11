@@ -180,7 +180,7 @@ class Edge {
                 if (amountIn == this.amountOutPrevious) // TODO: accuracy?
                     gas = -this.GasConsumption;
             } else {
-                out = calcOutByIn(pool, this.amountInPrevious + amountIn, false) - this.amountOutPrevious;
+                out = calcOutByIn(pool, this.amountOutPrevious + amountIn, false) - this.amountInPrevious;
                 console.assert(out < amountIn && out >= 0);
             }
         } else {
@@ -207,8 +207,8 @@ class Edge {
         const outPrev = this.direction ? this.amountOutPrevious : -this.amountInPrevious;
         const to = from.getNeibour(this);
         if (to) {
-            const inInc = from == this.vert0 ? from.bestIncome : -to.bestIncome;
-            const outInc = from == this.vert0 ? to.bestIncome : -from.bestIncome;
+            const inInc = from == this.vert0 ? from.bestIncome : -from.bestIncome;
+            const outInc = from == this.vert0 ? to.bestIncome : -to.bestIncome;
             const inNew = inPrev + inInc;
             const outNew = outPrev + outInc;
             console.assert(inNew*outNew >= 0);
@@ -218,8 +218,8 @@ class Edge {
                 this.amountOutPrevious = outNew;
             } else {
                 this.direction = false;
-                this.amountInPrevious = -inNew;
-                this.amountOutPrevious = -outNew;
+                this.amountInPrevious = -outNew;
+                this.amountOutPrevious = -inNew;
             } 
         } else
             console.error("Error 221");
@@ -230,7 +230,7 @@ class Edge {
             else {
                 return closeValues(this.amountInPrevious, calcOutByIn(this.pool, this.amountOutPrevious, this.direction), 1e-6);
             }
-        }, "Error 225")
+        }, `Error 225`)
     }
 }
 
@@ -348,7 +348,7 @@ class Graph {
                     nextVertList.push(v2);
                 if (!v2.bestSource || newTotal > v2.bestTotal) {
                     v2.bestIncome = newIncome;
-                    v2.gasSpent += gas;
+                    v2.gasSpent = (closestVert as Vertice).gasSpent + gas;
                     v2.bestTotal = newTotal;
                     v2.bestSource = e;
                 }
@@ -386,10 +386,10 @@ class Graph {
             if (!p) {
                 return;
             } else {
+                //console.log(step, totalOutput, p.gasSpent, p.output);
                 output += p.output;
                 gasSpent += p.gasSpent;
                 totalOutput += p.totalOutput;
-                //console.log(p.output, p.gasSpent, p.totalOutput);
                 this.addPath(this.tokens.get(from), p.path);
             }
         }
@@ -415,7 +415,7 @@ function testEnvironment() {
     var testPool1 = {
         token0: T1,
         token1: T2,
-        address: "xxx",
+        address: "pool1",
         type: PoolType.ConstantProduct,
         reserve0: reserve[0],
         reserve1: reserve[0]/price1In0 - 100,
@@ -425,7 +425,7 @@ function testEnvironment() {
     var testPool2 = {
         token0: T1,
         token1: T2,
-        address: "xxx",
+        address: "pool2",
         type: PoolType.ConstantProduct,
         reserve0: reserve[1],
         reserve1: reserve[1]/price1In0,
@@ -436,7 +436,7 @@ function testEnvironment() {
     var testPool3 = {
         token0: T1,
         token1: T2,
-        address: "xxx",
+        address: "pool3",
         type: PoolType.ConstantMean,
         reserve0: 2*weight0*price1In0*reserve[2]/(weight0*price1In0 + weight1),
         reserve1: 2*weight1*reserve[2]/(weight0*price1In0 + weight1),
@@ -446,31 +446,32 @@ function testEnvironment() {
     var testPool4 = {
         token0: T1,
         token1: T2,
-        address: "xxx",
+        address: "pool4",
         type: PoolType.ConstantProduct,
         reserve0: reserve[3] - 100,
         reserve1: reserve[3]/price1In0,
         data: new ArrayBuffer(16),
         fee: 0.003
     };
-    var testPool5 = {
-        token0: T1,
-        token1: T2,
-        address: "xxx",
-        type: PoolType.Hybrid,
-        reserve0: reserve[4],
-        reserve1: reserve[4]/price1In0,
-        data: HybridDataFromParams(80),
-        fee: 0.003
-    }; 
+    // var testPool5 = {
+    //     token0: T1,
+    //     token1: T2,
+    //     address: "pool5",
+    //     type: PoolType.Hybrid,
+    //     reserve0: reserve[4],
+    //     reserve1: reserve[4]/price1In0,
+    //     data: HybridDataFromParams(80),
+    //     fee: 0.003
+    // }; 
 
     var testPools = [testPool1, testPool2, testPool3, testPool4];
-    if (price1In0 == 1)
-        testPools.push(testPool5);
+    // if (price1In0 == 1)
+    //     testPools.push(testPool5);
 
     const tokens = [T1, T2];
 
     return {
+        price1In0,
         testPools,
         tokens
     }
@@ -494,7 +495,14 @@ function test3(pool: number, amountIn: number, steps: number) {
     const env = testEnvironment();
     const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
     const res = g.findBestMultiPath(env.tokens[0], env.tokens[1], amountIn, steps);
+    return [env, res];
+}
+
+function test4(pool: number, amountIn: number, steps: number) {
+    const env = testEnvironment();
+    const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
+    const res = g.findBestMultiPath(env.tokens[1], env.tokens[0], amountIn, steps);
     return res;
 }
 
-console.log(test3(0, 100, 1));
+test3(-1, 500, 100);
