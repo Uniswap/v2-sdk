@@ -388,7 +388,7 @@ export class Graph {
             if (!p) {
                 return;
             } else {
-                console.log(step, totalOutput, p.gasSpent, p.output);
+                //console.log(step, totalOutput, p.gasSpent, p.output);
                 output += p.output;
                 gasSpent += p.gasSpent;
                 totalOutput += p.totalOutput;

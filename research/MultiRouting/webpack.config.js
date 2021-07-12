@@ -14,11 +14,9 @@ module.exports = {
         }]
     },
     output: {
-        filename: 'MultiRouter3.js',
+        filename: 'MultiRouter.js',
         path: path.resolve(__dirname, 'build'),
-        library: 'Router3',        // to remove 
-        //libraryTarget: 'window', // to remove
-        //libraryExport: 'default'
+        library: 'Router'
     },
     resolve: {
         extensions: ['.ts']
