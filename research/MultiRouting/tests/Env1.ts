@@ -1,4 +1,4 @@
-import {ConstantMeanDataFromParams, HybridDataFromParams} from '../src/MultiRouter3'
+import {ConstantMeanDataFromParams, HybridDataFromParams} from '../src/MultiRouterMath'
 import {MultiRouterConstantMean, MultiRouterConstantProduct, MultiRouterHybrid, MultiRouterParallel, MultiRouterSerial} from '../src/MultiRouter2'
 import { PoolType } from '../src/MultiRouterTypes';
 

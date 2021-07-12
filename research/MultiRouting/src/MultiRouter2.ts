@@ -1,6 +1,7 @@
+import { calcSquareEquation, revertPositive } from './MultiRouterMath';
 import {PoolType, Pool} from './MultiRouterTypes'
 
-abstract class MultiRouter {
+export abstract class MultiRouter {
     abstract calcOutByIn(amountIn: number): [number, number];
     abstract calcPrice(amountIn: number): number;
     abstract calcInputByPrice(price: number, hint: number): number;
@@ -141,7 +142,7 @@ export class MultiRouterHybrid extends MultiRouter {
     computeY(x: number): number {
         const D = this.computeLiquidity();
         const A = this.getA();
-        return calcSquareEquation2(16*A*x, 16*A*x*x + 4*D*x - 16*A*D*x, -D*D*D)[1];
+        return calcSquareEquation(16*A*x, 16*A*x*x + 4*D*x - 16*A*D*x, -D*D*D)[1];
     }
 
     calcOutByIn(amountIn: number): [number, number] {
@@ -307,45 +308,5 @@ export class MultiRouterSerial extends MultiRouter {
             return this.subRouters[0].calcInputByPrice(price, hint);
 
         return revertPositive( (x:number) => 1/this.calcPrice(x), price, hint);
-    }
-}
-
-function calcSquareEquation2(a:number, b:number, c:number): [number, number] {
-    const D = b*b-4*a*c;
-    console.assert(D >= 0, `Discriminant is negative! ${a} ${b} ${c}`);
-    const sqrtD = Math.sqrt(D);
-    return [(-b-sqrtD)/2/a, (-b+sqrtD)/2/a];
-}
-
-// returns such x > 0 that f(x) = out or 0 if there is no such x or f defined not everywhere
-// hint - approximation of x to spead up the algorithm
-// f assumed to be continues monotone growth function defined everywhere
-function revertPositive(f: (x:number)=>number, out: number, hint = 1) {
-    try {
-        if (out <= f(0)) return 0;
-        let min, max;
-        if (f(hint) > out) {
-            min = hint/2;
-            while (f(min) > out) min /= 2;
-            max = min*2;
-        } else {
-            max = hint*2;
-            while (f(max) < out) max *= 2;
-            min = max/2;
-        }
-        
-        while((max/min - 1) > 1e-4)
-        {
-            const x0: number = (min+max)/2;
-            const y0 = f(x0);
-            if (out == y0) return x0;
-            if (out < y0) 
-                max=x0;
-            else
-                min=x0;
-        }
-        return (min+max)/2;
-    } catch (e) {
-        return 0;
     }
 }
