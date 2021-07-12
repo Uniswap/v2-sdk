@@ -65,7 +65,7 @@ export function testEnvironment1() {
         fee: 0.003
     }; 
 
-    var testPools = [testPool1, testPool2, testPool3, testPool4];//, testPool5];
+    var testPools = [testPool1, testPool2, testPool3, testPool4, testPool5];
 
     const tokens = [T1, T2];
 

@@ -279,7 +279,7 @@ function findBestDistributionIdealParams(
     }
 }
 
-function findBestDistributionIdeal(
+export function findBestDistributionIdeal(
     amountIn: number,
     pools: Pool[],
     tokenOutPriceBase: number,
@@ -414,7 +414,7 @@ function findBestDistributionWithoutTransactionCost(
     return [out, distr];
 }
 
-function findBestDistribution(
+export function findBestDistribution(
     amountIn: number,
     pools: Pool[],
     tokenOutPriceBase: number,
