@@ -2,6 +2,7 @@
 import {Graph} from '../src/MultiRouter3'
 import {testEnvironment1} from './Env1'
 export * as MultiRouter2 from '../src/MultiRouter2'
+export * as MultiRouter1 from '../src/MultiRouter1'
 
 function test1(pool: number, amountIn: number) {
     const env = testEnvironment1();
