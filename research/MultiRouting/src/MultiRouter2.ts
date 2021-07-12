@@ -1,18 +1,4 @@
-
-enum PoolType {
-    ConstantProduct = 'ConstantProduct',
-    ConstantMean = 'ConstantMean',
-    Hybrid = 'Hybrid'
-}
-
-interface Pool {
-    address: string;
-    type: PoolType;
-    reserve0: number;
-    reserve1: number;
-    data: ArrayBuffer;
-    fee: number;
-}
+import {PoolType, Pool} from './MultiRouterTypes'
 
 abstract class MultiRouter {
     abstract calcOutByIn(amountIn: number): [number, number];

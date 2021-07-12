@@ -1,5 +1,6 @@
-import {PoolType, ConstantMeanDataFromParams, HybridDataFromParams} from '../src/MultiRouter3'
+import {ConstantMeanDataFromParams, HybridDataFromParams} from '../src/MultiRouter3'
 import {MultiRouterConstantMean, MultiRouterConstantProduct, MultiRouterHybrid, MultiRouterParallel, MultiRouterSerial} from '../src/MultiRouter2'
+import { PoolType } from '../src/MultiRouterTypes';
 
 const price1In0 = 1;
 const reserve = [1_000_000, 100_000, 1_000_000, 1_000_000, 10_000];

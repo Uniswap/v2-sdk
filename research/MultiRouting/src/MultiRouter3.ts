@@ -1,3 +1,4 @@
+import {PoolType, Pool, Token} from './MultiRouterTypes'
 
 function ASSERT(f: () => boolean, t: string) {
     if (!f())
@@ -6,27 +7,6 @@ function ASSERT(f: () => boolean, t: string) {
 
 function closeValues(a: number, b: number, accuracy: number): boolean {
     return Math.abs(a/b-1) < accuracy;
-}
-interface Token {
-    name: string;
-    gasPrice: number;
-}
-
-export enum PoolType {
-    ConstantProduct = 'ConstantProduct',
-    ConstantMean = 'ConstantMean',
-    Hybrid = 'Hybrid'
-}
-
-interface Pool {
-    token0: Token;
-    token1: Token;
-    address: string;
-    type: PoolType;
-    reserve0: number;
-    reserve1: number;
-    data: ArrayBuffer;
-    fee: number;
 }
 
 function calcSquareEquation(a:number, b:number, c:number): [number, number] {

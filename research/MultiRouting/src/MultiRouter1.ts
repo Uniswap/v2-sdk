@@ -1,32 +1,6 @@
-export const LegGasConsuming = 40_000;
+import {PoolType, Pool, Route} from './MultiRouterTypes'
 
-export enum PoolType {
-    ConstantProduct = 'ConstantProduct',
-    ConstantMean = 'ConstantMean',
-    Hybrid = 'Hybrid'
-}
-
-interface Pool {
-    address: string;
-    type: PoolType;
-    reserve0: number;
-    reserve1: number;
-    data: ArrayBuffer;
-    fee: number;
-}
-
-interface RouteLeg {
-    address: string;
-  //  token: Token;
-    quantity: number;
-}
-
-interface Route {
-    amountIn: number,
-    amountOut: number,
-    legs: RouteLeg[],
-    feesApproximation: number
-}
+const LegGasConsuming = 40_000;
 
 function calcSquareEquation(a:number, b:number, c:number): [number, number] {
     const D = b*b-4*a*c;
