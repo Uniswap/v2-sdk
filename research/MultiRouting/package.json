@@ -5,7 +5,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "test": "ts-node ./tests/Router3.ts"
+    "test": "ts-node ./tests/RouterExport.ts"
   },
   "devDependencies": {
     "ts-loader": "^9.2.3",

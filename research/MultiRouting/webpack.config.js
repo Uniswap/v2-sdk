@@ -4,7 +4,7 @@ const path = require('path');
 module.exports = {
     context: path.resolve(__dirname, '.'),
     devtool: 'inline-source-map',
-    entry: './tests/Router3.ts',
+    entry: './tests/RouterExport.ts',
     mode: 'development',
     module: {
         rules: [{
