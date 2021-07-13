@@ -60,6 +60,24 @@ export function lossRatio(
     }
 }
 
+export function price(env: Environment, router: RouterType, poolNum) {
+    switch(router) {
+    case RouterType.MultiRouter2:
+        return amountIn => {
+            return env.routers[poolNum].calcPrice(amountIn);
+        }
+    }
+}
+
+export function input(env: Environment, router: RouterType, poolNum) {
+    switch(router) {
+    case RouterType.MultiRouter2:
+        return amountIn => {
+            return env.routers[poolNum].calcInputByPrice(amountIn, 1);
+        }
+    }
+}
+
 function test1(pool: number, amountIn: number) {
     const env = env1;
     const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
