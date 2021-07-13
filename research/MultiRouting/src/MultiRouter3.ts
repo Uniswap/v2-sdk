@@ -36,12 +36,14 @@ class Edge {
                     gas = -this.GasConsumption;
             } else {
                 out = calcOutByIn(pool, this.amountOutPrevious + amountIn, false) - this.amountInPrevious;
-                console.assert(out < amountIn && out >= 0);
+                const price = this.pool.token1.gasPrice/this.pool.token0.gasPrice;
+                console.assert(out < amountIn/price && out >= 0);
             }
         } else {
             if (this.direction) {
                 out = calcOutByIn(pool, this.amountInPrevious + amountIn, true) - this.amountOutPrevious;
-                console.assert(out < amountIn && out >= 0);
+                const price = this.pool.token1.gasPrice/this.pool.token0.gasPrice;
+                console.assert(out < amountIn*price && out >= 0);
             } else {
                 if (amountIn == this.amountOutPrevious) // TODO: accuracy?
                     gas = -this.GasConsumption;

@@ -51,15 +51,15 @@ export function loss(env: Environment, router: RouterType, poolNum: number, opti
     switch(router) {
         case RouterType.MultiRouter2:   
             return amountIn => {
-                // if (poolNum == -1)
-                //     poolNum = 5;
                 const amountOutIdeal = amountIn/env.price1In0;
                 let [out, gas] = env.routers[poolNum].calcOutByIn(amountIn);
-                out -= gas*env.gasPrice*env.tokenOutPriceBase;
+                out -= gas*env.gasPrice/env.tokenOutPriceBase;
                 const res = (amountOutIdeal - out)/amountOutIdeal;
                 return res;
             }
         case RouterType.MultiRouter3: {
+            if (poolNum >= 0 && poolNum >= env.testPools.length)
+                return x => 0;
             const g = new Graph(poolNum >= 0 ? [env.testPools[poolNum]] : env.testPools);
             return amountIn => {
                 const out = g.findBestMultiPath(env.tokens[0], env.tokens[1], amountIn, options.steps);
