@@ -37,7 +37,7 @@ class Edge {
             } else {
                 out = calcOutByIn(pool, this.amountOutPrevious + amountIn, false) - this.amountInPrevious;
                 const price = this.pool.token1.gasPrice/this.pool.token0.gasPrice;
-                console.assert(out < amountIn*price && out >= 0);
+                console.assert(out < amountIn/price && out >= 0);
             }
         } else {
             if (this.direction) {
@@ -200,14 +200,16 @@ export class Graph {
                 if (processedVert.has(v2))
                     return;
                 const [newIncome, gas] = e.calcOutput((closestVert as Vertice), (closestVert as Vertice).bestIncome);
-                const newTotal = newIncome - gas*to.gasPrice;
+                const newGasSpent = (closestVert as Vertice).gasSpent + gas;
+                const price = to.gasPrice/v2.token.gasPrice;
+                const newTotal = newIncome*price - newGasSpent*to.gasPrice;
                 //console.log(newIncome, gas, newTotal);
                 
                 if (!v2.bestSource)
                     nextVertList.push(v2);
                 if (!v2.bestSource || newTotal > v2.bestTotal) {
                     v2.bestIncome = newIncome;
-                    v2.gasSpent = (closestVert as Vertice).gasSpent + gas;
+                    v2.gasSpent = newGasSpent;
                     v2.bestTotal = newTotal;
                     v2.bestSource = e;
                 }

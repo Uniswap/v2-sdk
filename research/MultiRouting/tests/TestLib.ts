@@ -13,7 +13,9 @@ interface Environment {
     gasPrice: number;
     testPools: Pool[],
     tokens: Token[],
-    routers: MultiRouter[]
+    routers: MultiRouter[],
+    routerPrice: number[],
+    routerTokenOutPrice: number[]
 }
 
 export enum RouterType {
@@ -49,11 +51,13 @@ export function usage(env: Environment, router: RouterType, poolNum: number, opt
 
 export function loss(env: Environment, router: RouterType, poolNum: number, options: any) {
     switch(router) {
-        case RouterType.MultiRouter2:   
+        case RouterType.MultiRouter2:
+            if (poolNum >= env.routers.length)
+                return x => 0;
             return amountIn => {
-                const amountOutIdeal = amountIn/env.price1In0;
+                const amountOutIdeal = amountIn/env.routerPrice[poolNum];
                 let [out, gas] = env.routers[poolNum].calcOutByIn(amountIn);
-                out -= gas*env.gasPrice/env.tokenOutPriceBase;
+                out -= gas*env.gasPrice/env.routerTokenOutPrice[poolNum];
                 const res = (amountOutIdeal - out)/amountOutIdeal;
                 return res;
             }
@@ -61,10 +65,16 @@ export function loss(env: Environment, router: RouterType, poolNum: number, opti
             if (poolNum >= 0 && poolNum >= env.testPools.length)
                 return x => 0;
             const g = new Graph(poolNum >= 0 ? [env.testPools[poolNum]] : env.testPools);
+            options = {
+                steps: 20,
+                from: 0,
+                to: 1,
+                ...options
+            }
             return amountIn => {
-                const out = g.findBestMultiPath(env.tokens[0], env.tokens[1], amountIn, options.steps);
-                const price = env.tokens[1].gasPrice/env.tokens[0].gasPrice;
-                const amountOutIdeal = amountIn/price;
+                const out = g.findBestMultiPath(env.tokens[options.from], env.tokens[options.to], amountIn, options.steps);
+                const price = env.tokens[options.to].gasPrice/env.tokens[options.from].gasPrice;
+                const amountOutIdeal = amountIn*price;
                 const res = (amountOutIdeal - out.totalOutput)/amountOutIdeal;
                 return res;
             }
