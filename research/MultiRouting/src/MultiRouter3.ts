@@ -37,7 +37,7 @@ class Edge {
             } else {
                 out = calcOutByIn(pool, this.amountOutPrevious + amountIn, false) - this.amountInPrevious;
                 const price = this.pool.token1.gasPrice/this.pool.token0.gasPrice;
-                console.assert(out < amountIn/price && out >= 0);
+                console.assert(out < amountIn*price && out >= 0);
             }
         } else {
             if (this.direction) {

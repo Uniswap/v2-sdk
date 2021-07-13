@@ -63,7 +63,8 @@ export function loss(env: Environment, router: RouterType, poolNum: number, opti
             const g = new Graph(poolNum >= 0 ? [env.testPools[poolNum]] : env.testPools);
             return amountIn => {
                 const out = g.findBestMultiPath(env.tokens[0], env.tokens[1], amountIn, options.steps);
-                const amountOutIdeal = amountIn/env.price1In0;
+                const price = env.tokens[1].gasPrice/env.tokens[0].gasPrice;
+                const amountOutIdeal = amountIn/price;
                 const res = (amountOutIdeal - out.totalOutput)/amountOutIdeal;
                 return res;
             }
