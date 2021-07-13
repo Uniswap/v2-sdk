@@ -90,6 +90,7 @@ const r = new MultiRouterParallel([r1, r2, r3, r4, r5], gasPrice);
 const r6 = new MultiRouterSerial([r, r1]);
 
 export const env1 = {
+    name: "env1",
     tokenInPriceBase,
     tokenOutPriceBase,
     price1In0,

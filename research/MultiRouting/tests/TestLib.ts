@@ -1,9 +1,12 @@
-import {Pool, Token} from '../src/MultiRouterTypes'
-import {MultiRouter} from '../src/MultiRouter2'
+import * as _ from 'lodash'
+import {Pool, PoolType, Token} from '../src/MultiRouterTypes'
+import {MultiRouter, MultiRouterParallel} from '../src/MultiRouter2'
 import { Graph } from '../src/MultiRouter3';
 import { env1 } from './Env1';
+import { findBestDistributionIdeal } from '../src/MultiRouter1';
 
 interface Environment {
+    name: string;
     tokenInPriceBase : number;
     tokenOutPriceBase: number;
     price1In0: number;
@@ -18,6 +21,30 @@ export enum RouterType {
     MultiRouter1 = 'MultiRouter1',
     MultiRouter2 = 'MutiRouter2',
     MultiRouter3 = 'MutiRouter3'
+}
+
+const findBestDistributionIdealMemo = _.memoize(
+    (amountIn, env) => findBestDistributionIdeal(amountIn, env.testPools, env.tokenOutPriceBase, env.gasPrice/1e-9),
+    (amountIn, env) => `${amountIn}_${env1}`
+)
+
+export function usage(env: Environment, router: RouterType, poolNum: number, options: any) {
+    switch(router) {
+        case RouterType.MultiRouter05: {
+            return amountIn => {
+                const distr = findBestDistributionIdealMemo(amountIn, env)[1];
+                const usage = distr.find(a => a[0] == poolNum);
+                return usage ? usage[1] : 0;
+            }
+        }
+        case RouterType.MultiRouter2: {
+            return amountIn => {
+                const distr = (env.routers[5] as MultiRouterParallel).getDistrib(amountIn);
+                const usage = distr.find(a => a[0] == poolNum);
+                return usage ? usage[1] : 0;
+            }
+        }
+    }
 }
 
 export function loss(env: Environment, router: RouterType, poolNum: number, options: any) {
