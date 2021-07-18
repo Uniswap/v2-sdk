@@ -31,5 +31,6 @@ export interface Route {
     amountIn: number,
     amountOut: number,
     legs: RouteLeg[],
-    feesApproximation: number
+    gasSpent: number,
+    totalAmountOut: number
 }

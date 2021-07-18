@@ -72,10 +72,10 @@ export function loss(env: Environment, router: RouterType, poolNum: number, opti
                 ...options
             }
             return amountIn => {
-                const out = g.findBestMultiPath(env.tokens[options.from], env.tokens[options.to], amountIn, options.steps);
+                const out = g.findBestRoute(env.tokens[options.from], env.tokens[options.to], amountIn, options.steps);
                 const price = env.tokens[options.to].gasPrice/env.tokens[options.from].gasPrice;
                 const amountOutIdeal = amountIn*price;
-                const res = (amountOutIdeal - out.totalOutput)/amountOutIdeal;
+                const res = (amountOutIdeal - out.totalAmountOut)/amountOutIdeal;
                 return res;
             }
         }
@@ -133,13 +133,13 @@ function test2(pool: number, amountIn: number) {
 function test3(pool: number, amountIn: number, steps: number) {
     const env = env1;
     const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
-    const res = g.findBestMultiPath(env.tokens[0], env.tokens[1], amountIn, steps);
+    const res = g.findBestRoute(env.tokens[0], env.tokens[1], amountIn, steps);
     return [env, res];
 }
 
 function test4(pool: number, amountIn: number, steps: number) {
     const env = env1;
     const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
-    const res = g.findBestMultiPath(env.tokens[1], env.tokens[0], amountIn, steps);
+    const res = g.findBestRoute(env.tokens[1], env.tokens[0], amountIn, steps);
     return res;
 }

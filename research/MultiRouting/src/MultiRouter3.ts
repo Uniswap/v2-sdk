@@ -1,5 +1,6 @@
+import TopologicalSort from './TopologicalSort';
 import { ASSERT, calcInByOut, calcOutByIn, closeValues } from './MultiRouterMath';
-import {PoolType, Pool, Token} from './MultiRouterTypes'
+import {PoolType, Pool, Token, RouteLeg, Route} from './MultiRouterTypes'
 
 
 class Edge {
@@ -229,11 +230,7 @@ export class Graph {
         })
     }
 
-    findBestMultiPath(from: Token, to: Token, amountIn: number, steps = 100): {
-        output: number;
-        gasSpent: number;
-        totalOutput: number
-     } | undefined {
+    findBestRoute(from: Token, to: Token, amountIn: number, steps = 100): Route | undefined {
         this.edges.forEach(e => {
             e.amountInPrevious = 0;
             e.amountOutPrevious = 0;
@@ -254,7 +251,69 @@ export class Graph {
                 this.addPath(this.tokens.get(from), p.path);
             }
         }
-        return {output, gasSpent, totalOutput};
+        return {
+            amountIn,
+            amountOut: output,
+            legs: this.getRouteLegs(),
+            gasSpent: gasSpent,
+            totalAmountOut: totalOutput
+        }
+    }
+
+    getRouteLegs(): RouteLeg[] {
+        const nodes = this.topologySort();        
+        const legs = [];
+        nodes.forEach(n => {
+            const outEdges = n.edges.map(e => {
+                const from = this.edgeFrom(e);
+                return from ? [e, from[0], from[1]] : [e]
+            }).filter(e => e[1] == n);
+
+            let outAmount = outEdges.reduce((a, b) => a + (b[2] as number), 0);
+            if (outAmount <= 0)
+                return;
+
+            const total = outAmount;
+            outEdges.forEach((e, i) => {
+                const p = e[2] as number;
+                const quantity = i + 1 == outEdges.length ? 1 : p/outAmount;
+                legs.push({
+                    address: (e[0] as Edge).pool.address,
+                    token: n.token,
+                    quantity,
+                    relative: p/total
+                });
+                outAmount -= p;
+            });
+            console.assert(Math.abs(outAmount) < 1e-6 , "Error 281");
+        })
+        return legs;
     }
     
+    edgeFrom(e: Edge): [Vertice, number] | undefined {
+        if (e.amountInPrevious == 0)
+            return undefined;
+        return e.direction ? [e.vert0, e.amountInPrevious] : [e.vert1, e.amountOutPrevious];
+    }
+
+    getOutputEdges(v: Vertice): Edge[] {
+        return v.edges.filter(e => this.edgeFrom(e)[0] == v);
+    }
+
+    topologySort(): Vertice[] {
+        const nodes = new Map<string, Vertice>();
+        this.vertices.forEach(v => nodes.set(v.token.name, v));
+        const sortOp = new TopologicalSort(nodes);
+        this.edges.forEach(e => {
+            if (e.amountInPrevious == 0)
+                return;
+            if(e.direction)
+                sortOp.addEdge(e.vert0.token.name, e.vert1.token.name);
+            else
+                sortOp.addEdge(e.vert1.token.name, e.vert0.token.name);
+        })
+        const sorted = Array.from(sortOp.sort().keys()).map(k => nodes.get(k));
+
+        return sorted;
+    }
 }
