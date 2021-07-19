@@ -1,151 +1,6 @@
-
-function ASSERT(f: () => boolean, t: string) {
-    if (!f())
-        console.error(t);
-}
-
-function closeValues(a: number, b: number, accuracy: number): boolean {
-    return Math.abs(a/b-1) < accuracy;
-}
-interface Token {
-    name: string;
-    gasPrice: number;
-}
-
-enum PoolType {
-    ConstantProduct = 'ConstantProduct',
-    ConstantMean = 'ConstantMean',
-    Hybrid = 'Hybrid'
-}
-
-interface Pool {
-    token0: Token;
-    token1: Token;
-    address: string;
-    type: PoolType;
-    reserve0: number;
-    reserve1: number;
-    data: ArrayBuffer;
-    fee: number;
-}
-
-function calcSquareEquation(a:number, b:number, c:number): [number, number] {
-    const D = b*b-4*a*c;
-    console.assert(D >= 0, `Discriminant is negative! ${a} ${b} ${c}`);
-    const sqrtD = Math.sqrt(D);
-    return [(-b-sqrtD)/2/a, (-b+sqrtD)/2/a];
-}
-
-function ConstantMeanParamsFromData(data: ArrayBuffer): [number, number] {
-    const arr = new Uint8Array(data);
-    return [arr[0], 100-arr[0]];
-}
-
-function ConstantMeanDataFromParams(weight0: number, weight1: number): ArrayBuffer {
-    console.assert(weight0+weight1 == 100, 'Weight wrong')
-    const data = new ArrayBuffer(16);
-    const arr = new Uint8Array(data);
-    arr[0] = weight0;
-    return data;
-}
-
-function HybridParamsFromData(data: ArrayBuffer): number {
-    const arr = new Int32Array(data);
-    return arr[0];
-}
-
-function HybridDataFromParams(A: number): ArrayBuffer {
-    const data = new ArrayBuffer(16);
-    const arr = new Int32Array(data);
-    arr[0] = A;
-    return data;
-}
-
-const DCache = new Map<Pool, number>();
-function HybridComputeLiquidity(pool: Pool): number {
-    const res = DCache.get(pool);
-    if (res != undefined)
-        return res;
-
-    const s = pool.reserve0 + pool.reserve1;
-    if (s == 0) {
-        DCache.set(pool, 0);
-        return 0;
-    }
-
-    const A = HybridParamsFromData(pool.data);
-    const nA = A * 2;
-
-    let prevD;
-    let D = s;
-    for (let i = 0; i < 256; i++) {
-        const dP = D*D*D / (pool.reserve0 * pool.reserve1 * 4);
-        prevD = D;
-        D = (nA*s + dP * 2)*D/((nA - 1)*D + dP * 3);
-        if ( (D - prevD) <= 1 ) {
-            break;
-        }
-    }
-    DCache.set(pool, D);
-    return D;
-}
-
-function HybridgetY(pool: Pool, x: number): number {
-    const D = HybridComputeLiquidity(pool);
-    const A = HybridParamsFromData(pool.data);
-    return calcSquareEquation(16*A*x, 16*A*x*x + 4*D*x - 16*A*D*x, -D*D*D)[1];
-}
-
-function calcOutByIn(pool:Pool, amountIn: number, direction: boolean): number {
-    const x = direction ? pool.reserve0 : pool.reserve1;
-    const y = direction ? pool.reserve1 : pool.reserve0;
-    switch(pool.type) {
-        case PoolType.ConstantProduct: {
-            return y*amountIn/(x/(1-pool.fee) + amountIn);
-        } 
-        case PoolType.ConstantMean: {
-            const [weight0, weight1] = ConstantMeanParamsFromData(pool.data);
-            const weightRatio = direction ? weight0/weight1 : weight1/weight0;
-            const actualIn = amountIn*(1-pool.fee);
-            return y*(1-Math.pow(x/(x+actualIn), weightRatio));
-        } 
-        case PoolType.Hybrid: {
-            const xNew = x + amountIn;
-            const yNew = HybridgetY(pool, xNew);
-            const dy = (y - yNew)*(1-pool.fee); // TODO: Why other pools take fees at the beginning, and this one - at the end?
-            return dy;
-        }
-    }
-    console.error('Unknown pool type');
-}
-
-function calcInByOut(pool:Pool, amountOut: number, direction: boolean): number {
-    let input = 0;
-    const x = direction ? pool.reserve0 : pool.reserve1;
-    const y = direction ? pool.reserve1 : pool.reserve0;
-    switch(pool.type) {
-        case PoolType.ConstantProduct: {
-            input = x*amountOut/(1-pool.fee)/(y - amountOut);
-            break;
-        } 
-        case PoolType.ConstantMean: {
-            const [weight0, weight1] = ConstantMeanParamsFromData(pool.data);
-            const weightRatio = direction ? weight1/weight0 : weight1/weight0;
-            input = x*(1-pool.fee)*(Math.pow(1-amountOut/y, -weightRatio) - 1);
-            break;
-        } 
-        case PoolType.Hybrid: {
-            const yNew = y - amountOut/(1-pool.fee);
-            const xNew = HybridgetY(pool, yNew);
-            input = (x - xNew);
-            break;
-        }
-        default:
-            console.error('Unknown pool type');
-    }
-    ASSERT(() => Math.abs(amountOut/calcOutByIn(pool, input, direction)-1) < 1e-6, "Error 138");
-    return input;
-}
+import {Pool, Token, RouteLeg, Route} from '../types/multiroutertypes'
+import { ASSERT, calcInByOut, calcOutByIn, closeValues } from '../utils/MultiRouterMath';
+import TopologicalSort from '../utils/TopologicalSort';
 
 class Edge {
     readonly GasConsumption = 40_000;
@@ -181,12 +36,14 @@ class Edge {
                     gas = -this.GasConsumption;
             } else {
                 out = calcOutByIn(pool, this.amountOutPrevious + amountIn, false) - this.amountInPrevious;
-                console.assert(out < amountIn && out >= 0);
+                const price = this.pool.token1.gasPrice/this.pool.token0.gasPrice;
+                console.assert(out < amountIn/price && out >= 0);
             }
         } else {
             if (this.direction) {
                 out = calcOutByIn(pool, this.amountInPrevious + amountIn, true) - this.amountOutPrevious;
-                console.assert(out < amountIn && out >= 0);
+                const price = this.pool.token1.gasPrice/this.pool.token0.gasPrice;
+                console.assert(out < amountIn*price && out >= 0);
             } else {
                 if (amountIn == this.amountOutPrevious) // TODO: accuracy?
                     gas = -this.GasConsumption;
@@ -343,12 +200,16 @@ class Graph {
                 if (processedVert.has(v2))
                     return;
                 const [newIncome, gas] = e.calcOutput((closestVert as Vertice), (closestVert as Vertice).bestIncome);
-                const newTotal = newIncome - gas*to.gasPrice;
+                const newGasSpent = (closestVert as Vertice).gasSpent + gas;
+                const price = to.gasPrice/v2.token.gasPrice;
+                const newTotal = newIncome*price - newGasSpent*to.gasPrice;
+                //console.log(newIncome, gas, newTotal);
+                
                 if (!v2.bestSource)
                     nextVertList.push(v2);
                 if (!v2.bestSource || newTotal > v2.bestTotal) {
                     v2.bestIncome = newIncome;
-                    v2.gasSpent = (closestVert as Vertice).gasSpent + gas;
+                    v2.gasSpent = newGasSpent;
                     v2.bestTotal = newTotal;
                     v2.bestSource = e;
                 }
@@ -368,11 +229,7 @@ class Graph {
         })
     }
 
-    findBestMultiPath(from: Token, to: Token, amountIn: number, steps = 100): {
-        output: number;
-        gasSpent: number;
-        totalOutput: number
-     } | undefined {
+    findBestRoute(from: Token, to: Token, amountIn: number, steps = 100): Route | undefined {
         this.edges.forEach(e => {
             e.amountInPrevious = 0;
             e.amountOutPrevious = 0;
@@ -393,116 +250,80 @@ class Graph {
                 this.addPath(this.tokens.get(from), p.path);
             }
         }
-        return {output, gasSpent, totalOutput};
+        return {
+            amountIn,
+            amountOut: output,
+            legs: this.getRouteLegs(),
+            gasSpent: gasSpent,
+            totalAmountOut: totalOutput
+        }
+    }
+
+    getRouteLegs(): RouteLeg[] {
+        const nodes = this.topologySort();        
+        const legs: RouteLeg[] = [];
+        nodes.forEach(n => {
+            const outEdges = n.edges.map(e => {
+                const from = this.edgeFrom(e);
+                return from ? [e, from[0], from[1]] : [e]
+            }).filter(e => e[1] == n);
+
+            let outAmount = outEdges.reduce((a, b) => a + (b[2] as number), 0);
+            if (outAmount <= 0)
+                return;
+
+            const total = outAmount;
+            outEdges.forEach((e, i) => {
+                const p = e[2] as number;
+                const quantity = i + 1 == outEdges.length ? 1 : p/outAmount;
+                legs.push({
+                    address: (e[0] as Edge).pool.address,
+                    token: n.token,
+                    swapPortion: quantity,
+                    absolutePortion: p/total
+                });
+                outAmount -= p;
+            });
+            console.assert(Math.abs(outAmount) < 1e-6 , "Error 281");
+        })
+        return legs;
     }
     
-}
-
-
-function testEnvironment() {
-    const price1In0 = 1;
-    const reserve = [1_000_000, 100_000, 1_000_000, 1_000_000, 10_000];
-
-    const T1 = {
-        name: "1",
-        gasPrice: 1*200*1e-9
-    }
-    const T2 = {
-        name: "2",
-        gasPrice: 1*200*1e-9
+    edgeFrom(e: Edge): [Vertice, number] | undefined {
+        if (e.amountInPrevious == 0)
+            return undefined;
+        return e.direction ? [e.vert0, e.amountInPrevious] : [e.vert1, e.amountOutPrevious];
     }
 
-    var testPool1 = {
-        token0: T1,
-        token1: T2,
-        address: "pool1",
-        type: PoolType.ConstantProduct,
-        reserve0: reserve[0],
-        reserve1: reserve[0]/price1In0 - 100,
-        data: new ArrayBuffer(16),
-        fee: 0.003
-    };
-    var testPool2 = {
-        token0: T1,
-        token1: T2,
-        address: "pool2",
-        type: PoolType.ConstantProduct,
-        reserve0: reserve[1],
-        reserve1: reserve[1]/price1In0,
-        data: new ArrayBuffer(16),
-        fee: 0.003
-    };
-    const weight0 = 90, weight1 = 10;
-    var testPool3 = {
-        token0: T1,
-        token1: T2,
-        address: "pool3",
-        type: PoolType.ConstantMean,
-        reserve0: 2*weight0*price1In0*reserve[2]/(weight0*price1In0 + weight1),
-        reserve1: 2*weight1*reserve[2]/(weight0*price1In0 + weight1),
-        data: ConstantMeanDataFromParams(weight0, weight1),
-        fee: 0.002
-    };
-    var testPool4 = {
-        token0: T1,
-        token1: T2,
-        address: "pool4",
-        type: PoolType.ConstantProduct,
-        reserve0: reserve[3] - 100,
-        reserve1: reserve[3]/price1In0,
-        data: new ArrayBuffer(16),
-        fee: 0.003
-    };
-    // var testPool5 = {
-    //     token0: T1,
-    //     token1: T2,
-    //     address: "pool5",
-    //     type: PoolType.Hybrid,
-    //     reserve0: reserve[4],
-    //     reserve1: reserve[4]/price1In0,
-    //     data: HybridDataFromParams(80),
-    //     fee: 0.003
-    // }; 
+    getOutputEdges(v: Vertice): Edge[] {
+        return v.edges.filter(e => {
+            const from = this.edgeFrom(e);
+            if (from === undefined)
+                return false;
+            return from[0] == v;
+        });
+    }
 
-    var testPools = [testPool1, testPool2, testPool3, testPool4];
-    // if (price1In0 == 1)
-    //     testPools.push(testPool5);
+    topologySort(): Vertice[] {
+        const nodes = new Map<string, Vertice>();
+        this.vertices.forEach(v => nodes.set(v.token.name, v));
+        const sortOp = new TopologicalSort(nodes);
+        this.edges.forEach(e => {
+            if (e.amountInPrevious == 0)
+                return;
+            if(e.direction)
+                sortOp.addEdge(e.vert0.token.name, e.vert1.token.name);
+            else
+                sortOp.addEdge(e.vert1.token.name, e.vert0.token.name);
+        })
+        const sorted = Array.from(sortOp.sort().keys()).map(k => nodes.get(k)) as Vertice[];
 
-    const tokens = [T1, T2];
-
-    return {
-        price1In0,
-        testPools,
-        tokens
+        return sorted;
     }
 }
 
-function test1(pool: number, amountIn: number) {
-    const env = testEnvironment();
-    const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
-    const p = g.findBestPath(env.tokens[0], env.tokens[1], amountIn);
-    return p;
+export function findMultiRouting(from: Token, to: Token, amountIn: number, pools: Pool[]): Route | undefined {
+    const g = new Graph(pools);
+    const out = g.findBestRoute(from, to, amountIn);
+    return out;
 }
-
-function test2(pool: number, amountIn: number) {
-    const env = testEnvironment();
-    const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
-    const p = g.findBestPath(env.tokens[1], env.tokens[0], amountIn);
-    return p;
-}
-
-function test3(pool: number, amountIn: number, steps: number) {
-    const env = testEnvironment();
-    const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
-    const res = g.findBestMultiPath(env.tokens[0], env.tokens[1], amountIn, steps);
-    return [env, res];
-}
-
-function test4(pool: number, amountIn: number, steps: number) {
-    const env = testEnvironment();
-    const g = new Graph(pool >= 0 ? [env.testPools[pool]] : env.testPools);
-    const res = g.findBestMultiPath(env.tokens[1], env.tokens[0], amountIn, steps);
-    return res;
-}
-
-test3(-1, 500, 100);
