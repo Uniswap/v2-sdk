@@ -24,7 +24,7 @@ export const FACTORY_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HARMONY_TESTNET]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
   [ChainId.OKEX]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
   [ChainId.OKEX_TESTNET]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
-  [ChainId.CELO]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4'
+  [ChainId.CELO]: '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
 }
 
 export const ROUTER_ADDRESS: { [chainId in ChainId]: string } = {
@@ -51,7 +51,7 @@ export const ROUTER_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HARMONY_TESTNET]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
   [ChainId.OKEX]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
   [ChainId.OKEX_TESTNET]: '0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506',
-  [ChainId.CELO]: '0x1421bDe4B10e8dd459b3BCb598810B1337D56842'
+  [ChainId.CELO]: '0x1421bDe4B10e8dd459b3BCb598810B1337D56842',
 }
 
 export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
@@ -72,13 +72,13 @@ export const SUSHI_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.MOONBEAM_TESTNET]: '',
   [ChainId.AVALANCHE]: '0x39cf1BD5f15fb22eC3D9Ff86b0727aFc203427cc',
   [ChainId.AVALANCHE_TESTNET]: '',
-  [ChainId.HECO]: '',
+  [ChainId.HECO]: '0x52E00B2dA5Bd7940fFe26B609A42F957f31118D5',
   [ChainId.HECO_TESTNET]: '',
   [ChainId.HARMONY]: '0xBEC775Cb42AbFa4288dE81F387a9b1A3c4Bc552A',
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '0x2218E0D5E0173769F5b4939a3aE423f7e5E4EAB7',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
 export const MASTERCHEF_ADDRESS: { [chainId in ChainId]: string } = {
@@ -105,7 +105,7 @@ export const MASTERCHEF_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
 export const BAR_ADDRESS: { [chainId in ChainId]: string } = {
@@ -132,7 +132,7 @@ export const BAR_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
 export const MAKER_ADDRESS: { [chainId in ChainId]: string } = {
@@ -159,7 +159,7 @@ export const MAKER_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
 export const TIMELOCK_ADDRESS: { [chainId in ChainId]: string } = {
@@ -186,7 +186,7 @@ export const TIMELOCK_ADDRESS: { [chainId in ChainId]: string } = {
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
 export const BENTOBOX_ADDRESS: {
@@ -201,7 +201,7 @@ export const BENTOBOX_ADDRESS: {
   [ChainId.FANTOM_TESTNET]: '',
   [ChainId.MATIC]: '0x0319000133d3AdA02600f0875d2cf03D442C3367',
   [ChainId.MATIC_TESTNET]: '0xF5BCE5077908a1b7370B9ae04AdC565EBd643966',
-  [ChainId.XDAI]: '',
+  [ChainId.XDAI]: '0xF5BCE5077908a1b7370B9ae04AdC565EBd643966',
   [ChainId.BSC]: '0xF5BCE5077908a1b7370B9ae04AdC565EBd643966',
   [ChainId.BSC_TESTNET]: '0xF5BCE5077908a1b7370B9ae04AdC565EBd643966',
   [ChainId.ARBITRUM]: '',
@@ -209,13 +209,13 @@ export const BENTOBOX_ADDRESS: {
   [ChainId.MOONBEAM_TESTNET]: '',
   [ChainId.AVALANCHE]: '',
   [ChainId.AVALANCHE_TESTNET]: '',
-  [ChainId.HECO]: '',
+  [ChainId.HECO]: '0xF5BCE5077908a1b7370B9ae04AdC565EBd643966',
   [ChainId.HECO_TESTNET]: '',
   [ChainId.HARMONY]: '',
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
 export const KASHI_ADDRESS: {
@@ -230,7 +230,7 @@ export const KASHI_ADDRESS: {
   [ChainId.FANTOM_TESTNET]: '',
   [ChainId.MATIC]: '0xB527C5295c4Bc348cBb3a2E96B2494fD292075a7',
   [ChainId.MATIC_TESTNET]: '',
-  [ChainId.XDAI]: '',
+  [ChainId.XDAI]: '0x2cBA6Ab6574646Badc84F0544d05059e57a5dc42',
   [ChainId.BSC]: '0x2cBA6Ab6574646Badc84F0544d05059e57a5dc42',
   [ChainId.BSC_TESTNET]: '',
   [ChainId.ARBITRUM]: '',
@@ -238,13 +238,13 @@ export const KASHI_ADDRESS: {
   [ChainId.MOONBEAM_TESTNET]: '',
   [ChainId.AVALANCHE]: '',
   [ChainId.AVALANCHE_TESTNET]: '',
-  [ChainId.HECO]: '',
+  [ChainId.HECO]: '0x2cBA6Ab6574646Badc84F0544d05059e57a5dc42',
   [ChainId.HECO_TESTNET]: '',
   [ChainId.HARMONY]: '',
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
 // export const KASHI_ADDRESS = '0x2cBA6Ab6574646Badc84F0544d05059e57a5dc42'
@@ -275,7 +275,7 @@ export const SUSHISWAP_SWAPPER_ADDRESS: {
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
 export const SUSHISWAP_MULTISWAPPER_ADDRESS: {
@@ -304,7 +304,7 @@ export const SUSHISWAP_MULTISWAPPER_ADDRESS: {
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
 export const SUSHISWAP_MULTI_EXACT_SWAPPER_ADDRESS = {
@@ -331,16 +331,20 @@ export const SUSHISWAP_MULTI_EXACT_SWAPPER_ADDRESS = {
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
 
-export const PEGGED_ORACLE_ADDRESS = '0x6cbfbB38498Df0E1e7A4506593cDB02db9001564'
+export const PEGGED_ORACLE_ADDRESS =
+  '0x6cbfbB38498Df0E1e7A4506593cDB02db9001564'
 
-export const SUSHISWAP_TWAP_0_ORACLE_ADDRESS = '0x66F03B0d30838A3fee971928627ea6F59B236065'
+export const SUSHISWAP_TWAP_0_ORACLE_ADDRESS =
+  '0x66F03B0d30838A3fee971928627ea6F59B236065'
 
-export const SUSHISWAP_TWAP_1_ORACLE_ADDRESS = '0x0D51b575591F8f74a2763Ade75D3CDCf6789266f'
+export const SUSHISWAP_TWAP_1_ORACLE_ADDRESS =
+  '0x0D51b575591F8f74a2763Ade75D3CDCf6789266f'
 
-export const CHAINLINK_ORACLE_ADDRESS = '0x00632CFe43d8F9f8E6cD0d39Ffa3D4fa7ec73CFB'
+export const CHAINLINK_ORACLE_ADDRESS =
+  '0x00632CFe43d8F9f8E6cD0d39Ffa3D4fa7ec73CFB'
 
 export const BORING_HELPER_ADDRESS = {
   [ChainId.MAINNET]: '0x11Ca5375AdAfd6205E41131A4409f182677996E6',
@@ -366,5 +370,5 @@ export const BORING_HELPER_ADDRESS = {
   [ChainId.HARMONY_TESTNET]: '',
   [ChainId.OKEX]: '',
   [ChainId.OKEX_TESTNET]: '',
-  [ChainId.CELO]: ''
+  [ChainId.CELO]: '',
 }
