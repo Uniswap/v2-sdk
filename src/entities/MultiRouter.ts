@@ -1,6 +1,6 @@
 import {Pool, Token, RouteLeg, Route} from '../types/MultiRouterTypest'
-import { ASSERT, calcInByOut, calcOutByIn, closeValues } from '../utils/MultiRouterMatht';
-import TopologicalSort from '../utils/TopologicalSortt';
+import { ASSERT, calcInByOut, calcOutByIn, closeValues } from '../utils/MultiRouterMath';
+import TopologicalSort from '../utils/TopologicalSort';
 
 class Edge {
     readonly GasConsumption = 40_000;

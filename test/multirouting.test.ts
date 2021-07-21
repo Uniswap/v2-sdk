@@ -1,6 +1,6 @@
 
 import { PoolType } from '../src/types/MultiRouterTypest';
-import {findMultiRouting} from '../src/entities/MultiRoutert'
+import {findMultiRouting} from '../src/entities/MultiRouter'
 const gasPrice = 1*200*1e-9;
 
 // Bridge:
@@ -41,7 +41,6 @@ describe('constants', () => {
     describe('INIT_CODE_HASH', () => {
       it('matches computed bytecode hash', () => {
           const res = findMultiRouting(tokens[0], tokens[3], 10000, testPools);
-          console.log(res);
           
           expect(res).toBeDefined();
           expect(res?.legs.length).toEqual(testPools.length);
