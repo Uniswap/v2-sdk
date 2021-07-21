@@ -1,4 +1,4 @@
-import { Pool, PoolType } from "../types/MultiRouterTypes"
+import { Pool, PoolType } from "../types/MultiRouterTypest"
 
 
 export function ConstantMeanParamsFromData(data: ArrayBuffer): [number, number] {
