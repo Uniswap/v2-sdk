@@ -1,4 +1,4 @@
-import {Pool, Token, RouteLeg, Route} from '../types/multiroutertypes'
+import {Pool, Token, RouteLeg, Route} from '../types/MultiRouterTypes'
 import { ASSERT, calcInByOut, calcOutByIn, closeValues } from '../utils/MultiRouterMath';
 import TopologicalSort from '../utils/TopologicalSort';
 
