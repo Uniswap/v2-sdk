@@ -1,5 +1,5 @@
 
-import { PoolType } from '../src/types/MultiRouterTypest';
+import { PoolType } from '../src/types/MultiRouterTypes';
 import {findMultiRouting} from '../src/entities/MultiRouter'
 const gasPrice = 1*200*1e-9;
 

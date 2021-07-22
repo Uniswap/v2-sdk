@@ -1,2 +1,2 @@
 export type { BigintIsh } from './BigIntIsh'
-export * from './MultiRouterTypest'
+export * from './MultiRouterTypes'
