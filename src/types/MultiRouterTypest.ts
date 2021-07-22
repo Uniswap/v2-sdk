@@ -28,7 +28,7 @@ export interface RouteLeg {
     absolutePortion: number;    // To depict at webpage for user
 }
 
-export interface Route {
+export interface MultiRoute {
     amountIn: number,
     amountOut: number,
     legs: RouteLeg[],

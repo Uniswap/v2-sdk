@@ -1,4 +1,4 @@
-import {Pool, Token, RouteLeg, Route} from '../types/MultiRouterTypest'
+import {Pool, Token, RouteLeg, MultiRoute} from '../types/MultiRouterTypest'
 import { ASSERT, calcInByOut, calcOutByIn, closeValues } from '../utils/MultiRouterMath';
 import TopologicalSort from '../utils/TopologicalSort';
 
@@ -229,7 +229,7 @@ class Graph {
         })
     }
 
-    findBestRoute(from: Token, to: Token, amountIn: number, steps = 100): Route | undefined {
+    findBestRoute(from: Token, to: Token, amountIn: number, steps = 100): MultiRoute | undefined {
         this.edges.forEach(e => {
             e.amountInPrevious = 0;
             e.amountOutPrevious = 0;
@@ -322,7 +322,7 @@ class Graph {
     }
 }
 
-export function findMultiRouting(from: Token, to: Token, amountIn: number, pools: Pool[]): Route | undefined {
+export function findMultiRouting(from: Token, to: Token, amountIn: number, pools: Pool[]): MultiRoute | undefined {
     const g = new Graph(pools);
     const out = g.findBestRoute(from, to, amountIn);
     return out;
