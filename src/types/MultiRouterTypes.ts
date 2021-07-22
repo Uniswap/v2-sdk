@@ -1,5 +1,5 @@
 
-export interface Token {
+export interface RToken {
     name: string;
     gasPrice: number;
 }
@@ -12,8 +12,8 @@ export enum PoolType {
 
 export interface Pool {
     address: string;
-    token0: Token;
-    token1: Token;
+    token0: RToken;
+    token1: RToken;
     type: PoolType;
     reserve0: number;
     reserve1: number;
@@ -23,7 +23,7 @@ export interface Pool {
 
 export interface RouteLeg {
     address: string;
-    token: Token;
+    token: RToken;
     swapPortion: number;        // For router contract
     absolutePortion: number;    // To depict at webpage for user
 }

@@ -1,4 +1,4 @@
-import {Pool, Token, RouteLeg, MultiRoute} from '../types/MultiRouterTypes'
+import {Pool, RToken, RouteLeg, MultiRoute} from '../types/MultiRouterTypes'
 import { ASSERT, calcInByOut, calcOutByIn, closeValues } from '../utils/MultiRouterMath';
 import TopologicalSort from '../utils/TopologicalSort';
 
@@ -92,7 +92,7 @@ class Edge {
 }
 
 class Vertice {
-    token: Token;
+    token: RToken;
     edges: Edge[];
 
     bestIncome: number;    // temp data used for findBestPath algorithm
@@ -100,7 +100,7 @@ class Vertice {
     bestTotal: number;     // temp data used for findBestPath algorithm
     bestSource?: Edge;     // temp data used for findBestPath algorithm
 
-    constructor(t:Token) {
+    constructor(t:RToken) {
         this.token = t;
         this.edges = [];
         this.bestIncome = 0;
@@ -119,7 +119,7 @@ class Vertice {
 class Graph {
     vertices: Vertice[];
     edges: Edge[];
-    tokens: Map<Token, Vertice>;
+    tokens: Map<RToken, Vertice>;
 
     constructor(pools: Pool[]) {
         this.vertices = [];
@@ -135,7 +135,7 @@ class Graph {
         })
     }
 
-    getOrCreateVertice(token: Token) {
+    getOrCreateVertice(token: RToken) {
         let vert = this.tokens.get(token);
         if (vert)
             return vert;
@@ -145,7 +145,7 @@ class Graph {
         return vert;
     }
 
-    findBestPath(from: Token, to: Token, amountIn: number): {
+    findBestPath(from: RToken, to: RToken, amountIn: number): {
         path: Edge[];
         output: number;
         gasSpent: number;
@@ -229,7 +229,7 @@ class Graph {
         })
     }
 
-    findBestRoute(from: Token, to: Token, amountIn: number, steps = 100): MultiRoute | undefined {
+    findBestRoute(from: RToken, to: RToken, amountIn: number, steps = 100): MultiRoute | undefined {
         this.edges.forEach(e => {
             e.amountInPrevious = 0;
             e.amountOutPrevious = 0;
@@ -322,7 +322,7 @@ class Graph {
     }
 }
 
-export function findMultiRouting(from: Token, to: Token, amountIn: number, pools: Pool[]): MultiRoute | undefined {
+export function findMultiRouting(from: RToken, to: RToken, amountIn: number, pools: Pool[]): MultiRoute | undefined {
     const g = new Graph(pools);
     const out = g.findBestRoute(from, to, amountIn);
     return out;
