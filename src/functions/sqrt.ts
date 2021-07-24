@@ -1,22 +1,31 @@
-import { ONE, SolidityType, THREE, TWO, ZERO } from '../constants'
-
 import JSBI from 'jsbi'
-import { validateSolidityTypeInstance } from './validateSolidityTypeInstance'
+import invariant from 'tiny-invariant'
 
-// mock the on-chain sqrt function
-export function sqrt(y: JSBI): JSBI {
-  validateSolidityTypeInstance(y, SolidityType.uint256)
-  let z: JSBI = ZERO
+export const MAX_SAFE_INTEGER = JSBI.BigInt(Number.MAX_SAFE_INTEGER)
+
+const ZERO = JSBI.BigInt(0)
+const ONE = JSBI.BigInt(1)
+const TWO = JSBI.BigInt(2)
+
+/**
+ * Computes floor(sqrt(value))
+ * @param value the value for which to compute the square root, rounded down
+ */
+export function sqrt(value: JSBI): JSBI {
+  invariant(JSBI.greaterThanOrEqual(value, ZERO), 'NEGATIVE')
+
+  // rely on built in sqrt if possible
+  if (JSBI.lessThan(value, MAX_SAFE_INTEGER)) {
+    return JSBI.BigInt(Math.floor(Math.sqrt(JSBI.toNumber(value))))
+  }
+
+  let z: JSBI
   let x: JSBI
-  if (JSBI.greaterThan(y, THREE)) {
-    z = y
-    x = JSBI.add(JSBI.divide(y, TWO), ONE)
-    while (JSBI.lessThan(x, z)) {
-      z = x
-      x = JSBI.divide(JSBI.add(JSBI.divide(y, x), x), TWO)
-    }
-  } else if (JSBI.notEqual(y, ZERO)) {
-    z = ONE
+  z = value
+  x = JSBI.add(JSBI.divide(value, TWO), ONE)
+  while (JSBI.lessThan(x, z)) {
+    z = x
+    x = JSBI.divide(JSBI.add(JSBI.divide(value, x), x), TWO)
   }
   return z
 }
