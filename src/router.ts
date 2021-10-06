@@ -1,5 +1,5 @@
 import { Token, Currency, CurrencyAmount, Percent, TradeType, validateAndParseAddress } from '@uniswap/sdk-core'
-import { Trade } from 'entities'
+import { Trade } from './entities'
 import invariant from 'tiny-invariant'
 
 /**
