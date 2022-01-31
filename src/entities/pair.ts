@@ -10,25 +10,29 @@ import { InsufficientReservesError, InsufficientInputAmountError } from '../erro
 export const computePairAddress = ({
   factoryAddress,
   tokenA,
-  tokenB
+  tokenB,
+  initCodeHash
 }: {
   factoryAddress: string
   tokenA: Token
   tokenB: Token
+  initCodeHash: string
 }): string => {
   const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
   return getCreate2Address(
     factoryAddress,
     keccak256(['bytes'], [pack(['address', 'address'], [token0.address, token1.address])]),
-    INIT_CODE_HASH
+    initCodeHash
   )
 }
 export class Pair {
+  public static factoryAddress = FACTORY_ADDRESS
+  public static initCodeHash = INIT_CODE_HASH
   public readonly liquidityToken: Token
   private readonly tokenAmounts: [CurrencyAmount<Token>, CurrencyAmount<Token>]
 
   public static getAddress(tokenA: Token, tokenB: Token): string {
-    return computePairAddress({ factoryAddress: FACTORY_ADDRESS, tokenA, tokenB })
+    return computePairAddress({ factoryAddress: this.factoryAddress, tokenA, tokenB, initCodeHash: Pair.initCodeHash })
   }
 
   public constructor(currencyAmountA: CurrencyAmount<Token>, tokenAmountB: CurrencyAmount<Token>) {
@@ -39,8 +43,8 @@ export class Pair {
       tokenAmounts[0].currency.chainId,
       Pair.getAddress(tokenAmounts[0].currency, tokenAmounts[1].currency),
       18,
-      'UNI-V2',
-      'Uniswap V2'
+      'OCX-V1',
+      'OccamX V1'
     )
     this.tokenAmounts = tokenAmounts as [CurrencyAmount<Token>, CurrencyAmount<Token>]
   }
