@@ -1,4 +1,4 @@
-import { Token, Currency, CurrencyAmount, Percent, TradeType, validateAndParseAddress } from '@uniswap/sdk-core'
+import { Token, Currency, CurrencyAmount, Percent, TradeType, validateAndParseAddress } from '@intercroneswap/sdk-core'
 import { Trade } from './entities'
 import invariant from 'tiny-invariant'
 
@@ -36,11 +36,11 @@ export interface TradeOptionsDeadline extends Omit<TradeOptions, 'ttl'> {
 }
 
 /**
- * The parameters to use in the call to the Uniswap V2 Router to execute a trade.
+ * The parameters to use in the call to the InterCroneswap V2 Router to execute a trade.
  */
 export interface SwapParameters {
   /**
-   * The method to call on the Uniswap V2 Router.
+   * The method to call on the InterCroneswap V2 Router.
    */
   methodName: string
   /**
@@ -60,7 +60,7 @@ function toHex(currencyAmount: CurrencyAmount<Currency>) {
 const ZERO_HEX = '0x0'
 
 /**
- * Represents the Uniswap V2 Router, and has static methods for helping execute trades.
+ * Represents the InterCroneswap V2 Router, and has static methods for helping execute trades.
  */
 export abstract class Router {
   /**
@@ -140,7 +140,7 @@ export abstract class Router {
     return {
       methodName,
       args,
-      value
+      value,
     }
   }
 }

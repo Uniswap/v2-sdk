@@ -1,4 +1,4 @@
-import { Token, WETH9, Price, CurrencyAmount } from '@uniswap/sdk-core'
+import { Token, WETH9, Price, CurrencyAmount } from '@intercroneswap/sdk-core'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
 
@@ -9,7 +9,7 @@ describe('computePairAddress', () => {
     const result = computePairAddress({
       factoryAddress: '0x1111111111111111111111111111111111111111',
       tokenA,
-      tokenB
+      tokenB,
     })
 
     expect(result).toEqual('0xb50b5182D6a47EC53a469395AF44e371d7C76ed4')
@@ -22,7 +22,7 @@ describe('computePairAddress', () => {
     const resultA = computePairAddress({
       factoryAddress: '0x1111111111111111111111111111111111111111',
       tokenA,
-      tokenB
+      tokenB,
     })
 
     tokenA = DAI
@@ -30,7 +30,7 @@ describe('computePairAddress', () => {
     const resultB = computePairAddress({
       factoryAddress: '0x1111111111111111111111111111111111111111',
       tokenA,
-      tokenB
+      tokenB,
     })
 
     expect(resultA).toEqual(resultB)

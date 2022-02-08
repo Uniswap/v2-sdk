@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant'
-import { Currency, Price, Token } from '@uniswap/sdk-core'
+import { Currency, Price, Token } from '@intercroneswap/sdk-core'
 
 import { Pair } from './pair'
 
@@ -13,7 +13,7 @@ export class Route<TInput extends Currency, TOutput extends Currency> {
     invariant(pairs.length > 0, 'PAIRS')
     const chainId: number = pairs[0].chainId
     invariant(
-      pairs.every(pair => pair.chainId === chainId),
+      pairs.every((pair) => pair.chainId === chainId),
       'CHAIN_IDS'
     )
 
