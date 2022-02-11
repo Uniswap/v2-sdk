@@ -89,7 +89,7 @@ describe('Trade', () => {
     it('throws with max hops of 0', () => {
       expect(() =>
         Trade.bestTradeExactIn([pair_0_2], CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(100)), token2, {
-          maxHops: 0,
+          maxHops: 0
         })
       ).toThrow('MAX_HOPS')
     })
@@ -352,7 +352,7 @@ describe('Trade', () => {
     it('throws with max hops of 0', () => {
       expect(() =>
         Trade.bestTradeExactOut([pair_0_2], token0, CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(100)), {
-          maxHops: 0,
+          maxHops: 0
         })
       ).toThrow('MAX_HOPS')
     })

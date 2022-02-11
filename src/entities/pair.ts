@@ -10,7 +10,7 @@ import { InsufficientReservesError, InsufficientInputAmountError } from '../erro
 export const computePairAddress = ({
   factoryAddress,
   tokenA,
-  tokenB,
+  tokenB
 }: {
   factoryAddress: string
   tokenA: Token
