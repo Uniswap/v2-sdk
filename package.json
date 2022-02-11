@@ -31,7 +31,7 @@
   "devDependencies": {
     "@types/big.js": "^4.0.5",
     "@types/jest": "^24.0.25",
-    "@intercroneswap/sdk-core": "^0.0.1",
+    "@intercroneswap/v2-periphery": "^0.1.1",
     "tsdx": "^0.14.1"
   },
   "engines": {
