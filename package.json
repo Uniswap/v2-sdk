@@ -24,14 +24,14 @@
   "dependencies": {
     "@ethersproject/address": "^5.0.0",
     "@ethersproject/solidity": "^5.0.0",
-    "@intercroneswap/sdk-core": "^3.0.0-alpha.3",
+    "@intercroneswap/sdk-core": "^0.0.1",
     "tiny-invariant": "^1.1.0",
     "tiny-warning": "^1.0.3"
   },
   "devDependencies": {
     "@types/big.js": "^4.0.5",
     "@types/jest": "^24.0.25",
-    "@intercroneswap/v2-core": "^1.0.1",
+    "@intercroneswap/sdk-core": "^0.0.1",
     "tsdx": "^0.14.1"
   },
   "engines": {
