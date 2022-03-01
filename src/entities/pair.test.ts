@@ -1,4 +1,4 @@
-import { Token, WETH9, Price, CurrencyAmount } from '@intercroneswap/sdk-core'
+import { Token, CurrencyAmount, WETH9, Price } from '..'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
 
@@ -44,7 +44,7 @@ describe('Pair', () => {
   describe('constructor', () => {
     it('cannot be used for tokens on different chains', () => {
       expect(
-        () => new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(WETH9[3], '100'))
+        () => new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(WETH9[3], '100'))
       ).toThrow('CHAIN_IDS')
     })
   })
@@ -58,51 +58,51 @@ describe('Pair', () => {
   describe('#token0', () => {
     it('always is the token that sorts before', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).token0
+        new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(DAI, '100')).token0
       ).toEqual(DAI)
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '100')).token0
+        new Pair(new CurrencyAmount(DAI, '100'), new CurrencyAmount(USDC, '100')).token0
       ).toEqual(DAI)
     })
   })
   describe('#token1', () => {
     it('always is the token that sorts after', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).token1
+        new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(DAI, '100')).token1
       ).toEqual(USDC)
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '100')).token1
+        new Pair(new CurrencyAmount(DAI, '100'), new CurrencyAmount(USDC, '100')).token1
       ).toEqual(USDC)
     })
   })
   describe('#reserve0', () => {
     it('always comes from the token that sorts before', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '101')).reserve0
-      ).toEqual(CurrencyAmount.fromRawAmount(DAI, '101'))
+        new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(DAI, '101')).reserve0
+      ).toEqual(new CurrencyAmount(DAI, '101'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '101'), CurrencyAmount.fromRawAmount(USDC, '100')).reserve0
-      ).toEqual(CurrencyAmount.fromRawAmount(DAI, '101'))
+        new Pair(new CurrencyAmount(DAI, '101'), new CurrencyAmount(USDC, '100')).reserve0
+      ).toEqual(new CurrencyAmount(DAI, '101'))
     })
   })
   describe('#reserve1', () => {
     it('always comes from the token that sorts after', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '101')).reserve1
-      ).toEqual(CurrencyAmount.fromRawAmount(USDC, '100'))
+        new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(DAI, '101')).reserve1
+      ).toEqual(new CurrencyAmount(USDC, '100'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '101'), CurrencyAmount.fromRawAmount(USDC, '100')).reserve1
-      ).toEqual(CurrencyAmount.fromRawAmount(USDC, '100'))
+        new Pair(new CurrencyAmount(DAI, '101'), new CurrencyAmount(USDC, '100')).reserve1
+      ).toEqual(new CurrencyAmount(USDC, '100'))
     })
   })
 
   describe('#token0Price', () => {
     it('returns price of token0 in terms of token1', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '101'), CurrencyAmount.fromRawAmount(DAI, '100')).token0Price
+        new Pair(new CurrencyAmount(USDC, '101'), new CurrencyAmount(DAI, '100')).token0Price
       ).toEqual(new Price(DAI, USDC, '100', '101'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '101')).token0Price
+        new Pair(new CurrencyAmount(DAI, '100'), new CurrencyAmount(USDC, '101')).token0Price
       ).toEqual(new Price(DAI, USDC, '100', '101'))
     })
   })
@@ -110,16 +110,16 @@ describe('Pair', () => {
   describe('#token1Price', () => {
     it('returns price of token1 in terms of token0', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '101'), CurrencyAmount.fromRawAmount(DAI, '100')).token1Price
+        new Pair(new CurrencyAmount(USDC, '101'), new CurrencyAmount(DAI, '100')).token1Price
       ).toEqual(new Price(USDC, DAI, '101', '100'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '101')).token1Price
+        new Pair(new CurrencyAmount(DAI, '100'), new CurrencyAmount(USDC, '101')).token1Price
       ).toEqual(new Price(USDC, DAI, '101', '100'))
     })
   })
 
   describe('#priceOf', () => {
-    const pair = new Pair(CurrencyAmount.fromRawAmount(USDC, '101'), CurrencyAmount.fromRawAmount(DAI, '100'))
+    const pair = new Pair(new CurrencyAmount(USDC, '101'), new CurrencyAmount(DAI, '100'))
     it('returns price of token in terms of other token', () => {
       expect(pair.priceOf(DAI)).toEqual(pair.token0Price)
       expect(pair.priceOf(USDC)).toEqual(pair.token1Price)
@@ -133,16 +133,16 @@ describe('Pair', () => {
   describe('#reserveOf', () => {
     it('returns reserves of the given token', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '101')).reserveOf(USDC)
-      ).toEqual(CurrencyAmount.fromRawAmount(USDC, '100'))
+        new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(DAI, '101')).reserveOf(USDC)
+      ).toEqual(new CurrencyAmount(USDC, '100'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '101'), CurrencyAmount.fromRawAmount(USDC, '100')).reserveOf(USDC)
-      ).toEqual(CurrencyAmount.fromRawAmount(USDC, '100'))
+        new Pair(new CurrencyAmount(DAI, '101'), new CurrencyAmount(USDC, '100')).reserveOf(USDC)
+      ).toEqual(new CurrencyAmount(USDC, '100'))
     })
 
     it('throws if not in the pair', () => {
       expect(() =>
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '101'), CurrencyAmount.fromRawAmount(USDC, '100')).reserveOf(
+        new Pair(new CurrencyAmount(DAI, '101'), new CurrencyAmount(USDC, '100')).reserveOf(
           WETH9[1]
         )
       ).toThrow('TOKEN')
@@ -152,22 +152,22 @@ describe('Pair', () => {
   describe('#chainId', () => {
     it('returns the token0 chainId', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).chainId
+        new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(DAI, '100')).chainId
       ).toEqual(1)
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '100')).chainId
+        new Pair(new CurrencyAmount(DAI, '100'), new CurrencyAmount(USDC, '100')).chainId
       ).toEqual(1)
     })
   })
   describe('#involvesToken', () => {
     expect(
-      new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).involvesToken(USDC)
+      new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(DAI, '100')).involvesToken(USDC)
     ).toEqual(true)
     expect(
-      new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).involvesToken(DAI)
+      new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(DAI, '100')).involvesToken(DAI)
     ).toEqual(true)
     expect(
-      new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).involvesToken(
+      new Pair(new CurrencyAmount(USDC, '100'), new CurrencyAmount(DAI, '100')).involvesToken(
         WETH9[1]
       )
     ).toEqual(false)
@@ -176,28 +176,28 @@ describe('Pair', () => {
     it('getLiquidityMinted:0', async () => {
       const tokenA = new Token(3, '0x0000000000000000000000000000000000000001', 18)
       const tokenB = new Token(3, '0x0000000000000000000000000000000000000002', 18)
-      const pair = new Pair(CurrencyAmount.fromRawAmount(tokenA, '0'), CurrencyAmount.fromRawAmount(tokenB, '0'))
+      const pair = new Pair(new CurrencyAmount(tokenA, '0'), new CurrencyAmount(tokenB, '0'))
 
       expect(() => {
         pair.getLiquidityMinted(
-          CurrencyAmount.fromRawAmount(pair.liquidityToken, '0'),
-          CurrencyAmount.fromRawAmount(tokenA, '1000'),
-          CurrencyAmount.fromRawAmount(tokenB, '1000')
+          new CurrencyAmount(pair.liquidityToken, '0'),
+          new CurrencyAmount(tokenA, '1000'),
+          new CurrencyAmount(tokenB, '1000')
         )
       }).toThrow(InsufficientInputAmountError)
 
       expect(() => {
         pair.getLiquidityMinted(
-          CurrencyAmount.fromRawAmount(pair.liquidityToken, '0'),
-          CurrencyAmount.fromRawAmount(tokenA, '1000000'),
-          CurrencyAmount.fromRawAmount(tokenB, '1')
+          new CurrencyAmount(pair.liquidityToken, '0'),
+          new CurrencyAmount(tokenA, '1000000'),
+          new CurrencyAmount(tokenB, '1')
         )
       }).toThrow(InsufficientInputAmountError)
 
       const liquidity = pair.getLiquidityMinted(
-        CurrencyAmount.fromRawAmount(pair.liquidityToken, '0'),
-        CurrencyAmount.fromRawAmount(tokenA, '1001'),
-        CurrencyAmount.fromRawAmount(tokenB, '1001')
+        new CurrencyAmount(pair.liquidityToken, '0'),
+        new CurrencyAmount(tokenA, '1001'),
+        new CurrencyAmount(tokenB, '1001')
       )
 
       expect(liquidity.quotient.toString()).toEqual('1')
@@ -207,16 +207,16 @@ describe('Pair', () => {
       const tokenA = new Token(3, '0x0000000000000000000000000000000000000001', 18)
       const tokenB = new Token(3, '0x0000000000000000000000000000000000000002', 18)
       const pair = new Pair(
-        CurrencyAmount.fromRawAmount(tokenA, '10000'),
-        CurrencyAmount.fromRawAmount(tokenB, '10000')
+        new CurrencyAmount(tokenA, '10000'),
+        new CurrencyAmount(tokenB, '10000')
       )
 
       expect(
         pair
           .getLiquidityMinted(
-            CurrencyAmount.fromRawAmount(pair.liquidityToken, '10000'),
-            CurrencyAmount.fromRawAmount(tokenA, '2000'),
-            CurrencyAmount.fromRawAmount(tokenB, '2000')
+            new CurrencyAmount(pair.liquidityToken, '10000'),
+            new CurrencyAmount(tokenA, '2000'),
+            new CurrencyAmount(tokenB, '2000')
           )
           .quotient.toString()
       ).toEqual('2000')
@@ -225,13 +225,13 @@ describe('Pair', () => {
     it('getLiquidityValue:!feeOn', async () => {
       const tokenA = new Token(3, '0x0000000000000000000000000000000000000001', 18)
       const tokenB = new Token(3, '0x0000000000000000000000000000000000000002', 18)
-      const pair = new Pair(CurrencyAmount.fromRawAmount(tokenA, '1000'), CurrencyAmount.fromRawAmount(tokenB, '1000'))
+      const pair = new Pair(new CurrencyAmount(tokenA, '1000'), new CurrencyAmount(tokenB, '1000'))
 
       {
         const liquidityValue = pair.getLiquidityValue(
           tokenA,
-          CurrencyAmount.fromRawAmount(pair.liquidityToken, '1000'),
-          CurrencyAmount.fromRawAmount(pair.liquidityToken, '1000'),
+          new CurrencyAmount(pair.liquidityToken, '1000'),
+          new CurrencyAmount(pair.liquidityToken, '1000'),
           false
         )
         expect(liquidityValue.currency.equals(tokenA)).toBe(true)
@@ -242,8 +242,8 @@ describe('Pair', () => {
       {
         const liquidityValue = pair.getLiquidityValue(
           tokenA,
-          CurrencyAmount.fromRawAmount(pair.liquidityToken, '1000'),
-          CurrencyAmount.fromRawAmount(pair.liquidityToken, '500'),
+          new CurrencyAmount(pair.liquidityToken, '1000'),
+          new CurrencyAmount(pair.liquidityToken, '500'),
           false
         )
         expect(liquidityValue.currency.equals(tokenA)).toBe(true)
@@ -254,8 +254,8 @@ describe('Pair', () => {
       {
         const liquidityValue = pair.getLiquidityValue(
           tokenB,
-          CurrencyAmount.fromRawAmount(pair.liquidityToken, '1000'),
-          CurrencyAmount.fromRawAmount(pair.liquidityToken, '1000'),
+          new CurrencyAmount(pair.liquidityToken, '1000'),
+          new CurrencyAmount(pair.liquidityToken, '1000'),
           false
         )
         expect(liquidityValue.currency.equals(tokenB)).toBe(true)
@@ -266,12 +266,12 @@ describe('Pair', () => {
     it('getLiquidityValue:feeOn', async () => {
       const tokenA = new Token(3, '0x0000000000000000000000000000000000000001', 18)
       const tokenB = new Token(3, '0x0000000000000000000000000000000000000002', 18)
-      const pair = new Pair(CurrencyAmount.fromRawAmount(tokenA, '1000'), CurrencyAmount.fromRawAmount(tokenB, '1000'))
+      const pair = new Pair(new CurrencyAmount(tokenA, '1000'), new CurrencyAmount(tokenB, '1000'))
 
       const liquidityValue = pair.getLiquidityValue(
         tokenA,
-        CurrencyAmount.fromRawAmount(pair.liquidityToken, '500'),
-        CurrencyAmount.fromRawAmount(pair.liquidityToken, '500'),
+        new CurrencyAmount(pair.liquidityToken, '500'),
+        new CurrencyAmount(pair.liquidityToken, '500'),
         true,
         '250000' // 500 ** 2
       )

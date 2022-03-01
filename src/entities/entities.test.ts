@@ -1,7 +1,6 @@
 import JSBI from 'jsbi'
 import invariant from 'tiny-invariant'
-import { WETH9 as _WETH9, TradeType, Token, CurrencyAmount } from '@intercroneswap/sdk-core'
-import { Pair, Route, Trade } from '../index'
+import { CurrencyAmount, Pair, Route, Token, Trade, TradeType } from '../index'
 
 const ADDRESSES = [
   '0x0000000000000000000000000000000000000001',
@@ -32,16 +31,16 @@ describe('entities', () => {
       it('Pair', () => {
         pairs = [
           new Pair(
-            CurrencyAmount.fromRawAmount(tokens[0], decimalize(1, tokens[0].decimals)),
-            CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals))
+            new CurrencyAmount(tokens[0], decimalize(1, tokens[0].decimals)),
+            new CurrencyAmount(tokens[1], decimalize(1, tokens[1].decimals))
           ),
           new Pair(
-            CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals)),
-            CurrencyAmount.fromRawAmount(tokens[2], decimalize(1, tokens[2].decimals))
+            new CurrencyAmount(tokens[1], decimalize(1, tokens[1].decimals)),
+            new CurrencyAmount(tokens[2], decimalize(1, tokens[2].decimals))
           ),
           new Pair(
-            CurrencyAmount.fromRawAmount(tokens[2], decimalize(1, tokens[2].decimals)),
-            CurrencyAmount.fromRawAmount(WETH9, decimalize(1234, WETH9.decimals))
+            new CurrencyAmount(tokens[2], decimalize(1, tokens[2].decimals)),
+            new CurrencyAmount(WETH9, decimalize(1234, WETH9.decimals))
           )
         ]
       })
@@ -59,14 +58,14 @@ describe('entities', () => {
         invariant(route.input.isToken)
         invariant(route.output.isToken)
         expect(
-          route.midPrice.quote(CurrencyAmount.fromRawAmount(route.input, decimalize(1, route.input.decimals))).toExact()
-        ).toEqual(CurrencyAmount.fromRawAmount(route.output, decimalize(1234, route.output.decimals)).toExact())
+          route.midPrice.quote(new CurrencyAmount(route.input, decimalize(1, route.input.decimals))).toExact()
+        ).toEqual(new CurrencyAmount(route.output, decimalize(1234, route.output.decimals)).toExact())
         expect(
           route.midPrice
             .invert()
-            .quote(CurrencyAmount.fromRawAmount(route.output, decimalize(1234, route.output.decimals)))
+            .quote(new CurrencyAmount(route.output, decimalize(1234, route.output.decimals)))
             .toExact()
-        ).toEqual(CurrencyAmount.fromRawAmount(route.input, decimalize(1, route.input.decimals)).toExact())
+        ).toEqual(new CurrencyAmount(route.input, decimalize(1, route.input.decimals)).toExact())
 
         expect(route.midPrice.invert().toSignificant(5)).toEqual('0.00081037')
         expect(route.midPrice.toFixed(2)).toEqual('1234.00')
@@ -79,15 +78,15 @@ describe('entities', () => {
           route = new Route(
             [
               new Pair(
-                CurrencyAmount.fromRawAmount(tokens[1], decimalize(5, tokens[1].decimals)),
-                CurrencyAmount.fromRawAmount(WETH9, decimalize(10, WETH9.decimals))
+                new CurrencyAmount(tokens[1], decimalize(5, tokens[1].decimals)),
+                new CurrencyAmount(WETH9, decimalize(10, WETH9.decimals))
               )
             ],
             tokens[1],
             WETH9
           )
-          const inputAmount = CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals))
-          const expectedOutputAmount = CurrencyAmount.fromRawAmount(WETH9, '1662497915624478906')
+          const inputAmount = new CurrencyAmount(tokens[1], decimalize(1, tokens[1].decimals))
+          const expectedOutputAmount = new CurrencyAmount(WETH9, '1662497915624478906')
           const trade = new Trade(route, inputAmount, TradeType.EXACT_INPUT)
           expect(trade.route).toEqual(route)
           expect(trade.tradeType).toEqual(TradeType.EXACT_INPUT)
@@ -103,8 +102,8 @@ describe('entities', () => {
         })
 
         it('TradeType.EXACT_OUTPUT', () => {
-          const outputAmount = CurrencyAmount.fromRawAmount(WETH9, '1662497915624478906')
-          const expectedInputAmount = CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals))
+          const outputAmount = new CurrencyAmount(WETH9, '1662497915624478906')
+          const expectedInputAmount = new CurrencyAmount(tokens[1], decimalize(1, tokens[1].decimals))
           const trade = new Trade(route, outputAmount, TradeType.EXACT_OUTPUT)
           expect(trade.route).toEqual(route)
           expect(trade.tradeType).toEqual(TradeType.EXACT_OUTPUT)
@@ -124,8 +123,8 @@ describe('entities', () => {
             const route = new Route(
               [
                 new Pair(
-                  CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals)),
-                  CurrencyAmount.fromRawAmount(
+                  new CurrencyAmount(tokens[1], decimalize(1, tokens[1].decimals)),
+                  new CurrencyAmount(
                     WETH9,
                     JSBI.add(
                       decimalize(10, WETH9.decimals),
@@ -137,7 +136,7 @@ describe('entities', () => {
               tokens[1],
               WETH9
             )
-            const outputAmount = CurrencyAmount.fromRawAmount(tokens[1], '1')
+            const outputAmount = new CurrencyAmount(tokens[1], '1')
             const trade = new Trade(route, outputAmount, TradeType.EXACT_INPUT)
 
             expect(trade.priceImpact.toSignificant(18)).toEqual(

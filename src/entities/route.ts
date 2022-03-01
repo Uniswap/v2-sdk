@@ -1,15 +1,18 @@
 import invariant from 'tiny-invariant'
-import { Currency, Price, Token } from '@intercroneswap/sdk-core'
+import { Token } from './token'
+import { Currency, ETHER } from './currency'
+import { WETH } from './weth'
+import { Price } from './fractions/price'
 
 import { Pair } from './pair'
 
-export class Route<TInput extends Currency, TOutput extends Currency> {
+export class Route {
   public readonly pairs: Pair[]
   public readonly path: Token[]
-  public readonly input: TInput
-  public readonly output: TOutput
+  public readonly input: Currency
+  public readonly output: Currency
 
-  public constructor(pairs: Pair[], input: TInput, output: TOutput) {
+  public constructor(pairs: Pair[], input: Currency, output?: Currency) {
     invariant(pairs.length > 0, 'PAIRS')
     const chainId: number = pairs[0].chainId
     invariant(
@@ -17,11 +20,20 @@ export class Route<TInput extends Currency, TOutput extends Currency> {
       'CHAIN_IDS'
     )
 
-    const wrappedInput = input.wrapped
-    invariant(pairs[0].involvesToken(wrappedInput), 'INPUT')
-    invariant(typeof output === 'undefined' || pairs[pairs.length - 1].involvesToken(output.wrapped), 'OUTPUT')
+    invariant(
+      (input instanceof Token && pairs[0].involvesToken(input)) ||
+        (input === ETHER && pairs[0].involvesToken(WETH[pairs[0].chainId])),
+      'INPUT'
+    )
+    const wrappedInput = WETH[pairs[0].chainId]
+    invariant(
+      typeof output === 'undefined' ||
+        (output instanceof Token && pairs[pairs.length - 1].involvesToken(output)) ||
+        (output === ETHER && pairs[pairs.length - 1].involvesToken(WETH[pairs[0].chainId])),
+      'OUTPUT'
+    )
 
-    const path: Token[] = [wrappedInput]
+    const path: Token[] = [input instanceof Token ? input : wrappedInput]
     for (const [i, pair] of pairs.entries()) {
       const currentInput = path[i]
       invariant(currentInput.equals(pair.token0) || currentInput.equals(pair.token1), 'PATH')
@@ -32,19 +44,19 @@ export class Route<TInput extends Currency, TOutput extends Currency> {
     this.pairs = pairs
     this.path = path
     this.input = input
-    this.output = output
+    this.output = output ?? path[path.length - 1]
   }
 
-  private _midPrice: Price<TInput, TOutput> | null = null
+  private _midPrice: Price | null = null
 
-  public get midPrice(): Price<TInput, TOutput> {
+  public get midPrice(): Price {
     if (this._midPrice !== null) return this._midPrice
-    const prices: Price<Currency, Currency>[] = []
+    const prices: Price[] = []
     for (const [i, pair] of this.pairs.entries()) {
       prices.push(
         this.path[i].equals(pair.token0)
-          ? new Price(pair.reserve0.currency, pair.reserve1.currency, pair.reserve0.quotient, pair.reserve1.quotient)
-          : new Price(pair.reserve1.currency, pair.reserve0.currency, pair.reserve1.quotient, pair.reserve0.quotient)
+          ? new Price(pair.reserve0.currency, pair.reserve1.currency, pair.reserve0.raw, pair.reserve1.raw)
+          : new Price(pair.reserve1.currency, pair.reserve0.currency, pair.reserve1.raw, pair.reserve0.raw)
       )
     }
     const reduced = prices.slice(1).reduce((accumulator, currentValue) => accumulator.multiply(currentValue), prices[0])
