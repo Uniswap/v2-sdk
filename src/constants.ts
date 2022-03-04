@@ -24,7 +24,7 @@ export const FACTORY_ADDRESS = '0x486be31557ee7d7b50113a512da8faa1a6c3a5ef'
 export const FACTORY_ADDRESSES: { [chainId: number]: string } = {
   [ChainId.MAINNET]: '0x991255549e4fd299f03acd368497366cb9a2bfb0',
   [ChainId.NILE]: '0xed8185b97e71435f5c37381a8b4d050b5daee972',
-  [ChainId.SHASTA]: '0x78dab87d069bad81b7388453db9deb4f4d256979'
+  [ChainId.SHASTA]: '0x9c50adc935c61e988d17f2b5eff079999b65c9fc'
 }
 export const INIT_CODE_HASH = '0xac05afeaccf341d8467f4be1ff78dac15408fe7c39535ce679618a8fb6e0468f'
 
