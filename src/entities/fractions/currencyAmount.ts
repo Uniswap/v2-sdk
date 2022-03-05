@@ -59,6 +59,6 @@ export class CurrencyAmount extends Fraction {
 
   public toExact(format: object = { groupSeparator: '' }): string {
     Big.DP = this.currency.decimals
-    return new Big(this.quotient.toString()).div(this.denominator.toString()).toFormat(format)
+    return new Big(this.numerator.toString()).div(this.denominator.toString()).toFormat(format)
   }
 }
