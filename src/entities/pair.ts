@@ -24,6 +24,8 @@ import { TokenAmount } from './fractions/tokenAmount'
 import { sqrt } from '../utils/sqrt'
 import { InsufficientInputAmountError, InsufficientReservesError } from '../errors'
 
+let PAIR_ADDRESS_CACHE: { [token0Address: string]: { [token1Address: string]: string } } = {}
+
 export const getFactoryContract = ({ chainId, provider }: { chainId: ChainId; provider: Provider }): Contract => {
   return new Contract(FACTORY_ADDRESSES[chainId], ISwapFactoryABI, provider)
 }
@@ -53,10 +55,22 @@ export class Pair {
   }
 
   public static async getAddressAsync(tokenA: Token, tokenB: Token, provider: Provider): Promise<string> {
+    const tokens = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA];
     try {
-      var { chainId } = tokenA
-      var contract = getFactoryContract({ chainId, provider })
-      return contract.getPair(tokenA.address, tokenB.address)
+      if (PAIR_ADDRESS_CACHE?.[tokens[0].address]?.[tokens[1].address] === undefined) {
+        var { chainId } = tokenA
+        var contract = getFactoryContract({ chainId, provider })
+        const pair = await contract.getPair(tokenA.address, tokenB.address)
+        PAIR_ADDRESS_CACHE = {
+          ...PAIR_ADDRESS_CACHE,
+          [tokens[0].address]: {
+            ...PAIR_ADDRESS_CACHE?.[tokens[0].address],
+            [tokens[1].address]: pair
+          }
+        }
+      }
+
+      return PAIR_ADDRESS_CACHE[tokens[0].address][tokens[1].address];
     } catch (error) {
       throw error
     }

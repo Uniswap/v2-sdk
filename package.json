@@ -1,7 +1,7 @@
 {
   "name": "@intercroneswap/v2-sdk",
   "license": "MIT",
-  "version": "1.0.2-trx",
+  "version": "1.0.3-trx",
   "description": "🛠 An SDK for building applications on top of Intercroneswap V2",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
