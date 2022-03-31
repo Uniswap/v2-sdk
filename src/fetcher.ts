@@ -10,8 +10,7 @@ import { TokenAmount } from './entities/fractions/tokenAmount'
 
 export var TOKEN_DECIMALS_CACHE: { [chainId: number]: { [tokenAddress: string]: number } } = {
   [ChainId.MAINNET]: {},
-  [ChainId.NILE]: {},
-  [ChainId.SHASTA]: {}
+  [ChainId.TESTNET]: {}
 }
 
 /**
