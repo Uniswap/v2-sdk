@@ -2,7 +2,6 @@ import { Token } from './token'
 import { ChainId } from '../constants'
 
 export const WETH: { [chainId: number]: Token } = {
-  [ChainId.MAINNET]: new Token(ChainId.MAINNET, '0x891CDB91D149F23B1A45D9C5CA78A88D0CB44C18', 6, 'WTRX', 'Wrapped TRX'),
-  [ChainId.NILE]: new Token(ChainId.NILE, '0x8f44113A985076431b77f6078f0929f949cB8836', 6, 'WTRX', 'Wrapped TRX'),
-  [ChainId.SHASTA]: new Token(ChainId.SHASTA, '0xB970B980C520EC3F49921C2727BFA6DE79E7226A', 6, 'WTRX', 'Wrapped TRX')
+  [ChainId.MAINNET]: new Token(ChainId.MAINNET, '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c', 6, 'WBNB', 'Wrapped BNB'),
+  [ChainId.TESTNET]: new Token(ChainId.TESTNET, '0xae13d989dac2f0debff460ac112a837c89baa7cd', 6, 'WBNB', 'Wrapped BNB')
 }

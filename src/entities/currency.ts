@@ -5,7 +5,7 @@ export class Currency {
   readonly symbol?: string
   readonly name?: string
 
-  public static readonly ETHER: Currency = new Currency(6, 'TRX', 'Tron')
+  public static readonly ETHER: Currency = new Currency(18, 'BNB', 'Binance')
 
   protected constructor(decimals: number, symbol?: string, name?: string) {
     invariant(decimals >= 0 && decimals < 255 && Number.isInteger(decimals), 'DECIMALS')
