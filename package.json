@@ -1,5 +1,5 @@
 {
-  "name": "@uniswap/v2-sdk",
+  "name": "@zuzu-cat/defira-sdk",
   "license": "MIT",
   "version": "3.0.1",
   "description": "🛠 An SDK for building applications on top of Uniswap V2",
@@ -8,10 +8,11 @@
   "files": [
     "dist"
   ],
-  "repository": "https://github.com/Uniswap/uniswap-v2-sdk.git",
+  "repository": "https://github.com/zuzu-cat/defira-sdk.git",
   "keywords": [
-    "uniswap",
-    "ethereum"
+    "defira",
+    "harmony",
+    "uniswap"
   ],
   "module": "dist/v2-sdk.esm.js",
   "scripts": {
