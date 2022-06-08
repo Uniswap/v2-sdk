@@ -2377,6 +2377,7 @@ __metadata:
     "@uniswap/sdk-core": ^3.0.0-alpha.3
     "@uniswap/v2-core": ^1.0.1
     "@zuzu-cat/defira-sdk-core": "https://github.com/zuzu-cat/defira-sdk-core.git"
+    rimraf: ^3.0.2
     tiny-invariant: ^1.1.0
     tiny-warning: ^1.0.3
     tsdx: ^0.14.1
