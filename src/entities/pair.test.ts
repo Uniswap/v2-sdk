@@ -1,11 +1,13 @@
-import { Token, WETH9, Price, CurrencyAmount } from '@uniswap/sdk-core'
+import { Token, Price, CurrencyAmount } from '@uniswap/sdk-core'
+import { WONE as WONE5 } from '@zuzu-cat/defira-sdk-core'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
 
 describe('computePairAddress', () => {
   it('should correctly compute the pool address', () => {
-    const tokenA = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
-    const tokenB = new Token(1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
+    const CHAIN_ID = 1666600000
+    const tokenA = new Token(CHAIN_ID, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
+    const tokenB = new Token(CHAIN_ID, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
     const result = computePairAddress({
       factoryAddress: '0x1111111111111111111111111111111111111111',
       tokenA,
@@ -15,8 +17,9 @@ describe('computePairAddress', () => {
     expect(result).toEqual('0xb50b5182D6a47EC53a469395AF44e371d7C76ed4')
   })
   it('should give same result regardless of token order', () => {
-    const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
-    const DAI = new Token(1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
+    const CHAIN_ID = 1666600000
+    const USDC = new Token(CHAIN_ID, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
+    const DAI = new Token(CHAIN_ID, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
     let tokenA = USDC
     let tokenB = DAI
     const resultA = computePairAddress({
@@ -38,13 +41,21 @@ describe('computePairAddress', () => {
 })
 
 describe('Pair', () => {
-  const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
-  const DAI = new Token(1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
+  const CHAIN_ID1 = 1666600000
+  const CHAIN_ID2 = 1666600002
+  const CHAIN_ID3 = 1666700000
+  const USDC = new Token(CHAIN_ID1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
+  const DAI = new Token(CHAIN_ID1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
 
   describe('constructor', () => {
-    it('cannot be used for tokens on different chains', () => {
+    it('cannot be used for tokens on different chains but the same network', () => {
       expect(
-        () => new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(WETH9[3], '100'))
+        () => new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(WONE5[CHAIN_ID2], '100'))
+      ).toThrow('CHAIN_IDS')
+    })
+    it('cannot be used for tokens on different chains and different networks', () => {
+      expect(
+        () => new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(WONE5[CHAIN_ID3], '100'))
       ).toThrow('CHAIN_IDS')
     })
   })
@@ -119,6 +130,7 @@ describe('Pair', () => {
   })
 
   describe('#priceOf', () => {
+    const CHAIN_ID = 1666600000
     const pair = new Pair(CurrencyAmount.fromRawAmount(USDC, '101'), CurrencyAmount.fromRawAmount(DAI, '100'))
     it('returns price of token in terms of other token', () => {
       expect(pair.priceOf(DAI)).toEqual(pair.token0Price)
@@ -126,7 +138,7 @@ describe('Pair', () => {
     })
 
     it('throws if invalid token', () => {
-      expect(() => pair.priceOf(WETH9[1])).toThrow('TOKEN')
+      expect(() => pair.priceOf(WONE5[CHAIN_ID])).toThrow('TOKEN')
     })
   })
 
@@ -143,7 +155,7 @@ describe('Pair', () => {
     it('throws if not in the pair', () => {
       expect(() =>
         new Pair(CurrencyAmount.fromRawAmount(DAI, '101'), CurrencyAmount.fromRawAmount(USDC, '100')).reserveOf(
-          WETH9[1]
+          WONE5[CHAIN_ID1]
         )
       ).toThrow('TOKEN')
     })
@@ -153,13 +165,14 @@ describe('Pair', () => {
     it('returns the token0 chainId', () => {
       expect(
         new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).chainId
-      ).toEqual(1)
+      ).toEqual(CHAIN_ID1)
       expect(
         new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '100')).chainId
-      ).toEqual(1)
+      ).toEqual(CHAIN_ID1)
     })
   })
   describe('#involvesToken', () => {
+    const CHAIN_ID = 1666600000
     expect(
       new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).involvesToken(USDC)
     ).toEqual(true)
@@ -168,14 +181,15 @@ describe('Pair', () => {
     ).toEqual(true)
     expect(
       new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).involvesToken(
-        WETH9[1]
+        WONE5[CHAIN_ID]
       )
     ).toEqual(false)
   })
   describe('miscellaneous', () => {
     it('getLiquidityMinted:0', async () => {
-      const tokenA = new Token(3, '0x0000000000000000000000000000000000000001', 18)
-      const tokenB = new Token(3, '0x0000000000000000000000000000000000000002', 18)
+      const CHAIN_ID = 1666600002
+      const tokenA = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000001', 18)
+      const tokenB = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000002', 18)
       const pair = new Pair(CurrencyAmount.fromRawAmount(tokenA, '0'), CurrencyAmount.fromRawAmount(tokenB, '0'))
 
       expect(() => {
@@ -204,8 +218,9 @@ describe('Pair', () => {
     })
 
     it('getLiquidityMinted:!0', async () => {
-      const tokenA = new Token(3, '0x0000000000000000000000000000000000000001', 18)
-      const tokenB = new Token(3, '0x0000000000000000000000000000000000000002', 18)
+      const CHAIN_ID = 1666600000
+      const tokenA = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000001', 18)
+      const tokenB = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000002', 18)
       const pair = new Pair(
         CurrencyAmount.fromRawAmount(tokenA, '10000'),
         CurrencyAmount.fromRawAmount(tokenB, '10000')
@@ -223,8 +238,9 @@ describe('Pair', () => {
     })
 
     it('getLiquidityValue:!feeOn', async () => {
-      const tokenA = new Token(3, '0x0000000000000000000000000000000000000001', 18)
-      const tokenB = new Token(3, '0x0000000000000000000000000000000000000002', 18)
+      const CHAIN_ID = 1666600000
+      const tokenA = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000001', 18)
+      const tokenB = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000002', 18)
       const pair = new Pair(CurrencyAmount.fromRawAmount(tokenA, '1000'), CurrencyAmount.fromRawAmount(tokenB, '1000'))
 
       {
@@ -264,8 +280,9 @@ describe('Pair', () => {
     })
 
     it('getLiquidityValue:feeOn', async () => {
-      const tokenA = new Token(3, '0x0000000000000000000000000000000000000001', 18)
-      const tokenB = new Token(3, '0x0000000000000000000000000000000000000002', 18)
+      const CHAIN_ID = 1666600000
+      const tokenA = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000001', 18)
+      const tokenB = new Token(CHAIN_ID, '0x0000000000000000000000000000000000000002', 18)
       const pair = new Pair(CurrencyAmount.fromRawAmount(tokenA, '1000'), CurrencyAmount.fromRawAmount(tokenB, '1000'))
 
       const liquidityValue = pair.getLiquidityValue(
