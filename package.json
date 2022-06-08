@@ -16,16 +16,21 @@
   ],
   "module": "dist/v2-sdk.esm.js",
   "scripts": {
-    "lint": "tsdx lint src test",
     "build": "tsdx build",
+    "lint": "tsdx lint src test",
     "start": "tsdx watch",
     "test": "tsdx test",
+    "prepack": "tsdx build",
+    "prepublish": "tsdx lint && tsdx test",
+    "prepublishOnly": "tsdx lint && tsdx test",
+    "postpack": "rimraf dist",
     "prepare": "tsdx build"
   },
   "dependencies": {
     "@ethersproject/address": "^5.0.0",
     "@ethersproject/solidity": "^5.0.0",
     "@uniswap/sdk-core": "^3.0.0-alpha.3",
+    "@zuzu-cat/defira-sdk-core": "https://github.com/zuzu-cat/defira-sdk-core.git",
     "tiny-invariant": "^1.1.0",
     "tiny-warning": "^1.0.3"
   },
@@ -42,5 +47,6 @@
     "printWidth": 120,
     "semi": false,
     "singleQuote": true
-  }
+  },
+  "packageManager": "yarn@3.2.1"
 }
