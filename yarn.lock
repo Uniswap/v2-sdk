@@ -2354,7 +2354,7 @@ __metadata:
 
 "@zuzu-cat/defira-sdk-core@https://github.com/zuzu-cat/defira-sdk-core.git":
   version: 3.0.1
-  resolution: "@zuzu-cat/defira-sdk-core@https://github.com/zuzu-cat/defira-sdk-core.git#commit=fe594cd99061edf0a9e46e758b64ac0974fe85db"
+  resolution: "@zuzu-cat/defira-sdk-core@https://github.com/zuzu-cat/defira-sdk-core.git#commit=b54f0377175ee6c018f061723f15d2da8c2cc01b"
   dependencies:
     "@ethersproject/address": ^5.0.2
     big.js: ^5.2.2
@@ -2362,7 +2362,7 @@ __metadata:
     jsbi: ^3.1.4
     tiny-invariant: ^1.1.0
     toformat: ^2.0.0
-  checksum: 632cb8901d31de36b3e853db8b46e4d1e803d46e3e92a03616d42a9aa60df6711be6683c937a4343af079fe3a41aba182af3f2b4761492d14d36eb0a23be55e4
+  checksum: 4e640dcc33e157b6f0a5463e858c87fedc168bf45b12ccba05cd064738c5e61df32e64d12a8a240d928921eb65f74649aac2e138187529d25f8c87029cbee652
   languageName: node
   linkType: hard
 
