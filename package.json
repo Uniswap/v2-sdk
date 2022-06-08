@@ -47,5 +47,6 @@
     "printWidth": 120,
     "semi": false,
     "singleQuote": true
-  }
+  },
+  "packageManager": "yarn@3.2.1"
 }
