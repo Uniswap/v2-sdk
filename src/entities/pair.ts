@@ -23,14 +23,21 @@ export const computePairAddress = ({
     factoryAddress,
     keccak256(['bytes'], [pack(['address', 'address'], [token0.address, token1.address])]),
     initHashCode
+  )
 }
+
 export class Pair {
   public readonly liquidityToken: Token
   private readonly tokenAmounts: [CurrencyAmount<Token>, CurrencyAmount<Token>]
   private readonly factoryAddress: string
   private readonly initCodeHash: string
 
-  public static getAddress(tokenA: Token, tokenB: Token, factoryAddress = FACTORY_ADDRESS, initHashCode = INIT_CODE_HASH): string {
+  public static getAddress(
+    tokenA: Token,
+    tokenB: Token,
+    factoryAddress = FACTORY_ADDRESS,
+    initHashCode = INIT_CODE_HASH
+  ): string {
     return computePairAddress({ factoryAddress, tokenA, tokenB, initHashCode })
   }
 
@@ -38,7 +45,7 @@ export class Pair {
     currencyAmountA: CurrencyAmount<Token>,
     tokenAmountB: CurrencyAmount<Token>,
     factoryAddress = FACTORY_ADDRESS,
-    initCodeHash = INIT_CODE_HASH,
+    initCodeHash = INIT_CODE_HASH
   ) {
     const tokenAmounts = currencyAmountA.currency.sortsBefore(tokenAmountB.currency) // does safety checks
       ? [currencyAmountA, tokenAmountB]
@@ -134,7 +141,15 @@ export class Pair {
     if (JSBI.equal(outputAmount.quotient, ZERO)) {
       throw new InsufficientInputAmountError()
     }
-    return [outputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount), this.factoryAddress, this.initCodeHash)]
+    return [
+      outputAmount,
+      new Pair(
+        inputReserve.add(inputAmount),
+        outputReserve.subtract(outputAmount),
+        this.factoryAddress,
+        this.initCodeHash
+      )
+    ]
   }
 
   public getInputAmount(outputAmount: CurrencyAmount<Token>): [CurrencyAmount<Token>, Pair] {
@@ -155,7 +170,15 @@ export class Pair {
       outputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
       JSBI.add(JSBI.divide(numerator, denominator), ONE)
     )
-    return [inputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount), this.factoryAddress, this.initCodeHash)]
+    return [
+      inputAmount,
+      new Pair(
+        inputReserve.add(inputAmount),
+        outputReserve.subtract(outputAmount),
+        this.factoryAddress,
+        this.initCodeHash
+      )
+    ]
   }
 
   public getLiquidityMinted(
