@@ -28,6 +28,8 @@
   },
   "dependencies": {
     "@ethersproject/address": "^5.0.0",
+    "@ethersproject/contracts": "^5.6.2",
+    "@ethersproject/providers": "^5.6.8",
     "@ethersproject/solidity": "^5.0.0",
     "@uniswap/sdk-core": "^3.0.0-alpha.3",
     "@zuzu-cat/defira-sdk-core": "https://github.com/zuzu-cat/defira-sdk-core.git",

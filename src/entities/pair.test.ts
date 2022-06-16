@@ -2,36 +2,40 @@ import { Token, Price, CurrencyAmount } from '@uniswap/sdk-core'
 import { WONE as WONE5 } from '@zuzu-cat/defira-sdk-core'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
+import { INIT_CODE_HASH, FACTORY_ADDRESS } from '../constants'
 
 describe('computePairAddress', () => {
   it('should correctly compute the pool address', () => {
     const CHAIN_ID = 1666600000
-    const tokenA = new Token(CHAIN_ID, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
-    const tokenB = new Token(CHAIN_ID, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
+    const WONE = new Token(CHAIN_ID, '0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a', 18, 'WONE', 'Wrapped ONE')
+    const ETH = new Token(CHAIN_ID, '0x6983D1E6DEf3690C4d616b13597A09e6193EA013', 18, '1ETH', 'ETH')
     const result = computePairAddress({
-      factoryAddress: '0x1111111111111111111111111111111111111111',
-      tokenA,
-      tokenB
+      factoryAddress: FACTORY_ADDRESS,
+      initHashCode: INIT_CODE_HASH,
+      tokenA: WONE,
+      tokenB: ETH
     })
 
-    expect(result).toEqual('0xb50b5182D6a47EC53a469395AF44e371d7C76ed4')
+    expect(result).toEqual('0xBc132b3A5A345069846c5e6f49FE28FeC01E7c47')
   })
   it('should give same result regardless of token order', () => {
     const CHAIN_ID = 1666600000
-    const USDC = new Token(CHAIN_ID, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
-    const DAI = new Token(CHAIN_ID, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
-    let tokenA = USDC
-    let tokenB = DAI
+    const WONE = new Token(CHAIN_ID, '0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a', 18, 'WONE', 'Wrapped ONE')
+    const ETH = new Token(CHAIN_ID, '0x6983D1E6DEf3690C4d616b13597A09e6193EA013', 18, '1ETH', 'ETH')
+    let tokenA = WONE
+    let tokenB = ETH
     const resultA = computePairAddress({
-      factoryAddress: '0x1111111111111111111111111111111111111111',
+      factoryAddress: FACTORY_ADDRESS,
+      initHashCode: INIT_CODE_HASH,
       tokenA,
       tokenB
     })
 
-    tokenA = DAI
-    tokenB = USDC
+    tokenA = ETH
+    tokenB = WONE
     const resultB = computePairAddress({
-      factoryAddress: '0x1111111111111111111111111111111111111111',
+      factoryAddress: FACTORY_ADDRESS,
+      initHashCode: INIT_CODE_HASH,
       tokenA,
       tokenB
     })
@@ -44,119 +48,118 @@ describe('Pair', () => {
   const CHAIN_ID1 = 1666600000
   const CHAIN_ID2 = 1666600002
   const CHAIN_ID3 = 1666700000
-  const USDC = new Token(CHAIN_ID1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
-  const DAI = new Token(CHAIN_ID1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
+  const WONE = new Token(CHAIN_ID1, '0xcF664087a5bB0237a0BAd6742852ec6c8d69A27a', 18, 'WONE', 'Wrapped ONE')
+  const ETH = new Token(CHAIN_ID1, '0x6983D1E6DEf3690C4d616b13597A09e6193EA013', 18, '1ETH', 'ETH')
+  const USDC = new Token(CHAIN_ID1, '0x0000000000000000000000000000000000000001', 18, 'USDC', 'USD Coin')
+  const USDC2 = new Token(CHAIN_ID2, '0x0000000000000000000000000000000000000001', 18, 'USDC', 'USD Coin')
 
   describe('constructor', () => {
     it('cannot be used for tokens on different chains but the same network', () => {
       expect(
-        () => new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(WONE5[CHAIN_ID2], '100'))
+        () => new Pair(CurrencyAmount.fromRawAmount(WONE, '100'), CurrencyAmount.fromRawAmount(WONE5[CHAIN_ID2], '100'))
       ).toThrow('CHAIN_IDS')
     })
     it('cannot be used for tokens on different chains and different networks', () => {
       expect(
-        () => new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(WONE5[CHAIN_ID3], '100'))
+        () => new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE5[CHAIN_ID3], '100'))
       ).toThrow('CHAIN_IDS')
     })
   })
 
   describe('#getAddress', () => {
     it('returns the correct address', () => {
-      expect(Pair.getAddress(USDC, DAI)).toEqual('0xAE461cA67B15dc8dc81CE7615e0320dA1A9aB8D5')
+      expect(Pair.getAddress(WONE, ETH)).toEqual('0xBc132b3A5A345069846c5e6f49FE28FeC01E7c47')
     })
   })
 
   describe('#token0', () => {
     it('always is the token that sorts before', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).token0
-      ).toEqual(DAI)
+        new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE, '100')).token0
+      ).toEqual(ETH)
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '100')).token0
-      ).toEqual(DAI)
+        new Pair(CurrencyAmount.fromRawAmount(WONE, '100'), CurrencyAmount.fromRawAmount(ETH, '100')).token0
+      ).toEqual(ETH)
     })
   })
   describe('#token1', () => {
     it('always is the token that sorts after', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).token1
-      ).toEqual(USDC)
+        new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE, '100')).token1
+      ).toEqual(WONE)
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '100')).token1
-      ).toEqual(USDC)
+        new Pair(CurrencyAmount.fromRawAmount(WONE, '100'), CurrencyAmount.fromRawAmount(ETH, '100')).token1
+      ).toEqual(WONE)
     })
   })
   describe('#reserve0', () => {
     it('always comes from the token that sorts before', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '101')).reserve0
-      ).toEqual(CurrencyAmount.fromRawAmount(DAI, '101'))
+        new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE, '101')).reserve0
+      ).toEqual(CurrencyAmount.fromRawAmount(ETH, '100'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '101'), CurrencyAmount.fromRawAmount(USDC, '100')).reserve0
-      ).toEqual(CurrencyAmount.fromRawAmount(DAI, '101'))
+        new Pair(CurrencyAmount.fromRawAmount(WONE, '101'), CurrencyAmount.fromRawAmount(ETH, '100')).reserve0
+      ).toEqual(CurrencyAmount.fromRawAmount(ETH, '100'))
     })
   })
   describe('#reserve1', () => {
     it('always comes from the token that sorts after', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '101')).reserve1
-      ).toEqual(CurrencyAmount.fromRawAmount(USDC, '100'))
+        new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE, '101')).reserve1
+      ).toEqual(CurrencyAmount.fromRawAmount(WONE, '101'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '101'), CurrencyAmount.fromRawAmount(USDC, '100')).reserve1
-      ).toEqual(CurrencyAmount.fromRawAmount(USDC, '100'))
+        new Pair(CurrencyAmount.fromRawAmount(WONE, '101'), CurrencyAmount.fromRawAmount(ETH, '100')).reserve1
+      ).toEqual(CurrencyAmount.fromRawAmount(WONE, '101'))
     })
   })
 
   describe('#token0Price', () => {
     it('returns price of token0 in terms of token1', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '101'), CurrencyAmount.fromRawAmount(DAI, '100')).token0Price
-      ).toEqual(new Price(DAI, USDC, '100', '101'))
+        new Pair(CurrencyAmount.fromRawAmount(ETH, '101'), CurrencyAmount.fromRawAmount(WONE, '100')).token0Price
+      ).toEqual(new Price(ETH, WONE, '101', '100'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '101')).token0Price
-      ).toEqual(new Price(DAI, USDC, '100', '101'))
+        new Pair(CurrencyAmount.fromRawAmount(WONE, '100'), CurrencyAmount.fromRawAmount(ETH, '101')).token0Price
+      ).toEqual(new Price(ETH, WONE, '101', '100'))
     })
   })
 
   describe('#token1Price', () => {
     it('returns price of token1 in terms of token0', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '101'), CurrencyAmount.fromRawAmount(DAI, '100')).token1Price
-      ).toEqual(new Price(USDC, DAI, '101', '100'))
+        new Pair(CurrencyAmount.fromRawAmount(ETH, '101'), CurrencyAmount.fromRawAmount(WONE, '100')).token1Price
+      ).toEqual(new Price(WONE, ETH, '100', '101'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '101')).token1Price
-      ).toEqual(new Price(USDC, DAI, '101', '100'))
+        new Pair(CurrencyAmount.fromRawAmount(WONE, '100'), CurrencyAmount.fromRawAmount(ETH, '101')).token1Price
+      ).toEqual(new Price(WONE, ETH, '100', '101'))
     })
   })
 
   describe('#priceOf', () => {
-    const CHAIN_ID = 1666600000
-    const pair = new Pair(CurrencyAmount.fromRawAmount(USDC, '101'), CurrencyAmount.fromRawAmount(DAI, '100'))
+    const pair = new Pair(CurrencyAmount.fromRawAmount(ETH, '101'), CurrencyAmount.fromRawAmount(WONE, '100'))
     it('returns price of token in terms of other token', () => {
-      expect(pair.priceOf(DAI)).toEqual(pair.token0Price)
-      expect(pair.priceOf(USDC)).toEqual(pair.token1Price)
+      expect(pair.priceOf(ETH)).toEqual(pair.token0Price)
+      expect(pair.priceOf(WONE)).toEqual(pair.token1Price)
     })
 
     it('throws if invalid token', () => {
-      expect(() => pair.priceOf(WONE5[CHAIN_ID])).toThrow('TOKEN')
+      expect(() => pair.priceOf(USDC)).toThrow('TOKEN')
     })
   })
 
   describe('#reserveOf', () => {
     it('returns reserves of the given token', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '101')).reserveOf(USDC)
-      ).toEqual(CurrencyAmount.fromRawAmount(USDC, '100'))
+        new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE, '101')).reserveOf(ETH)
+      ).toEqual(CurrencyAmount.fromRawAmount(ETH, '100'))
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '101'), CurrencyAmount.fromRawAmount(USDC, '100')).reserveOf(USDC)
-      ).toEqual(CurrencyAmount.fromRawAmount(USDC, '100'))
+        new Pair(CurrencyAmount.fromRawAmount(WONE, '101'), CurrencyAmount.fromRawAmount(ETH, '100')).reserveOf(ETH)
+      ).toEqual(CurrencyAmount.fromRawAmount(ETH, '100'))
     })
 
     it('throws if not in the pair', () => {
       expect(() =>
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '101'), CurrencyAmount.fromRawAmount(USDC, '100')).reserveOf(
-          WONE5[CHAIN_ID1]
-        )
+        new Pair(CurrencyAmount.fromRawAmount(WONE, '101'), CurrencyAmount.fromRawAmount(ETH, '100')).reserveOf(USDC2)
       ).toThrow('TOKEN')
     })
   })
@@ -164,25 +167,22 @@ describe('Pair', () => {
   describe('#chainId', () => {
     it('returns the token0 chainId', () => {
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).chainId
+        new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE, '100')).chainId
       ).toEqual(CHAIN_ID1)
       expect(
-        new Pair(CurrencyAmount.fromRawAmount(DAI, '100'), CurrencyAmount.fromRawAmount(USDC, '100')).chainId
+        new Pair(CurrencyAmount.fromRawAmount(WONE, '100'), CurrencyAmount.fromRawAmount(ETH, '100')).chainId
       ).toEqual(CHAIN_ID1)
     })
   })
   describe('#involvesToken', () => {
-    const CHAIN_ID = 1666600000
     expect(
-      new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).involvesToken(USDC)
+      new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE, '100')).involvesToken(ETH)
     ).toEqual(true)
     expect(
-      new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).involvesToken(DAI)
+      new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE, '100')).involvesToken(WONE)
     ).toEqual(true)
     expect(
-      new Pair(CurrencyAmount.fromRawAmount(USDC, '100'), CurrencyAmount.fromRawAmount(DAI, '100')).involvesToken(
-        WONE5[CHAIN_ID]
-      )
+      new Pair(CurrencyAmount.fromRawAmount(ETH, '100'), CurrencyAmount.fromRawAmount(WONE, '100')).involvesToken(USDC)
     ).toEqual(false)
   })
   describe('miscellaneous', () => {
