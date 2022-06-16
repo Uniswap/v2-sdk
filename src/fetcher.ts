@@ -4,7 +4,7 @@ import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { getDefaultProvider } from '@ethersproject/providers'
 import { getNetwork } from '@ethersproject/networks'
 import { Contract } from '@ethersproject/contracts'
-import IUniswapV2Pair from '@uniswap/v2-core/build/IUniswapV2Pair.json'
+import DefiraPair from './abis/defiraPair.abi.json'
 
 /**
  * Contains methods for constructing instances of pairs and tokens from on-chain data.
@@ -30,7 +30,7 @@ export abstract class Fetcher {
   ): Promise<Pair> {
     invariant(tokenA.chainId === tokenB.chainId, 'CHAIN_ID')
     const address = Pair.getAddress(tokenA, tokenB, factoryAddress, initHashCode)
-    const [reserves0, reserves1] = await new Contract(address, IUniswapV2Pair.abi, provider).getReserves()
+    const [reserves0, reserves1] = await new Contract(address, DefiraPair.abi, provider).getReserves()
     const balances = tokenA.sortsBefore(tokenB) ? [reserves0, reserves1] : [reserves1, reserves0]
     return new Pair(
       CurrencyAmount.fromRawAmount(tokenA, balances[0]),
