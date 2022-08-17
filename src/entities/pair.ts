@@ -43,8 +43,12 @@ export class Pair {
       tokenAmounts[0].currency.chainId,
       Pair.getAddress(tokenAmounts[0].currency, tokenAmounts[1].currency),
       18,
-      'OCX-V1',
-      'OccamX V1'
+      currencyAmountA.currency.symbol && tokenAmountB.currency.symbol
+        ? `${currencyAmountA.currency.symbol}/${tokenAmountB.currency.symbol}`
+        : 'OCX-V1',
+      currencyAmountA.currency.name && tokenAmountB.currency.name
+        ? `${currencyAmountA.currency.name}/${tokenAmountB.currency.name}`
+        : 'OccamX V1'
     )
     this.tokenAmounts = tokenAmounts as [CurrencyAmount<Token>, CurrencyAmount<Token>]
   }
