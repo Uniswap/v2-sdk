@@ -1,11 +1,13 @@
 import { Pair } from './pair'
 import { Route } from './route'
 import { Trade } from './trade'
+import { AppName } from '../constants'
 import JSBI from 'jsbi'
 import { Ether, CurrencyAmount, Percent, Token, TradeType, WETH9, Price } from '@uniswap/sdk-core'
 
 describe('Trade', () => {
   const ETHER = Ether.onChain(1)
+  const APP_NAME = AppName.UNISWAP
   const token0 = new Token(1, '0x0000000000000000000000000000000000000001', 18, 't0')
   const token1 = new Token(1, '0x0000000000000000000000000000000000000002', 18, 't1')
   const token2 = new Token(1, '0x0000000000000000000000000000000000000003', 18, 't2')
@@ -13,33 +15,40 @@ describe('Trade', () => {
 
   const pair_0_1 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
-    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1000))
+    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1000)),
+    APP_NAME
   )
   const pair_0_2 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
-    CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(1100))
+    CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(1100)),
+    APP_NAME
   )
   const pair_0_3 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
-    CurrencyAmount.fromRawAmount(token3, JSBI.BigInt(900))
+    CurrencyAmount.fromRawAmount(token3, JSBI.BigInt(900)),
+    APP_NAME
   )
   const pair_1_2 = new Pair(
     CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1200)),
-    CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(1000))
+    CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(1000)),
+    APP_NAME
   )
   const pair_1_3 = new Pair(
     CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1200)),
-    CurrencyAmount.fromRawAmount(token3, JSBI.BigInt(1300))
+    CurrencyAmount.fromRawAmount(token3, JSBI.BigInt(1300)),
+    APP_NAME
   )
 
   const pair_weth_0 = new Pair(
     CurrencyAmount.fromRawAmount(WETH9[1], JSBI.BigInt(1000)),
-    CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000))
+    CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
+    APP_NAME
   )
 
   const empty_pair_0_1 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(0)),
-    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(0))
+    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(0)),
+    APP_NAME
   )
 
   it('can be constructed with ETHER as input', () => {

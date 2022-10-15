@@ -2,19 +2,21 @@ import JSBI from 'jsbi'
 import invariant from 'tiny-invariant'
 import { WETH9 as _WETH9, TradeType, Token, CurrencyAmount } from '@uniswap/sdk-core'
 import { Pair, Route, Trade } from '../index'
+import { AppName } from '../constants'
 
 const ADDRESSES = [
   '0x0000000000000000000000000000000000000001',
   '0x0000000000000000000000000000000000000002',
   '0x0000000000000000000000000000000000000003'
 ]
-const CHAIN_ID = 3
-const WETH9 = _WETH9[3]
+const CHAIN_ID = 1
+const WETH9 = _WETH9[1]
 const DECIMAL_PERMUTATIONS: [number, number, number][] = [
   [0, 0, 0],
   [0, 9, 18],
   [18, 18, 18]
 ]
+const APP_NAME = AppName.UNISWAP
 
 function decimalize(amount: number, decimals: number): JSBI {
   return JSBI.multiply(JSBI.BigInt(amount), JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals)))
@@ -33,15 +35,18 @@ describe('entities', () => {
         pairs = [
           new Pair(
             CurrencyAmount.fromRawAmount(tokens[0], decimalize(1, tokens[0].decimals)),
-            CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals))
+            CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals)),
+            APP_NAME
           ),
           new Pair(
             CurrencyAmount.fromRawAmount(tokens[1], decimalize(1, tokens[1].decimals)),
-            CurrencyAmount.fromRawAmount(tokens[2], decimalize(1, tokens[2].decimals))
+            CurrencyAmount.fromRawAmount(tokens[2], decimalize(1, tokens[2].decimals)),
+            APP_NAME
           ),
           new Pair(
             CurrencyAmount.fromRawAmount(tokens[2], decimalize(1, tokens[2].decimals)),
-            CurrencyAmount.fromRawAmount(WETH9, decimalize(1234, WETH9.decimals))
+            CurrencyAmount.fromRawAmount(WETH9, decimalize(1234, WETH9.decimals)),
+            APP_NAME
           )
         ]
       })
@@ -80,7 +85,8 @@ describe('entities', () => {
             [
               new Pair(
                 CurrencyAmount.fromRawAmount(tokens[1], decimalize(5, tokens[1].decimals)),
-                CurrencyAmount.fromRawAmount(WETH9, decimalize(10, WETH9.decimals))
+                CurrencyAmount.fromRawAmount(WETH9, decimalize(10, WETH9.decimals)),
+                APP_NAME
               )
             ],
             tokens[1],
@@ -131,7 +137,8 @@ describe('entities', () => {
                       decimalize(10, WETH9.decimals),
                       tokens[1].decimals === 9 ? JSBI.BigInt('30090280812437312') : JSBI.BigInt('30090270812437322')
                     )
-                  )
+                  ),
+                  APP_NAME
                 )
               ],
               tokens[1],
