@@ -12,10 +12,10 @@ export enum AppName {
 
 class FactoryProps {
   public factoryAddress: string
-  public initCodeHash: string
-  public constructor(factoryAddress: string, initCodeHash: string) {
+  public pairInitCodeHash: string
+  public constructor(factoryAddress: string, pairInitCodeHash: string) {
     this.factoryAddress = factoryAddress
-    this.initCodeHash = initCodeHash
+    this.pairInitCodeHash = pairInitCodeHash
   }
 }
 
@@ -29,17 +29,17 @@ export const FACTORY_PROPS: { [chainId: number]: { [appName: string]: FactoryPro
   [137]: {
     [AppName.SUSHISWAP]: new FactoryProps(
       '0xc35DADB65012eC5796536bD9864eD8773aBc74C4',
-      '0x8912bec8495aa7a7b156c25c603d9c2579a4a447b205457adfb360021fc67963'
+      '0xe18a34eb0e04b04f7a0ac29a6e80748dca96319b42c54d679cb821dca90c6303'
     ),
     [AppName.QUICKSWAP]: new FactoryProps(
       '0x5757371414417b8C6CAad45bAeF941aBc7d3Ab32',
-      '0xe54ba6cde2b5c88ab883218c9847d0f1a3e0d14a4eedd70e4bfd304578bfbce4'
+      '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'
     )
   },
   [1313161554]: {
     [AppName.TRISOLARIS]: new FactoryProps(
       '0xc66F594268041dB60507F00703b152492fb176E7',
-      '0xc4a5c12be15a4a9fa6029ac83707cd15bcaf9b03436b05bd8852835fb12bb216'
+      '0x754e1d90e536e4c1df81b7f030f47b4ca80c87120e145c294f098c83a6cb5ace'
     )
   }
 }

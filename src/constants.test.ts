@@ -10,7 +10,7 @@ const COMPUTED_INIT_CODE_HASH = keccak256(['bytes'], [`0x${bytecode}`])
 describe('constants', () => {
   describe('INIT_CODE_HASH', () => {
     it('matches computed bytecode hash', () => {
-      expect(COMPUTED_INIT_CODE_HASH).toEqual(FACTORY_PROPS[1][AppName.UNISWAP].initCodeHash)
+      expect(COMPUTED_INIT_CODE_HASH).toEqual(FACTORY_PROPS[1][AppName.UNISWAP].pairInitCodeHash)
     })
   })
 })
