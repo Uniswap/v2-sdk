@@ -25,7 +25,7 @@
   "dependencies": {
     "@ethersproject/address": "^5.0.0",
     "@ethersproject/solidity": "^5.0.0",
-    "@uniswap/sdk-core": "github:Mycelium-Lab/sdk-core#e4de6ca",
+    "@uniswap/sdk-core": "github:Mycelium-Lab/sdk-core#ab14e93",
     "tiny-invariant": "^1.1.0",
     "tiny-warning": "^1.0.3"
   },
