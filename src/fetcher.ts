@@ -1,17 +1,28 @@
 import { Contract } from '@ethersproject/contracts'
 import { getNetwork } from '@ethersproject/networks'
 import { getDefaultProvider } from '@ethersproject/providers'
-import { ChainId, Token, TokenAmount } from '@uniswap/sdk-core'
+import { SupportedChainId, Token, CurrencyAmount } from '@uniswap/sdk-core'
 import { Pair } from './entities/pair'
 import IUniswapV2Pair from '@uniswap/v2-core/build/IUniswapV2Pair.json'
 import invariant from 'tiny-invariant'
-import ERC20 from './abis/ERC20.json'
 
 let TOKEN_DECIMALS_CACHE: { [chainId: number]: { [address: string]: number } } = {
-    [ChainId.MAINNET]: {
+    [SupportedChainId.MAINNET]: {
         '0xE0B7927c4aF23765Cb51314A0E0521A9645F0E2A': 9 // DGD
     }
 }
+
+const ERC20_ABI = [
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [{ "name": "", "type": "uint8" }],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
 
 /**
  * Contains methods for constructing instances of pairs and tokens from on-chain data.
@@ -31,7 +42,7 @@ export abstract class Fetcher {
      * @param name optional name of the token
      */
     public static async fetchTokenData(
-        chainId: ChainId,
+        chainId: SupportedChainId,
         address: string,
         provider = getDefaultProvider(getNetwork(chainId)),
         symbol?: string,
@@ -40,7 +51,7 @@ export abstract class Fetcher {
         const parsedDecimals =
             typeof TOKEN_DECIMALS_CACHE?.[chainId]?.[address] === 'number'
                 ? TOKEN_DECIMALS_CACHE[chainId][address]
-                : await new Contract(address, ERC20, provider).decimals().then((decimals: number): number => {
+                : await new Contract(address, ERC20_ABI, provider).decimals().then((decimals: number): number => {
                     TOKEN_DECIMALS_CACHE = {
                         ...TOKEN_DECIMALS_CACHE,
                         [chainId]: {
@@ -68,6 +79,6 @@ export abstract class Fetcher {
         const address = Pair.getAddress(tokenA, tokenB)
         const [reserves0, reserves1] = await new Contract(address, IUniswapV2Pair.abi, provider).getReserves()
         const balances = tokenA.sortsBefore(tokenB) ? [reserves0, reserves1] : [reserves1, reserves0]
-        return new Pair(new TokenAmount(tokenA, balances[0]), new TokenAmount(tokenB, balances[1]))
+        return new Pair(CurrencyAmount.fromRawAmount(tokenA, balances[0]), CurrencyAmount.fromRawAmount(tokenB, balances[1]))
     }
 }
