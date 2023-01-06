@@ -9,7 +9,7 @@ jobs:
     name: Unit tests
     strategy:
       matrix:
-        node: ['10.x', '12.x']
+        node: ['16.x']
 
     runs-on: ubuntu-latest
 
@@ -22,20 +22,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Get cache directory
-        id: yarn-cache
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-
-      - name: Cache yarn dependencies
-        uses: actions/cache@v1
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            yarn-
-
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Run tests
-        run: yarn test
+        run: npm run test
