@@ -2,7 +2,7 @@ import { Pair } from './pair'
 import { Route } from './route'
 import { Trade } from './trade'
 import JSBI from 'jsbi'
-import { Ether, CurrencyAmount, Percent, Token, TradeType, WETH9, Price } from '@uniswap/sdk-core'
+import { Ether, CurrencyAmount, Percent, Token, TradeType, WETH9, Price } from '@reservoir-labs/sdk-core'
 
 describe('Trade', () => {
   const ETHER = Ether.onChain(1)
@@ -13,33 +13,40 @@ describe('Trade', () => {
 
   const pair_0_1 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
-    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1000))
+    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1000)),
+    0
   )
   const pair_0_2 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
-    CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(1100))
+    CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(1100)),
+    0
   )
   const pair_0_3 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
-    CurrencyAmount.fromRawAmount(token3, JSBI.BigInt(900))
+    CurrencyAmount.fromRawAmount(token3, JSBI.BigInt(900)),
+    0
   )
   const pair_1_2 = new Pair(
     CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1200)),
-    CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(1000))
+    CurrencyAmount.fromRawAmount(token2, JSBI.BigInt(1000)),
+    0
   )
   const pair_1_3 = new Pair(
     CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1200)),
-    CurrencyAmount.fromRawAmount(token3, JSBI.BigInt(1300))
+    CurrencyAmount.fromRawAmount(token3, JSBI.BigInt(1300)),
+    0
   )
 
   const pair_weth_0 = new Pair(
     CurrencyAmount.fromRawAmount(WETH9[1], JSBI.BigInt(1000)),
-    CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000))
+    CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
+    0
   )
 
   const empty_pair_0_1 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(0)),
-    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(0))
+    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(0)),
+    0
   )
 
   it('can be constructed with ETHER as input', () => {

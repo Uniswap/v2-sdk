@@ -2,7 +2,7 @@ import JSBI from 'jsbi'
 import { Pair, Route, Trade } from './entities'
 import { Router } from './router'
 import invariant from 'tiny-invariant'
-import { CurrencyAmount, Percent, Ether, Token, WETH9 } from '@uniswap/sdk-core'
+import { CurrencyAmount, Percent, Ether, Token, WETH9 } from '@reservoir-labs/sdk-core'
 
 function checkDeadline(deadline: string[] | string): void {
   expect(typeof deadline).toBe('string')
@@ -18,12 +18,14 @@ describe('Router', () => {
 
   const pair_0_1 = new Pair(
     CurrencyAmount.fromRawAmount(token0, JSBI.BigInt(1000)),
-    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1000))
+    CurrencyAmount.fromRawAmount(token1, JSBI.BigInt(1000)),
+    0
   )
 
   const pair_weth_0 = new Pair(
     CurrencyAmount.fromRawAmount(WETH9[1], '1000'),
-    CurrencyAmount.fromRawAmount(token0, '1000')
+    CurrencyAmount.fromRawAmount(token0, '1000'),
+    0
   )
 
   describe('#swapCallParameters', () => {

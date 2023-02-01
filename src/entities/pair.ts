@@ -1,48 +1,90 @@
-import { BigintIsh, Price, sqrt, Token, CurrencyAmount } from '@uniswap/sdk-core'
+import { BigintIsh, Price, sqrt, Token, CurrencyAmount } from '@reservoir-labs/sdk-core'
 import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
-import { pack, keccak256 } from '@ethersproject/solidity'
+import { keccak256, pack } from '@ethersproject/solidity'
 import { getCreate2Address } from '@ethersproject/address'
 
-import { FACTORY_ADDRESS, INIT_CODE_HASH, MINIMUM_LIQUIDITY, FIVE, _997, _1000, ONE, ZERO } from '../constants'
+import { FACTORY_ADDRESS, MINIMUM_LIQUIDITY, FIVE, FEE_ACCURACY, ONE, ZERO } from '../constants'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
+import ConstantProductPair from '../abis/ConstantProductPair.json'
+import StablePair from '../abis/StablePair.json'
+import { defaultAbiCoder } from '@ethersproject/abi'
+import { calcInGivenOut, calcOutGivenIn } from '../lib/balancer-math'
 
 export const computePairAddress = ({
   factoryAddress,
   tokenA,
-  tokenB
+  tokenB,
+  curveId
 }: {
   factoryAddress: string
   tokenA: Token
   tokenB: Token
+  curveId: number
 }): string => {
   const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA] // does safety checks
+
+  let initCode: any
+
+  switch (curveId) {
+    case 0:
+      initCode = ConstantProductPair.bytecode.object
+      break
+    case 1:
+      initCode = StablePair.bytecode.object
+      break
+  }
+
+  const encodedTokenAddresses = defaultAbiCoder.encode(['address', 'address'], [token0.address, token1.address])
+  const initCodeWithTokens = pack(['bytes', 'bytes'], [initCode, encodedTokenAddresses])
+
+  // N.B: we do not use a salt as the initCode is unique with token0 and token1 appended to it
   return getCreate2Address(
     factoryAddress,
-    keccak256(['bytes'], [pack(['address', 'address'], [token0.address, token1.address])]),
-    INIT_CODE_HASH
+    // TODO: to replace this zero bytes32 with a constant instead of using a string literal
+    pack(['bytes32'], ['0x0000000000000000000000000000000000000000000000000000000000000000']),
+    keccak256(['bytes'], [initCodeWithTokens])
   )
 }
 export class Pair {
   public readonly liquidityToken: Token
   private readonly tokenAmounts: [CurrencyAmount<Token>, CurrencyAmount<Token>]
 
-  public static getAddress(tokenA: Token, tokenB: Token): string {
-    return computePairAddress({ factoryAddress: FACTORY_ADDRESS, tokenA, tokenB })
+  private readonly curveId: number
+
+  // TODO: does the frontend dev need to know about the platformFee as well?
+  // not necessary for the swap function, but for the misc info about yield yes
+  public readonly swapFee: JSBI
+
+  // 0 for ConstantProductPair, non-zero for StablePair
+  public readonly amplificationCoefficient: JSBI
+
+  public static getAddress(tokenA: Token, tokenB: Token, curveId: number): string {
+    return computePairAddress({ factoryAddress: FACTORY_ADDRESS, tokenA, tokenB, curveId })
   }
 
-  public constructor(currencyAmountA: CurrencyAmount<Token>, tokenAmountB: CurrencyAmount<Token>) {
+  public constructor(
+    currencyAmountA: CurrencyAmount<Token>,
+    tokenAmountB: CurrencyAmount<Token>,
+    curveId: number,
+    swapFee: JSBI = JSBI.BigInt(3000),
+    amplificationCoefficient: JSBI = JSBI.BigInt(0)
+  ) {
+    invariant(curveId == 0 || curveId == 1, 'INVALID_CURVE_ID')
     const tokenAmounts = currencyAmountA.currency.sortsBefore(tokenAmountB.currency) // does safety checks
       ? [currencyAmountA, tokenAmountB]
       : [tokenAmountB, currencyAmountA]
     this.liquidityToken = new Token(
       tokenAmounts[0].currency.chainId,
-      Pair.getAddress(tokenAmounts[0].currency, tokenAmounts[1].currency),
+      Pair.getAddress(tokenAmounts[0].currency, tokenAmounts[1].currency, curveId),
       18,
-      'UNI-V2',
-      'Uniswap V2'
+      'RES-LP',
+      'Reservoir LP Token'
     )
     this.tokenAmounts = tokenAmounts as [CurrencyAmount<Token>, CurrencyAmount<Token>]
+    this.curveId = curveId
+    this.swapFee = swapFee
+    this.amplificationCoefficient = amplificationCoefficient
   }
 
   /**
@@ -113,17 +155,39 @@ export class Pair {
     }
     const inputReserve = this.reserveOf(inputAmount.currency)
     const outputReserve = this.reserveOf(inputAmount.currency.equals(this.token0) ? this.token1 : this.token0)
-    const inputAmountWithFee = JSBI.multiply(inputAmount.quotient, _997)
-    const numerator = JSBI.multiply(inputAmountWithFee, outputReserve.quotient)
-    const denominator = JSBI.add(JSBI.multiply(inputReserve.quotient, _1000), inputAmountWithFee)
-    const outputAmount = CurrencyAmount.fromRawAmount(
-      inputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
-      JSBI.divide(numerator, denominator)
-    )
-    if (JSBI.equal(outputAmount.quotient, ZERO)) {
-      throw new InsufficientInputAmountError()
+    const inputAmountWithFee = JSBI.multiply(inputAmount.quotient, JSBI.subtract(FEE_ACCURACY, this.swapFee))
+    let outputAmount
+
+    if (this.curveId == 0) {
+      const numerator = JSBI.multiply(inputAmountWithFee, outputReserve.quotient)
+      const denominator = JSBI.add(JSBI.multiply(inputReserve.quotient, FEE_ACCURACY), inputAmountWithFee)
+      outputAmount = CurrencyAmount.fromRawAmount(
+        inputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
+        JSBI.divide(numerator, denominator)
+      )
+      if (JSBI.equal(outputAmount.quotient, ZERO)) {
+        throw new InsufficientInputAmountError()
+      }
+    } else if (this.curveId == 1) {
+      const scaledBalances = this._scaleAmounts([inputReserve, outputReserve])
+      const scaledInputAmount = this._scaleAmounts([inputAmount])
+
+      outputAmount = calcOutGivenIn(
+        scaledBalances.map(bal => bal.toString()),
+        this.amplificationCoefficient.toString(),
+        0,
+        1,
+        scaledInputAmount[0].toString()
+      )
+
+      outputAmount = CurrencyAmount.fromRawAmount(
+        inputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
+        JSBI.BigInt(outputAmount.toString())
+      )
     }
-    return [outputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
+
+    // @ts-ignore
+    return [outputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount), this.curveId)]
   }
 
   public getInputAmount(outputAmount: CurrencyAmount<Token>): [CurrencyAmount<Token>, Pair] {
@@ -136,15 +200,51 @@ export class Pair {
       throw new InsufficientReservesError()
     }
 
-    const outputReserve = this.reserveOf(outputAmount.currency)
-    const inputReserve = this.reserveOf(outputAmount.currency.equals(this.token0) ? this.token1 : this.token0)
-    const numerator = JSBI.multiply(JSBI.multiply(inputReserve.quotient, outputAmount.quotient), _1000)
-    const denominator = JSBI.multiply(JSBI.subtract(outputReserve.quotient, outputAmount.quotient), _997)
-    const inputAmount = CurrencyAmount.fromRawAmount(
-      outputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
-      JSBI.add(JSBI.divide(numerator, denominator), ONE)
-    )
-    return [inputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
+    let outputReserve = this.reserveOf(outputAmount.currency)
+    let inputReserve = this.reserveOf(outputAmount.currency.equals(this.token0) ? this.token1 : this.token0)
+    let inputAmount
+
+    if (this.curveId == 0) {
+      const numerator = JSBI.multiply(JSBI.multiply(inputReserve.quotient, outputAmount.quotient), FEE_ACCURACY)
+      const denominator = JSBI.multiply(
+        JSBI.subtract(outputReserve.quotient, outputAmount.quotient),
+        JSBI.subtract(FEE_ACCURACY, this.swapFee)
+      )
+      inputAmount = CurrencyAmount.fromRawAmount(
+        outputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
+        JSBI.add(JSBI.divide(numerator, denominator), ONE)
+      )
+    } else if (this.curveId == 1) {
+      const scaledBalances = this._scaleAmounts([inputReserve, outputReserve])
+      const scaledOutputAmount = this._scaleAmounts([outputAmount])
+
+      inputAmount = calcInGivenOut(
+        scaledBalances.map(bal => bal.toString()),
+        this.amplificationCoefficient.toString(),
+        0,
+        1,
+        scaledOutputAmount[0].toString()
+      )
+
+      inputAmount = CurrencyAmount.fromRawAmount(
+        outputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
+        JSBI.BigInt(inputAmount.toString())
+      )
+        .multiply(JSBI.add(FEE_ACCURACY, this.swapFee)) // add fee
+        .divide(FEE_ACCURACY)
+    }
+
+    // @ts-ignore
+    return [inputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount), this.curveId)]
+  }
+
+  private _scaleAmounts(amounts: CurrencyAmount<Token>[]): JSBI[] {
+    return amounts.map(amount => {
+      return JSBI.multiply(
+        JSBI.multiply(JSBI.BigInt(amount.toExact()), JSBI.BigInt(amount.decimalScale)),
+        JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(18 - amount.currency.decimals))
+      )
+    })
   }
 
   public getLiquidityMinted(

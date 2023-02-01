@@ -1,40 +1,45 @@
 {
-  "name": "@uniswap/v2-sdk",
+  "name": "@reservoir-labs/sdk",
   "license": "MIT",
-  "version": "3.0.1",
-  "description": "🛠 An SDK for building applications on top of Uniswap V2",
+  "version": "0.0.1",
+  "description": "🛠 An SDK for building applications on top of Reservoir",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist"
   ],
-  "repository": "https://github.com/Uniswap/uniswap-v2-sdk.git",
+  "repository": "https://github.com/reservoir-labs/sdk.git",
   "keywords": [
-    "uniswap",
+    "reservoir",
     "ethereum"
   ],
-  "module": "dist/v2-sdk.esm.js",
+  "module": "dist/sdk.esm.js",
   "scripts": {
     "lint": "tsdx lint src test",
     "build": "tsdx build",
     "start": "tsdx watch",
     "test": "tsdx test",
-    "prepublishOnly": "tsdx build"
+    "prepublishOnly": "tsdx build",
+    "anvil": "anvil",
+    "anvil:avax": "anvil -f https://api.avax.network/ext/bc/C/rpc",
+    "setupTest": "forge script lib/v3-periphery/scripts/setup_scaffold.s.sol --target-contract SetupScaffold --fork-url \"http://127.0.0.1:8545\" --broadcast --gas-limit 100000000 --skip-simulation --slow -vvv"
   },
   "dependencies": {
     "@ethersproject/address": "^5.0.0",
+    "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/contracts": "^5.7.0",
     "@ethersproject/networks": "^5.7.1",
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/solidity": "^5.0.0",
-    "@uniswap/sdk-core": "^3.0.0-alpha.3",
+    "@ethersproject/wallet": "^5.7.0",
+    "@reservoir-labs/sdk-core": "^3.1.1",
+    "decimal.js": "^10.4.3",
     "tiny-invariant": "^1.1.0",
     "tiny-warning": "^1.0.3"
   },
   "devDependencies": {
     "@types/big.js": "^4.0.5",
     "@types/jest": "^24.0.25",
-    "@uniswap/v2-core": "^1.0.1",
     "tsdx": "^0.14.1"
   },
   "engines": {

@@ -1,4 +1,4 @@
-import { Ether, Token, WETH9, CurrencyAmount } from '@uniswap/sdk-core'
+import { Ether, Token, WETH9, CurrencyAmount } from '@reservoir-labs/sdk-core'
 import { Pair, Route } from './index'
 
 describe('Route', () => {
@@ -6,9 +6,17 @@ describe('Route', () => {
   const token0 = new Token(1, '0x0000000000000000000000000000000000000001', 18, 't0')
   const token1 = new Token(1, '0x0000000000000000000000000000000000000002', 18, 't1')
   const weth = WETH9[1]
-  const pair_0_1 = new Pair(CurrencyAmount.fromRawAmount(token0, '100'), CurrencyAmount.fromRawAmount(token1, '200'))
-  const pair_0_weth = new Pair(CurrencyAmount.fromRawAmount(token0, '100'), CurrencyAmount.fromRawAmount(weth, '100'))
-  const pair_1_weth = new Pair(CurrencyAmount.fromRawAmount(token1, '175'), CurrencyAmount.fromRawAmount(weth, '100'))
+  const pair_0_1 = new Pair(CurrencyAmount.fromRawAmount(token0, '100'), CurrencyAmount.fromRawAmount(token1, '200'), 0)
+  const pair_0_weth = new Pair(
+    CurrencyAmount.fromRawAmount(token0, '100'),
+    CurrencyAmount.fromRawAmount(weth, '100'),
+    0
+  )
+  const pair_1_weth = new Pair(
+    CurrencyAmount.fromRawAmount(token1, '175'),
+    CurrencyAmount.fromRawAmount(weth, '100'),
+    0
+  )
 
   it('constructs a path from the tokens', () => {
     const route = new Route([pair_0_1], token0, token1)

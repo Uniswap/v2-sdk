@@ -1,0 +1,33 @@
+[profile.default]
+solc = "0.8.17"
+#via_ir = true
+bytecode_hash = "none"
+optimizer_runs = 1_000_000
+verbosity = 3
+fs_permissions = [
+    { access = "read", path = "./lib/v3-core" },
+    { access = "read", path = "./out/" }
+]
+
+[profile.integration]
+match_path = "test/integration/*.sol"
+
+[profile.differential]
+fs_permissions = [{ access = "read", path = "./reference/balancer-v2-monorepo" }]
+match_path     = "test/differential/*.sol"
+
+[profile.differential.fuzz]
+runs = 10_000
+
+[profile.ci.fuzz]
+runs = 10_000
+
+[rpc_endpoints]
+avalanche = "https://api.avax.network/ext/bc/C/rpc"
+polygon   = "https://polygon-rpc.com"
+
+[fmt]
+bracket_spacing   = true
+wrap_comments     = false
+number_underscore = "thousands"
+int_types         = "long"
