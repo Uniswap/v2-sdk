@@ -47,13 +47,14 @@ export abstract class Fetcher {
   // returns the pairs that should be considered in the routing of trades
   // only returns pairs that have been instantiated already
   // does not return pairs that do not exist yet
+  // currently it returns the tokenA-tokenB pair for all curves, as well as
+  // pairs that are routed through the native asset as that probably will have the most liquidity
   public static async fetchRelevantPairs(
     chainId: SupportedChainId,
     tokenA: Token,
     tokenB: Token,
     provider = getDefaultProvider(getNetwork(chainId))
   ): Promise<Pair[]> {
-
     const factory = new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider)
 
     // get the pairs for the two curves
@@ -63,7 +64,6 @@ export abstract class Fetcher {
     // get native pairs
     const nativeTokenAConstantProduct = await factory.getPair(tokenA.address, ??, 0)
     const nativeTokenAStable = await factory.getPair(tokenA.address, ??, 1)
-
     const nativeTokenBConstantProduct = await factory.getPair(tokenA.address, ??, 0)
     const nativeTokenBStable = await factory.getPair(tokenA.address, ??, 1)
 
