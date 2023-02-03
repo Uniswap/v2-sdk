@@ -98,6 +98,7 @@ export class Pair {
   /**
    * Returns the current mid price of the pair in terms of token0, i.e. the ratio of reserve1 to reserve0
    */
+  // TODO: refactor this to take into account stable curve?
   public get token0Price(): Price<Token, Token> {
     const result = this.tokenAmounts[1].divide(this.tokenAmounts[0])
     return new Price(this.token0, this.token1, result.denominator, result.numerator)
@@ -106,6 +107,7 @@ export class Pair {
   /**
    * Returns the current mid price of the pair in terms of token1, i.e. the ratio of reserve0 to reserve1
    */
+  // TODO: refactor this to take into account stable curve?
   public get token1Price(): Price<Token, Token> {
     const result = this.tokenAmounts[0].divide(this.tokenAmounts[1])
     return new Price(this.token1, this.token0, result.denominator, result.numerator)
@@ -247,6 +249,7 @@ export class Pair {
     })
   }
 
+  // TODO: refactor this for stablePair calculations?
   public getLiquidityMinted(
     totalSupply: CurrencyAmount<Token>,
     tokenAmountA: CurrencyAmount<Token>,
@@ -275,6 +278,7 @@ export class Pair {
     return CurrencyAmount.fromRawAmount(this.liquidityToken, liquidity)
   }
 
+  // TODO: KIV, might need to refactor for the stablePair
   public getLiquidityValue(
     token: Token,
     totalSupply: CurrencyAmount<Token>,

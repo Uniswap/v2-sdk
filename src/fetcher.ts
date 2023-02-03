@@ -1,13 +1,14 @@
 import { Contract } from '@ethersproject/contracts'
 import { getNetwork } from '@ethersproject/networks'
 import { getDefaultProvider } from '@ethersproject/providers'
-import { SupportedChainId, Token, CurrencyAmount } from '@reservoir-labs/sdk-core'
+import { SupportedChainId, Token, CurrencyAmount, WETH9 } from '@reservoir-labs/sdk-core'
 import { Pair } from './entities/pair'
 import invariant from 'tiny-invariant'
 import { FACTORY_ADDRESS } from './constants'
 import GenericFactory from './abis/GenericFactory.json'
 import ReservoirPair from './abis/ReservoirPair.json'
 import JSBI from 'jsbi'
+import { AddressZero } from '@ethersproject/constants'
 
 let TOKEN_DECIMALS_CACHE: { [chainId: number]: { [address: string]: number } } = {
   [SupportedChainId.MAINNET]: {
@@ -44,8 +45,41 @@ export abstract class Fetcher {
     return await new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider).allPairs()
   }
 
-  public static async fetchRelevantPairs(): Promise<Pair[]> {
-    return []
+  // returns the pairs that should be considered in the routing of trades
+  // only returns pairs that have been instantiated already
+  // does not return pairs that do not exist yet
+  // currently it returns the tokenA-tokenB pair for all curves, as well as
+  // pairs that are routed through the native asset as that probably will have the most liquidity
+  public static async fetchRelevantPairs(
+    chainId: SupportedChainId,
+    tokenA: Token,
+    tokenB: Token,
+    provider = getDefaultProvider(getNetwork(chainId))
+  ): Promise<Pair[]> {
+    invariant(tokenA.chainId == tokenB.chainId, 'CHAIN_ID')
+    invariant(tokenA != tokenB, 'SAME_TOKEN')
+    const factory = new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider)
+
+    // get the pairs for the two curves
+    const stable = await factory.getPair(tokenA.address, tokenB.address, 1)
+    const constantProduct = await factory.getPair(tokenA.address, tokenB.address, 0)
+
+    // get native pairs
+    const nativeTokenAConstantProduct = await factory.getPair(tokenA.address, WETH9[chainId].address, 0)
+    const nativeTokenAStable = await factory.getPair(tokenA.address, WETH9[chainId].address, 1)
+    const nativeTokenBConstantProduct = await factory.getPair(tokenB.address, WETH9[chainId].address, 0)
+    const nativeTokenBStable = await factory.getPair(tokenB.address, WETH9[chainId].address, 1)
+
+    const relevantPairs = [
+      stable,
+      constantProduct,
+      nativeTokenAConstantProduct,
+      nativeTokenAStable,
+      nativeTokenBConstantProduct,
+      nativeTokenBStable
+    ].filter(address => address != AddressZero)
+
+    return [...new Set(relevantPairs)] // de-duplicate repeated addresses
   }
 
   /**
@@ -83,6 +117,7 @@ export abstract class Fetcher {
    * Fetches information about a pair and constructs a pair from the given two tokens.
    * @param tokenA first token
    * @param tokenB second token
+   * @param curveId 0 for ConstantProduct, 1 for Stable
    * @param provider the provider to use to fetch the data
    */
   public static async fetchPairData(

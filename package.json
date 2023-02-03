@@ -32,7 +32,7 @@
     "@ethersproject/providers": "^5.7.2",
     "@ethersproject/solidity": "^5.0.0",
     "@ethersproject/wallet": "^5.7.0",
-    "@reservoir-labs/sdk-core": "^3.1.1",
+    "@reservoir-labs/sdk-core": "^3.1.2",
     "decimal.js": "^10.4.3",
     "tiny-invariant": "^1.1.0",
     "tiny-warning": "^1.0.3"
