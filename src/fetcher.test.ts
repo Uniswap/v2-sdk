@@ -1,5 +1,5 @@
 import { Fetcher } from './fetcher'
-import { WETH9 as _WETH9 } from '@reservoir-labs/sdk-core/dist/entities/weth9'
+import { WETH9 } from '@reservoir-labs/sdk-core/dist/entities/weth9'
 import { BaseProvider } from '@ethersproject/providers'
 import { WebSocketProvider } from '@ethersproject/providers'
 import { Token, WETH9 } from '@reservoir-labs/sdk-core'
