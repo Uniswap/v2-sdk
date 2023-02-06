@@ -93,8 +93,10 @@ export abstract class Fetcher {
       nativeTokenBStable
     ].filter(address => address != null)
 
+    const result = new Set(relevantPairs) // de-duplicate addresses using a set
+
     // @ts-ignore
-    return [...new Set(relevantPairs)] // de-duplicate addresses using a set
+    return Array.from(result)
   }
 
   /**
