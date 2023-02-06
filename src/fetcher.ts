@@ -7,6 +7,7 @@ import invariant from 'tiny-invariant'
 import { FACTORY_ADDRESS } from './constants'
 import GenericFactory from './abis/GenericFactory.json'
 import ReservoirPair from './abis/ReservoirPair.json'
+import StablePair from './abis/StablePair.json'
 import JSBI from 'jsbi'
 import { AddressZero } from '@ethersproject/constants'
 
@@ -45,6 +46,20 @@ export abstract class Fetcher {
     return await new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider).allPairs()
   }
 
+  private static async _fetchPairIfExists(
+    tokenA: Token,
+    tokenB: Token,
+    curveId: number,
+    provider = getDefaultProvider(getNetwork(tokenA.chainId))
+  ): Promise<Pair | null> {
+    const factory = new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider)
+    const pair = await factory.getPair(tokenA.address, tokenB.address, curveId)
+
+    if (pair === AddressZero) return null
+
+    return Fetcher.fetchPairData(tokenA, tokenB, curveId, provider)
+  }
+
   // returns the pairs that should be considered in the routing of trades
   // only returns pairs that have been instantiated already
   // does not return pairs that do not exist yet
@@ -58,17 +73,16 @@ export abstract class Fetcher {
   ): Promise<Pair[]> {
     invariant(tokenA.chainId == tokenB.chainId, 'CHAIN_ID')
     invariant(tokenA != tokenB, 'SAME_TOKEN')
-    const factory = new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider)
 
     // get the pairs for the two curves
-    const stable = await factory.getPair(tokenA.address, tokenB.address, 1)
-    const constantProduct = await factory.getPair(tokenA.address, tokenB.address, 0)
+    const constantProduct = await this._fetchPairIfExists(tokenA, tokenB, 0, provider)
+    const stable = await this._fetchPairIfExists(tokenA, tokenB, 1, provider)
 
     // get native pairs
-    const nativeTokenAConstantProduct = await factory.getPair(tokenA.address, WETH9[chainId].address, 0)
-    const nativeTokenAStable = await factory.getPair(tokenA.address, WETH9[chainId].address, 1)
-    const nativeTokenBConstantProduct = await factory.getPair(tokenB.address, WETH9[chainId].address, 0)
-    const nativeTokenBStable = await factory.getPair(tokenB.address, WETH9[chainId].address, 1)
+    const nativeTokenAConstantProduct = await this._fetchPairIfExists(tokenA, WETH9[chainId], 0, provider)
+    const nativeTokenAStable = await this._fetchPairIfExists(tokenA, WETH9[chainId], 1, provider)
+    const nativeTokenBConstantProduct = await this._fetchPairIfExists(tokenB, WETH9[chainId], 0, provider)
+    const nativeTokenBStable = await this._fetchPairIfExists(tokenB, WETH9[chainId], 1, provider)
 
     const relevantPairs = [
       stable,
@@ -77,9 +91,10 @@ export abstract class Fetcher {
       nativeTokenAStable,
       nativeTokenBConstantProduct,
       nativeTokenBStable
-    ].filter(address => address != AddressZero)
+    ].filter(address => address != null)
 
-    return [...new Set(relevantPairs)] // de-duplicate repeated addresses
+    // @ts-ignore
+    return [...new Set(relevantPairs)] // de-duplicate addresses using a set
   }
 
   /**
@@ -129,15 +144,25 @@ export abstract class Fetcher {
     invariant(tokenA.chainId === tokenB.chainId, 'CHAIN_ID')
     const address = Pair.getAddress(tokenA, tokenB, curveId)
 
-    const pair = await new Contract(address, ReservoirPair.abi, provider)
-    const [reserves0, reserves1] = pair.getReserves()
-    const balances = tokenA.sortsBefore(tokenB) ? [reserves0, reserves1] : [reserves1, reserves0]
+    const pair = new Contract(address, ReservoirPair.abi, provider)
+    const reserves = await pair.getReserves()
+    const balances = tokenA.sortsBefore(tokenB)
+      ? [reserves.rReserve0, reserves.rReserve1]
+      : [reserves.rReserve1, reserves.rReserve0]
     const swapFee: JSBI = pair.swapFee()
+
+    let ampCoefficient = null
+    if (curveId == 1) {
+      // fetch amplification coefficient
+      ampCoefficient = await new Contract(address, StablePair.abi, provider).getCurrentAPrecise()
+    }
+
     return new Pair(
       CurrencyAmount.fromRawAmount(tokenA, balances[0]),
       CurrencyAmount.fromRawAmount(tokenB, balances[1]),
       curveId,
-      swapFee
+      swapFee,
+      ampCoefficient
     )
   }
 }
