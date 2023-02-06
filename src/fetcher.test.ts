@@ -37,8 +37,8 @@ describe('fetcher', () => {
 
       expect(pair.curveId).toEqual(0)
       expect(pair.amplificationCoefficient).toEqual(null)
-      expect(pair.reserve0).toBeGreaterThan(0)
-      expect(pair.reserve1.toExact()).toBeGreaterThan(0)
+      expect(pair.reserve0.toExact()).toEqual("1000000")
+      expect(pair.reserve1.toExact()).toEqual("950000")
     })
     it("should revert for a pair that doesn't exist", () => {
       // somehow jest's `toThrow` doesn't catch EVM call exceptions, so comment this test case out for now
