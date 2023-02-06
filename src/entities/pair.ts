@@ -50,14 +50,14 @@ export class Pair {
   public readonly liquidityToken: Token
   private readonly tokenAmounts: [CurrencyAmount<Token>, CurrencyAmount<Token>]
 
-  private readonly curveId: number
+  public readonly curveId: number
 
   // TODO: does the frontend dev need to know about the platformFee as well?
   // not necessary for the swap function, but for the misc info about yield yes
   public readonly swapFee: JSBI
 
-  // 0 for ConstantProductPair, non-zero for StablePair
-  public readonly amplificationCoefficient: JSBI
+  // null for ConstantProductPair, non-zero for StablePair
+  public readonly amplificationCoefficient: JSBI | null
 
   public static getAddress(tokenA: Token, tokenB: Token, curveId: number): string {
     return computePairAddress({ factoryAddress: FACTORY_ADDRESS, tokenA, tokenB, curveId })
@@ -68,7 +68,7 @@ export class Pair {
     tokenAmountB: CurrencyAmount<Token>,
     curveId: number,
     swapFee: JSBI = JSBI.BigInt(3000),
-    amplificationCoefficient: JSBI = JSBI.BigInt(0)
+    amplificationCoefficient: JSBI | null = null
   ) {
     invariant(curveId == 0 || curveId == 1, 'INVALID_CURVE_ID')
     const tokenAmounts = currencyAmountA.currency.sortsBefore(tokenAmountB.currency) // does safety checks
@@ -171,6 +171,8 @@ export class Pair {
         throw new InsufficientInputAmountError()
       }
     } else if (this.curveId == 1) {
+      invariant(this.amplificationCoefficient != null)
+
       const scaledBalances = this._scaleAmounts([inputReserve, outputReserve])
       const scaledInputAmount = this._scaleAmounts([inputAmount])
 
@@ -217,6 +219,8 @@ export class Pair {
         JSBI.add(JSBI.divide(numerator, denominator), ONE)
       )
     } else if (this.curveId == 1) {
+      invariant(this.amplificationCoefficient != null)
+
       const scaledBalances = this._scaleAmounts([inputReserve, outputReserve])
       const scaledOutputAmount = this._scaleAmounts([outputAmount])
 

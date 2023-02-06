@@ -7,6 +7,7 @@ import invariant from 'tiny-invariant'
 import { FACTORY_ADDRESS } from './constants'
 import GenericFactory from './abis/GenericFactory.json'
 import ReservoirPair from './abis/ReservoirPair.json'
+import StablePair from './abis/StablePair.json'
 import JSBI from 'jsbi'
 import { AddressZero } from '@ethersproject/constants'
 
@@ -129,15 +130,24 @@ export abstract class Fetcher {
     invariant(tokenA.chainId === tokenB.chainId, 'CHAIN_ID')
     const address = Pair.getAddress(tokenA, tokenB, curveId)
 
-    const pair = await new Contract(address, ReservoirPair.abi, provider)
-    const [reserves0, reserves1] = pair.getReserves()
-    const balances = tokenA.sortsBefore(tokenB) ? [reserves0, reserves1] : [reserves1, reserves0]
+    const pair = new Contract(address, ReservoirPair.abi, provider)
+    const reserves = await pair.getReserves()
+
+    // const balances = tokenA.sortsBefore(tokenB) ? [reserves0, reserves1] : [reserves1, reserves0]
     const swapFee: JSBI = pair.swapFee()
+
+    let ampCoefficient = null
+    if (curveId == 1) {
+      // fetch amplification coefficient
+      ampCoefficient = await new Contract(address, StablePair.abi, provider).getCurrentAPrecise()
+    }
+
     return new Pair(
-      CurrencyAmount.fromRawAmount(tokenA, balances[0]),
-      CurrencyAmount.fromRawAmount(tokenB, balances[1]),
+      CurrencyAmount.fromRawAmount(tokenA, reserves.rReserve0),
+      CurrencyAmount.fromRawAmount(tokenB, reserves.rReserve1),
       curveId,
-      swapFee
+      swapFee,
+      ampCoefficient
     )
   }
 }
