@@ -1,28 +1,33 @@
 import { Fetcher } from './fetcher'
 import { BaseProvider } from '@ethersproject/providers'
 import { WebSocketProvider } from '@ethersproject/providers'
-import { Token, WETH9 } from '@reservoir-labs/sdk-core'
+import { Token } from '@reservoir-labs/sdk-core'
 import { Pair } from 'entities'
 
 describe('fetcher', () => {
   let provider: BaseProvider = new WebSocketProvider('ws://127.0.0.1:8545')
-  const USDC_AVAX = '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'
+  const USDC_AVAX = '0x2B0d36FACD61B71CC05ab8F3D2355ec3631C0dd5'
+  const USDT_AVAX = '0xfbC22278A96299D91d41C453234d97b4F5Eb9B2d'
 
-  it('should fetch pairs', async () => {
-    const pairs = await Fetcher.fetchAllPairs(43114, provider)
+  describe('fetchAllPairs', async() => {
+    it('should fetch pairs', async () => {
+      const pairs = await Fetcher.fetchAllPairs(43114, provider)
 
-    expect(pairs.length).toEqual(1)
+      expect(pairs.length).toEqual(1)
+    })
   })
 
   describe('fetchRelevantPairs', () => {
     it('should not return pairs that have not been created', async () => {
       const relevantPairs = await Fetcher.fetchRelevantPairs(
         43114,
-        WETH9[43114],
+        new Token(43114, USDT_AVAX, 6),
         new Token(43114, USDC_AVAX, 6),
         provider
       )
+
       expect(relevantPairs.length).toBeLessThan(6)
+      expect(relevantPairs.length).toBeGreaterThan(0)
     })
   })
 
