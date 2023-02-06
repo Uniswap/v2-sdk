@@ -1,6 +1,6 @@
 import { Contract } from '@ethersproject/contracts'
 import { getNetwork } from '@ethersproject/networks'
-import {getDefaultProvider} from '@ethersproject/providers'
+import { getDefaultProvider } from '@ethersproject/providers'
 import { SupportedChainId, Token, CurrencyAmount, WETH9 } from '@reservoir-labs/sdk-core'
 import { Pair } from './entities/pair'
 import invariant from 'tiny-invariant'
@@ -46,7 +46,12 @@ export abstract class Fetcher {
     return await new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider).allPairs()
   }
 
-  private static async _fetchPairIfExists(tokenA: Token, tokenB: Token, curveId: number, provider = getDefaultProvider(getNetwork(tokenA.chainId))): Promise<Pair | null> {
+  private static async _fetchPairIfExists(
+    tokenA: Token,
+    tokenB: Token,
+    curveId: number,
+    provider = getDefaultProvider(getNetwork(tokenA.chainId))
+  ): Promise<Pair | null> {
     const factory = new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider)
     const pair = await factory.getPair(tokenA.address, tokenB.address, curveId)
 
@@ -141,7 +146,9 @@ export abstract class Fetcher {
 
     const pair = new Contract(address, ReservoirPair.abi, provider)
     const reserves = await pair.getReserves()
-    const balances = tokenA.sortsBefore(tokenB) ? [reserves.rReserve0, reserves.rReserve1] : [reserves.rReserve1, reserves.rReserve0]
+    const balances = tokenA.sortsBefore(tokenB)
+      ? [reserves.rReserve0, reserves.rReserve1]
+      : [reserves.rReserve1, reserves.rReserve0]
     const swapFee: JSBI = pair.swapFee()
 
     let ampCoefficient = null

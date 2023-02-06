@@ -9,7 +9,7 @@ describe('fetcher', () => {
   const USDC_AVAX = '0x2B0d36FACD61B71CC05ab8F3D2355ec3631C0dd5'
   const USDT_AVAX = '0xfbC22278A96299D91d41C453234d97b4F5Eb9B2d'
 
-  describe('fetchAllPairs', async() => {
+  describe('fetchAllPairs', async () => {
     it('should fetch pairs', async () => {
       const pairs = await Fetcher.fetchAllPairs(43114, provider)
 
