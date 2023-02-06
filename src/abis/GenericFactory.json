@@ -879,27 +879,13 @@
     "absolutePath": "src/GenericFactory.sol",
     "id": 51940,
     "exportedSymbols": {
-      "Address": [
-        26703
-      ],
-      "GenericFactory": [
-        51939
-      ],
-      "IGenericFactory": [
-        51432
-      ],
-      "MAX_SSTORE_SIZE": [
-        51449
-      ],
-      "Math": [
-        28354
-      ],
-      "Owned": [
-        29955
-      ],
-      "SSTORE2": [
-        31467
-      ]
+      "Address": [26703],
+      "GenericFactory": [51939],
+      "IGenericFactory": [51432],
+      "MAX_SSTORE_SIZE": [51449],
+      "Math": [28354],
+      "Owned": [29955],
+      "SSTORE2": [31467]
     },
     "nodeType": "SourceUnit",
     "src": "39:8251:58",
@@ -909,12 +895,7 @@
         "nodeType": "PragmaDirective",
         "src": "39:23:58",
         "nodes": [],
-        "literals": [
-          "solidity",
-          "^",
-          "0.8",
-          ".0"
-        ]
+        "literals": ["solidity", "^", "0.8", ".0"]
       },
       {
         "id": 51436,
@@ -1208,9 +1189,7 @@
                 "modifierName": {
                   "id": 51460,
                   "name": "Owned",
-                  "nameLocations": [
-                    "530:5:58"
-                  ],
+                  "nameLocations": ["530:5:58"],
                   "nodeType": "IdentifierPath",
                   "referencedDeclaration": 29955,
                   "src": "530:5:58"
@@ -1272,9 +1251,7 @@
             "nodeType": "VariableDeclaration",
             "src": "799:38:58",
             "nodes": [],
-            "baseFunctions": [
-              51387
-            ],
+            "baseFunctions": [51387],
             "constant": false,
             "functionSelector": "8eaa6ac0",
             "mutability": "mutable",
@@ -1399,9 +1376,7 @@
                 }
               ]
             },
-            "baseFunctions": [
-              51394
-            ],
+            "baseFunctions": [51394],
             "functionSelector": "f71f7a25",
             "implemented": true,
             "kind": "function",
@@ -1412,9 +1387,7 @@
                 "modifierName": {
                   "id": 51475,
                   "name": "onlyOwner",
-                  "nameLocations": [
-                    "896:9:58"
-                  ],
+                  "nameLocations": ["896:9:58"],
                   "nodeType": "IdentifierPath",
                   "referencedDeclaration": 29918,
                   "src": "896:9:58"
@@ -1572,9 +1545,7 @@
               "nodes": [],
               "statements": [
                 {
-                  "assignments": [
-                    51499
-                  ],
+                  "assignments": [51499],
                   "declarations": [
                     {
                       "constant": false,
@@ -1625,9 +1596,7 @@
                   "src": "1409:18:58"
                 },
                 {
-                  "assignments": [
-                    51503
-                  ],
+                  "assignments": [51503],
                   "declarations": [
                     {
                       "constant": false,
@@ -1684,9 +1653,7 @@
                     "src": "1519:427:58",
                     "statements": [
                       {
-                        "assignments": [
-                          51511
-                        ],
+                        "assignments": [51511],
                         "declarations": [
                           {
                             "constant": false,
@@ -2274,9 +2241,7 @@
               "nodes": [],
               "statements": [
                 {
-                  "assignments": [
-                    51560
-                  ],
+                  "assignments": [51560],
                   "declarations": [
                     {
                       "constant": false,
@@ -2357,9 +2322,7 @@
                   "src": "2076:52:58"
                 },
                 {
-                  "assignments": [
-                    51566
-                  ],
+                  "assignments": [51566],
                   "declarations": [
                     {
                       "constant": false,
@@ -2394,9 +2357,7 @@
                   "src": "2139:22:58"
                 },
                 {
-                  "assignments": [
-                    51569
-                  ],
+                  "assignments": [51569],
                   "declarations": [
                     {
                       "constant": false,
@@ -2524,17 +2485,13 @@
                       "valueSize": 1
                     }
                   ],
-                  "flags": [
-                    "memory-safe"
-                  ],
+                  "flags": ["memory-safe"],
                   "id": 51571,
                   "nodeType": "InlineAssembly",
                   "src": "2309:118:58"
                 },
                 {
-                  "assignments": [
-                    51573
-                  ],
+                  "assignments": [51573],
                   "declarations": [
                     {
                       "constant": false,
@@ -2591,9 +2548,7 @@
                     "src": "2521:540:58",
                     "statements": [
                       {
-                        "assignments": [
-                          51588
-                        ],
+                        "assignments": [51588],
                         "declarations": [
                           {
                             "constant": false,
@@ -2666,9 +2621,7 @@
                         "src": "2535:31:58"
                       },
                       {
-                        "assignments": [
-                          51594
-                        ],
+                        "assignments": [51594],
                         "declarations": [
                           {
                             "constant": false,
@@ -2903,9 +2856,7 @@
                             "valueSize": 1
                           }
                         ],
-                        "flags": [
-                          "memory-safe"
-                        ],
+                        "flags": ["memory-safe"],
                         "id": 51601,
                         "nodeType": "InlineAssembly",
                         "src": "2725:204:58"
@@ -3057,9 +3008,7 @@
                   },
                   "id": 51611,
                   "initializationExpression": {
-                    "assignments": [
-                      51577
-                    ],
+                    "assignments": [51577],
                     "declarations": [
                       {
                         "constant": false,
@@ -3359,9 +3308,7 @@
                       "valueSize": 1
                     }
                   ],
-                  "flags": [
-                    "memory-safe"
-                  ],
+                  "flags": ["memory-safe"],
                   "id": 51612,
                   "nodeType": "InlineAssembly",
                   "src": "3149:336:58"
@@ -3694,9 +3641,7 @@
                 "modifierName": {
                   "id": 51620,
                   "name": "onlyOwner",
-                  "nameLocations": [
-                    "3580:9:58"
-                  ],
+                  "nameLocations": ["3580:9:58"],
                   "nodeType": "IdentifierPath",
                   "referencedDeclaration": 29918,
                   "src": "3580:9:58"
@@ -4199,9 +4144,7 @@
                 }
               ]
             },
-            "baseFunctions": [
-              51403
-            ],
+            "baseFunctions": [51403],
             "functionSelector": "ff6eef52",
             "implemented": true,
             "kind": "function",
@@ -4212,9 +4155,7 @@
                 "modifierName": {
                   "id": 51653,
                   "name": "onlyOwner",
-                  "nameLocations": [
-                    "4103:9:58"
-                  ],
+                  "nameLocations": ["4103:9:58"],
                   "nodeType": "IdentifierPath",
                   "referencedDeclaration": 29918,
                   "src": "4103:9:58"
@@ -4337,9 +4278,7 @@
               "nodes": [],
               "statements": [
                 {
-                  "assignments": [
-                    51695
-                  ],
+                  "assignments": [51695],
                   "declarations": [
                     {
                       "constant": false,
@@ -4770,9 +4709,7 @@
             "nodeType": "VariableDeclaration",
             "src": "4857:82:58",
             "nodes": [],
-            "baseFunctions": [
-              51420
-            ],
+            "baseFunctions": [51420],
             "constant": false,
             "functionSelector": "5eced480",
             "mutability": "mutable",
@@ -4924,9 +4861,7 @@
                 }
               ]
             },
-            "baseFunctions": [
-              51409
-            ],
+            "baseFunctions": [51409],
             "functionSelector": "c97682f8",
             "implemented": true,
             "kind": "function",
@@ -5465,10 +5400,7 @@
                       "id": 51779,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [
-                        -18,
-                        -18
-                      ],
+                      "overloadedDeclarations": [-18, -18],
                       "referencedDeclaration": -18,
                       "src": "5377:7:58",
                       "typeDescriptions": {
@@ -5621,10 +5553,7 @@
                       "id": 51786,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [
-                        -18,
-                        -18
-                      ],
+                      "overloadedDeclarations": [-18, -18],
                       "referencedDeclaration": -18,
                       "src": "5446:7:58",
                       "typeDescriptions": {
@@ -5852,10 +5781,7 @@
                       "id": 51796,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [
-                        -18,
-                        -18
-                      ],
+                      "overloadedDeclarations": [-18, -18],
                       "referencedDeclaration": -18,
                       "src": "5511:7:58",
                       "typeDescriptions": {
@@ -5884,10 +5810,7 @@
                   "src": "5511:82:58"
                 },
                 {
-                  "assignments": [
-                    51813,
-                    51815
-                  ],
+                  "assignments": [51813, 51815],
                   "declarations": [
                     {
                       "constant": false,
@@ -6016,9 +5939,7 @@
                   "src": "5604:69:58"
                 },
                 {
-                  "assignments": [
-                    51822
-                  ],
+                  "assignments": [51822],
                   "declarations": [
                     {
                       "constant": false,
@@ -6239,9 +6160,7 @@
                       "valueSize": 1
                     }
                   ],
-                  "flags": [
-                    "memory-safe"
-                  ],
+                  "flags": ["memory-safe"],
                   "id": 51829,
                   "nodeType": "InlineAssembly",
                   "src": "5879:661:58"
@@ -6371,10 +6290,7 @@
                       "id": 51830,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [
-                        -18,
-                        -18
-                      ],
+                      "overloadedDeclarations": [-18, -18],
                       "referencedDeclaration": -18,
                       "src": "6549:7:58",
                       "typeDescriptions": {
@@ -6858,9 +6774,7 @@
                 }
               ]
             },
-            "baseFunctions": [
-              51431
-            ],
+            "baseFunctions": [51431],
             "functionSelector": "6b600d1c",
             "implemented": true,
             "kind": "function",
@@ -7143,9 +7057,7 @@
                 "modifierName": {
                   "id": 51886,
                   "name": "onlyOwner",
-                  "nameLocations": [
-                    "7223:9:58"
-                  ],
+                  "nameLocations": ["7223:9:58"],
                   "nodeType": "IdentifierPath",
                   "referencedDeclaration": 29918,
                   "src": "7223:9:58"
@@ -7415,10 +7327,7 @@
                       "id": 51918,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [
-                        -18,
-                        -18
-                      ],
+                      "overloadedDeclarations": [-18, -18],
                       "referencedDeclaration": -18,
                       "src": "7640:7:58",
                       "typeDescriptions": {
@@ -7447,9 +7356,7 @@
                   "src": "7640:61:58"
                 },
                 {
-                  "assignments": [
-                    51924
-                  ],
+                  "assignments": [51924],
                   "declarations": [
                     {
                       "constant": false,
@@ -7746,9 +7653,7 @@
                       "valueSize": 1
                     }
                   ],
-                  "flags": [
-                    "memory-safe"
-                  ],
+                  "flags": ["memory-safe"],
                   "id": 51931,
                   "nodeType": "InlineAssembly",
                   "src": "7842:394:58"
@@ -7974,9 +7879,7 @@
             "baseName": {
               "id": 51450,
               "name": "IGenericFactory",
-              "nameLocations": [
-                "428:15:58"
-              ],
+              "nameLocations": ["428:15:58"],
               "nodeType": "IdentifierPath",
               "referencedDeclaration": 51432,
               "src": "428:15:58"
@@ -7989,9 +7892,7 @@
             "baseName": {
               "id": 51452,
               "name": "Owned",
-              "nameLocations": [
-                "445:5:58"
-              ],
+              "nameLocations": ["445:5:58"],
               "nodeType": "IdentifierPath",
               "referencedDeclaration": 29955,
               "src": "445:5:58"
@@ -8005,11 +7906,7 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "linearizedBaseContracts": [
-          51939,
-          29955,
-          51432
-        ],
+        "linearizedBaseContracts": [51939, 29955, 51432],
         "name": "GenericFactory",
         "nameLocation": "410:14:58",
         "scope": 51940,
