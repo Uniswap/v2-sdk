@@ -1,9 +1,9 @@
 // taken from https://github.com/Uniswap/uniswap-v3-sdk
 import { Interface } from '@ethersproject/abi'
-import IMulticall from '@uniswap/v3-periphery/artifacts/contracts/interfaces/IMulticall.sol/IMulticall.json'
+import MulticallJson from '../lib/v3-periphery/out/Multicall.sol/Multicall.json'
 
 export abstract class Multicall {
-  public static INTERFACE: Interface = new Interface(IMulticall.abi)
+  public static INTERFACE: Interface = new Interface(MulticallJson.abi)
 
   /**
    * Cannot be constructed.
