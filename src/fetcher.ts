@@ -151,7 +151,7 @@ export abstract class Fetcher {
     const balances = tokenA.sortsBefore(tokenB)
       ? [reserves.rReserve0, reserves.rReserve1]
       : [reserves.rReserve1, reserves.rReserve0]
-    const swapFee: JSBI = pair.swapFee()
+    const swapFee: JSBI = JSBI.BigInt(await pair.swapFee())
 
     let ampCoefficient = null
     if (curveId == 1) {
