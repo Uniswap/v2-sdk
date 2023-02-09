@@ -5,8 +5,8 @@ bytecode_hash = "none"
 optimizer_runs = 1_000_000
 verbosity = 3
 fs_permissions = [
-    { access = "read", path = "./lib/v3-core" },
-    { access = "read", path = "./out/" }
+    { access = "read", path = "./lib/v3-periphery" },
+    { access = "read", path = "./out/" },
 ]
 
 [profile.integration]
