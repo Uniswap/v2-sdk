@@ -145,3 +145,22 @@ export function randomFromInterval(min: number, max: number): number {
   // min and max included
   return Math.random() * (max - min) + min
 }
+
+export function within1(x: Decimal, y: Decimal): boolean {
+  if (x.gt(y)) {
+    if (
+      fp(x)
+        .sub(fp(y))
+        .lte(1)
+    ) {
+      return true
+    }
+  } else if (
+    fp(y)
+      .sub(fp(x))
+      .lte(1)
+  ) {
+    return true
+  }
+  return false
+}

@@ -3,155 +3,144 @@
 import { Decimal } from 'decimal.js'
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { BigNumberish, decimal, bn, fp, fromFp, toFp } from './numbers'
+import { BigNumberish, decimal, bn, fp, fromFp, within1 } from './numbers'
 
-export function calculateInvariant(fpRawBalances: BigNumberish[], amplificationParameter: BigNumberish): BigNumber {
-  return calculateApproxInvariant(fpRawBalances, amplificationParameter)
+const A_PRECISION = decimal(100)
+const MAX_LOOP_LIMIT = 256
+
+export function calculateInvariant(
+  xp0: BigNumberish,
+  xp1: BigNumberish,
+  amplificationCoefficient: BigNumberish
+): BigNumber {
+  return calculateApproxInvariant(xp0, xp1, amplificationCoefficient)
 }
 
 export function calculateApproxInvariant(
-  fpRawBalances: BigNumberish[],
-  amplificationParameter: BigNumberish
+  xp0: BigNumberish,
+  xp1: BigNumberish,
+  amplificationCoefficient: BigNumberish
 ): BigNumber {
-  const totalCoins = fpRawBalances.length
-  const balances = fpRawBalances.map(fromFp)
+  const bal0 = decimal(xp0)
+  const bal1 = decimal(xp1)
+  // console.log("xp0", xp0.toString())
+  // console.log("bal0", bal0.toString())
 
-  const sum = balances.reduce((a, b) => a.add(b), decimal(0))
+  const sum = bal0.add(bal1)
+
+  // console.log("sum is", sum.toString())
 
   if (sum.isZero()) {
     return bn(0)
   }
 
+  // we multiply by 2 as there are only 2 coins in a pair
+  const N_A = decimal(amplificationCoefficient).mul(2)
+
   let inv = sum
   let prevInv = decimal(0)
-  const ampTimesTotal = decimal(amplificationParameter).mul(totalCoins)
-
-  for (let i = 0; i < 255; i++) {
-    let P_D = balances[0].mul(totalCoins)
-    for (let j = 1; j < totalCoins; j++) {
-      P_D = P_D.mul(balances[j])
-        .mul(totalCoins)
-        .div(inv)
-    }
+  for (let i = 0; i < MAX_LOOP_LIMIT; ++i) {
+    let dP = inv
+      .mul(inv)
+      .div(bal0)
+      .mul(inv)
+      .div(bal1)
+      .div(4)
 
     prevInv = inv
-    inv = decimal(totalCoins)
+    inv = N_A.mul(sum)
+      .div(A_PRECISION)
+      .add(dP.mul(2))
       .mul(inv)
-      .mul(inv)
-      .add(ampTimesTotal.mul(sum).mul(P_D))
       .div(
-        decimal(totalCoins)
-          .add(1)
+        N_A.minus(A_PRECISION)
           .mul(inv)
-          .add(ampTimesTotal.sub(1).mul(P_D))
+          .div(A_PRECISION)
+          .add(dP.mul(3))
       )
 
-    // converge with precision of integer 1
-    if (inv.gt(prevInv)) {
-      if (
-        fp(inv)
-          .sub(fp(prevInv))
-          .lte(1)
-      ) {
-        break
-      }
-    } else if (
-      fp(prevInv)
-        .sub(fp(inv))
-        .lte(1)
-    ) {
+    if (within1(inv, prevInv)) {
       break
     }
   }
-
   return fp(inv)
 }
 
 export function calcOutGivenIn(
-  fpBalances: BigNumberish[],
-  amplificationParameter: BigNumberish,
-  tokenIndexIn: number,
-  tokenIndexOut: number,
+  reserveIn: BigNumberish,
+  reserveOut: BigNumberish,
+  amplificationCoefficient: BigNumberish,
   fpTokenAmountIn: BigNumberish
 ): Decimal {
-  const invariant = fromFp(calculateInvariant(fpBalances, amplificationParameter))
+  const invariant = fromFp(calculateInvariant(reserveIn, reserveOut, amplificationCoefficient))
 
-  const balances = fpBalances.map(fromFp)
-  balances[tokenIndexIn] = balances[tokenIndexIn].add(fromFp(fpTokenAmountIn))
+  // console.log("invariant", invariant.toString())
+  // console.log("reserve out", reserveOut.toString())
+  // console.log("reserve in", reserveIn.toString())
+
+  let balanceIn = decimal(reserveIn).add(decimal(fpTokenAmountIn))
+  // console.log("bal in", balanceIn.toString())
 
   const finalBalanceOut = _getTokenBalanceGivenInvariantAndAllOtherBalances(
-    balances,
-    decimal(amplificationParameter),
-    invariant,
-    tokenIndexOut
+    balanceIn,
+    decimal(amplificationCoefficient),
+    invariant
   )
 
-  return toFp(balances[tokenIndexOut].sub(finalBalanceOut))
+  // console.log("final balance out", finalBalanceOut.toString())
+  // console.log("decimal(reserveOut).sub(finalBalanceOut)", decimal(reserveOut).sub(finalBalanceOut).toString())
+  return decimal(reserveOut).sub(finalBalanceOut)
 }
 
 export function calcInGivenOut(
-  fpBalances: BigNumberish[],
-  amplificationParameter: BigNumberish,
-  tokenIndexIn: number,
-  tokenIndexOut: number,
+  reserveIn: BigNumberish,
+  reserveOut: BigNumberish,
+  amplificationCoefficient: BigNumberish,
   fpTokenAmountOut: BigNumberish
 ): Decimal {
-  const invariant = fromFp(calculateInvariant(fpBalances, amplificationParameter))
-
-  const balances = fpBalances.map(fromFp)
-  balances[tokenIndexOut] = balances[tokenIndexOut].sub(fromFp(fpTokenAmountOut))
+  const invariant = fromFp(calculateInvariant(reserveIn, reserveOut, amplificationCoefficient))
+  let balanceOut = decimal(reserveOut).sub(decimal(fpTokenAmountOut))
 
   const finalBalanceIn = _getTokenBalanceGivenInvariantAndAllOtherBalances(
-    balances,
-    decimal(amplificationParameter),
-    invariant,
-    tokenIndexIn
+    balanceOut,
+    decimal(amplificationCoefficient),
+    invariant
   )
 
-  return toFp(finalBalanceIn.sub(balances[tokenIndexIn]))
+  return finalBalanceIn.sub(decimal(reserveIn))
 }
 
 function _getTokenBalanceGivenInvariantAndAllOtherBalances(
-  balances: Decimal[],
-  amplificationParameter: Decimal | BigNumberish,
-  invariant: Decimal,
-  tokenIndex: number
+  balanceIn: Decimal,
+  amplificationCoefficient: Decimal,
+  invariant: Decimal
 ): Decimal {
-  let sum = decimal(0)
-  let mul = decimal(1)
-  const numTokens = balances.length
+  const N_A = amplificationCoefficient.mul(2)
 
-  for (let i = 0; i < numTokens; i++) {
-    if (i != tokenIndex) {
-      sum = sum.add(balances[i])
-      mul = mul.mul(balances[i])
+  let c = invariant.mul(invariant).div(balanceIn.mul(2))
+  c = c
+    .mul(invariant)
+    .mul(A_PRECISION)
+    .div(N_A.mul(2))
+
+  let b = balanceIn.add(invariant.mul(A_PRECISION).div(N_A))
+  let yPrev
+  let y = invariant
+
+  for (let i = 0; i < MAX_LOOP_LIMIT; ++i) {
+    yPrev = y
+    y = y
+      .mul(y)
+      .add(c)
+      .div(
+        y
+          .mul(2)
+          .add(b)
+          .sub(invariant)
+      )
+    if (within1(yPrev, y)) {
+      break
     }
   }
-
-  // const a = 1;
-  amplificationParameter = decimal(amplificationParameter)
-  const b = invariant
-    .div(amplificationParameter.mul(numTokens))
-    .add(sum)
-    .sub(invariant)
-  const c = invariant
-    .pow(numTokens + 1)
-    .mul(-1)
-    .div(
-      amplificationParameter.mul(
-        decimal(numTokens)
-          .pow(numTokens + 1)
-          .mul(mul)
-      )
-    )
-
-  return b
-    .mul(-1)
-    .add(
-      b
-        .pow(2)
-        .sub(c.mul(4))
-        .squareRoot()
-    )
-    .div(2)
+  return y
 }

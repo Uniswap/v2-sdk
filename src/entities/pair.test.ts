@@ -44,6 +44,7 @@ describe('computePairAddress', () => {
 describe('Pair', () => {
   const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
   const DAI = new Token(1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
+  const USDT = new Token(1, '0xdAC17F958D2ee523a2206206994597C13D831ec7', 6, 'USDT', 'USD Tether')
 
   describe('constructor', () => {
     it('cannot be used for tokens on different chains', () => {
@@ -189,12 +190,26 @@ describe('Pair', () => {
         JSBI.BigInt(100),
         JSBI.BigInt(1000)
       )
+      const pair2 = new Pair(
+        CurrencyAmount.fromRawAmount(USDC, '815018240192830192830192'),
+        CurrencyAmount.fromRawAmount(USDT, '950192301923'),
+        1,
+        JSBI.BigInt(100),
+        JSBI.BigInt(1000)
+      )
 
       it('should give the correct output amount given the inputAmount', () => {
         const inputAmount = CurrencyAmount.fromRawAmount(DAI, '1000000000000000000')
         const [outputAmount] = pair.getOutputAmount(inputAmount)
 
         expect(outputAmount.toExact()).toEqual('0.999772449652')
+      })
+
+      it('should give correct amounts when decimals are not 18', () => {
+        const inputAmount = CurrencyAmount.fromRawAmount(USDT, '1039281')
+        const [outputAmount] = pair2.getOutputAmount(inputAmount)
+
+        console.log(outputAmount.toExact())
       })
 
       it('should give the correct input amount given the outputAmount', () => {

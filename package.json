@@ -1,7 +1,7 @@
 {
   "name": "@reservoir-labs/sdk",
   "license": "MIT",
-  "version": "0.0.7",
+  "version": "0.0.44",
   "description": "🛠 An SDK for building applications on top of Reservoir",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -22,7 +22,8 @@
     "prepublishOnly": "tsdx build",
     "anvil": "anvil",
     "anvil:avax": "anvil -f https://api.avax.network/ext/bc/C/rpc",
-    "setupTest": "forge script lib/v3-periphery/scripts/setup_scaffold.s.sol --target-contract SetupScaffold --fork-url \"http://127.0.0.1:8545\" --broadcast --gas-limit 100000000 --skip-simulation --slow -vvv"
+    "setupTest": "cd lib/v3-periphery && forge script scripts/setup_scaffold.s.sol --target-contract SetupScaffold --fork-url \"http://127.0.0.1:8545\" --broadcast --skip-simulation --slow -vvv",
+    "deployStablePair": "cd lib/v3-periphery && forge script scripts/deploy_stablepair.s.sol --target-contract DeployStablePair --fork-url \"http://127.0.0.1:8545\" --broadcast -vvv"
   },
   "dependencies": {
     "@ethersproject/address": "^5.0.0",
@@ -34,6 +35,7 @@
     "@ethersproject/wallet": "^5.7.0",
     "@reservoir-labs/sdk-core": "^3.1.2",
     "decimal.js": "^10.4.3",
+    "jsbi": "^3.1.4",
     "tiny-invariant": "^1.1.0",
     "tiny-warning": "^1.0.3"
   },

@@ -13,7 +13,7 @@ describe('fetcher', () => {
     it('should fetch pairs', async () => {
       const pairs = await Fetcher.fetchAllPairs(43114, provider)
 
-      expect(pairs.length).toEqual(1)
+      expect(pairs.length).toEqual(2)
     })
   })
 
@@ -55,6 +55,21 @@ describe('fetcher', () => {
       //       provider
       //   )
       // }).toThrow()
+    })
+  })
+
+  describe('fetchPairDataUsingAddress', () => {
+    it('should fetch the info of a valid pair', async () => {
+      const pairAddresses = await Fetcher.fetchAllPairs(43114, provider)
+
+      const pair = await Fetcher.fetchPairDataUsingAddress(43114, pairAddresses[0], provider)
+
+      expect(pair.curveId).toEqual(0)
+      expect(pair.amplificationCoefficient).toEqual(null)
+      expect(pair.reserve0.toExact()).toEqual('1000000')
+      expect(pair.reserve1.toExact()).toEqual('950000')
+      expect(pair.token0.symbol).toEqual('USDC')
+      expect(pair.token1.symbol).toEqual('USDT')
     })
   })
 })
