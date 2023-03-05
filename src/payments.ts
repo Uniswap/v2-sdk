@@ -28,9 +28,10 @@ export abstract class Payments {
     return toHex(fee.multiply(10_000).quotient)
   }
 
-  public static encodeUnwrapWETH9(amountMinimum: JSBI, recipient: string, feeOptions?: FeeOptions): string {
+  public static encodeUnwrapWETH(amountMinimum: JSBI, recipient: string, feeOptions?: FeeOptions): string {
     recipient = validateAndParseAddress(recipient)
 
+    // TODO: what is the real usage of these "fees"
     if (!!feeOptions) {
       const feeBips = this.encodeFeeBips(feeOptions.fee)
       const feeRecipient: string = validateAndParseAddress(feeOptions.recipient)
@@ -42,7 +43,7 @@ export abstract class Payments {
         feeRecipient
       ])
     } else {
-      return Payments.INTERFACE.encodeFunctionData('unwrapWETH9', [toHex(amountMinimum), recipient])
+      return Payments.INTERFACE.encodeFunctionData('unwrapWETH', [toHex(amountMinimum), recipient])
     }
   }
 

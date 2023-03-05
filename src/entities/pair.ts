@@ -265,6 +265,7 @@ export class Pair {
   //   })
   // }
 
+  // TODO: the math for the stable case is still slightly (0.0001% off), to investigate why
   public getLiquidityMinted(
     totalSupply: CurrencyAmount<Token>,
     tokenAmountA: CurrencyAmount<Token>,

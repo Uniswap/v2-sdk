@@ -9,7 +9,6 @@ import GenericFactory from './abis/GenericFactory.json'
 import ReservoirPair from './abis/ReservoirPair.json'
 import StablePair from './abis/StablePair.json'
 import JSBI from 'jsbi'
-import { AddressZero } from '@ethersproject/constants'
 
 let TOKEN_DECIMALS_CACHE: { [chainId: number]: { [address: string]: number } } = {
   [SupportedChainId.MAINNET]: {
@@ -72,19 +71,19 @@ export abstract class Fetcher {
     return await new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider).allPairs()
   }
 
-  private static async _fetchPairIfExists(
-    tokenA: Token,
-    tokenB: Token,
-    curveId: number,
-    provider = getDefaultProvider(getNetwork(tokenA.chainId))
-  ): Promise<Pair | null> {
-    const factory = new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider)
-    const pair = await factory.getPair(tokenA.address, tokenB.address, curveId)
-
-    if (pair === AddressZero) return null
-
-    return Fetcher.fetchPairData(tokenA, tokenB, curveId, provider)
-  }
+  // private static async _fetchPairIfExists(
+  //   tokenA: Token,
+  //   tokenB: Token,
+  //   curveId: number,
+  //   provider = getDefaultProvider(getNetwork(tokenA.chainId))
+  // ): Promise<Pair | null> {
+  //   const factory = new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider)
+  //   const pair = await factory.getPair(tokenA.address, tokenB.address, curveId)
+  //
+  //   if (pair === AddressZero) return null
+  //
+  //   return Fetcher.fetchPairData(tokenA, tokenB, curveId, provider)
+  // }
 
   // returns the pairs that should be considered in the routing of trades
   // only returns pairs that have been instantiated already
@@ -100,29 +99,41 @@ export abstract class Fetcher {
     invariant(tokenA.chainId == tokenB.chainId, 'CHAIN_ID')
     invariant(tokenA != tokenB, 'SAME_TOKEN')
 
+    const relevantPairs: Set<string> = new Set()
+
     // get the pairs for the two curves
-    const constantProduct = await this._fetchPairIfExists(tokenA, tokenB, 0, provider)
-    const stable = await this._fetchPairIfExists(tokenA, tokenB, 1, provider)
+    const constantProduct = Pair.getAddress(tokenA, tokenB, 0)
+    const stable = Pair.getAddress(tokenA, tokenB, 1)
+
+    relevantPairs.add(constantProduct)
+    relevantPairs.add(stable)
 
     // get native pairs
-    const nativeTokenAConstantProduct = await this._fetchPairIfExists(tokenA, WETH9[chainId], 0, provider)
-    const nativeTokenAStable = await this._fetchPairIfExists(tokenA, WETH9[chainId], 1, provider)
-    const nativeTokenBConstantProduct = await this._fetchPairIfExists(tokenB, WETH9[chainId], 0, provider)
-    const nativeTokenBStable = await this._fetchPairIfExists(tokenB, WETH9[chainId], 1, provider)
+    if (!tokenA.equals(WETH9[chainId])) {
+      const nativeTokenAConstantProduct = Pair.getAddress(tokenA, WETH9[chainId], 0)
+      const nativeTokenAStable = Pair.getAddress(tokenA, WETH9[chainId], 1)
+      relevantPairs.add(nativeTokenAConstantProduct)
+      relevantPairs.add(nativeTokenAStable)
+    }
 
-    const relevantPairs = [
-      stable,
-      constantProduct,
-      nativeTokenAConstantProduct,
-      nativeTokenAStable,
-      nativeTokenBConstantProduct,
-      nativeTokenBStable
-    ].filter(address => address != null)
+    if (!tokenB.equals(WETH9[chainId])) {
+      const nativeTokenBConstantProduct = Pair.getAddress(tokenB, WETH9[chainId], 0)
+      const nativeTokenBStable = Pair.getAddress(tokenB, WETH9[chainId], 1)
+      relevantPairs.add(nativeTokenBConstantProduct)
+      relevantPairs.add(nativeTokenBStable)
+    }
 
-    const result = new Set(relevantPairs) // de-duplicate addresses using a set
+    const promises = Array.from(relevantPairs).map(async value => {
+      try {
+        return [await this.fetchPairDataUsingAddress(chainId, value, provider)]
+      } catch {
+        return []
+      }
+    })
 
-    // @ts-ignore
-    return Array.from(result)
+    const fetchedPairs = await Promise.all(promises)
+
+    return fetchedPairs.flat(1)
   }
 
   /**
@@ -181,7 +192,6 @@ export abstract class Fetcher {
 
     let ampCoefficient = null
     if (curveId == 1) {
-      // fetch amplification coefficient
       ampCoefficient = JSBI.BigInt(await new Contract(address, StablePair.abi, provider).getCurrentAPrecise())
     }
 

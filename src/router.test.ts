@@ -1,7 +1,8 @@
 import JSBI from 'jsbi'
 import { Pair, Route, Trade } from './entities'
 import { Router } from './router'
-import { CurrencyAmount, Percent, Ether, Token, WETH9 } from '@reservoir-labs/sdk-core'
+import { CurrencyAmount, Percent, Ether, Token /*, WETH9*/ } from '@reservoir-labs/sdk-core'
+import { AddressZero } from '@ethersproject/constants'
 
 describe('Router', () => {
   const ETHER = Ether.onChain(1)
@@ -126,6 +127,35 @@ describe('Router', () => {
           '0x0000000000000000000000000000000000000004'
         ])
         expect(result.value).toEqual('0x0')
+      })
+    })
+  })
+  describe('#removeLiquidityParameters', () => {
+    describe('ether out', () => {
+      it('should use multicall', () => {
+        const tokenAmountA: CurrencyAmount<Ether> = CurrencyAmount.fromRawAmount(ETHER, '39291231231')
+        const tokenAmountB: CurrencyAmount<Token> = CurrencyAmount.fromRawAmount(token0, '312983109283213')
+
+        const liqAmount = '12312312312'
+        const parameters = Router.removeLiquidityParameters(tokenAmountA, tokenAmountB, 1, liqAmount, {
+          allowedSlippage: new Percent(1, 100),
+          recipient: AddressZero
+        })
+
+        expect(parameters.calldata.slice((end = 10))).toEqual('0xac9650d8')
+      })
+    })
+    describe('only erc20 out', () => {
+      it('should call removeLiquidity directly', () => {
+        const tokenAmountA: CurrencyAmount<Token> = CurrencyAmount.fromRawAmount(token1, '39291231231')
+        const tokenAmountB: CurrencyAmount<Token> = CurrencyAmount.fromRawAmount(token0, '312983109283213')
+
+        const liqAmount = '12312312312'
+        const parameters = Router.removeLiquidityParameters(tokenAmountA, tokenAmountB, 1, liqAmount, {
+          allowedSlippage: new Percent(1, 1000),
+          recipient: AddressZero
+        })
+        expect(parameters.calldata.slice(undefined, 10)).toEqual('0xea904f3d')
       })
     })
   })

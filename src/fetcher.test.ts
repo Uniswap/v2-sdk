@@ -6,14 +6,14 @@ import { Pair } from 'entities'
 
 describe('fetcher', () => {
   let provider: BaseProvider = new WebSocketProvider('ws://127.0.0.1:8545')
-  const USDC_AVAX = '0x2B0d36FACD61B71CC05ab8F3D2355ec3631C0dd5'
-  const USDT_AVAX = '0xfbC22278A96299D91d41C453234d97b4F5Eb9B2d'
+  const USDC_AVAX = '0x5D60473C5Cb323032d6fdFf42380B50E2AE4d245'
+  const USDT_AVAX = '0x6e9FDaE1Fe20b0A5a605C879Ae14030a0aE99cF9'
 
   describe('fetchAllPairs', () => {
     it('should fetch pairs', async () => {
       const pairs = await Fetcher.fetchAllPairs(43114, provider)
 
-      expect(pairs.length).toEqual(2)
+      expect(pairs.length).toEqual(3)
     })
   })
 
@@ -25,7 +25,6 @@ describe('fetcher', () => {
         new Token(43114, USDC_AVAX, 6),
         provider
       )
-
       expect(relevantPairs.length).toBeLessThan(6)
       expect(relevantPairs.length).toBeGreaterThan(0)
     })
@@ -34,8 +33,8 @@ describe('fetcher', () => {
   describe('fetchPairData', () => {
     it('should fetch the info a of a valid pair', async () => {
       const pair: Pair = await Fetcher.fetchPairData(
-        new Token(43114, '0x2B0d36FACD61B71CC05ab8F3D2355ec3631C0dd5', 6),
-        new Token(43114, '0xfbC22278A96299D91d41C453234d97b4F5Eb9B2d', 6),
+        new Token(43114, USDC_AVAX, 6),
+        new Token(43114, USDT_AVAX, 6),
         0,
         provider
       )
