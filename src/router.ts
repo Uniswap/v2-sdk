@@ -39,7 +39,7 @@ export interface TradeOptions {
 /**
  * The parameters to use in the call to the Uniswap V2 Router to execute a trade.
  */
-export interface SwapParameters {
+export interface MethodParameters {
   /**
    * The arguments to pass to the method, all hex encoded.
    */
@@ -70,7 +70,7 @@ export abstract class Router {
    * @param trade to produce call parameters for
    * @param options options for the call parameters
    */
-  public static swapCallParameters(trade: Trade<Currency, Currency, TradeType>, options: TradeOptions): SwapParameters {
+  public static swapCallParameters(trade: Trade<Currency, Currency, TradeType>, options: TradeOptions): MethodParameters {
     const etherIn = trade.inputAmount.currency.isNative
     const etherOut = trade.outputAmount.currency.isNative
     // the router does not support both ether in and out
@@ -130,7 +130,7 @@ export abstract class Router {
     tokenAmountB: CurrencyAmount<any>,
     curveId: number,
     options: TradeOptions
-  ): SwapParameters {
+  ): MethodParameters {
     invariant(!tokenAmountA.currency.equals(tokenAmountB.currency), 'ATTEMPTING_TO_ADD_LIQ_FOR_SAME_TOKEN')
     invariant(curveId === 0 || curveId === 1, 'INVALID_CURVE_ID')
     const etherIn = tokenAmountA.currency.isNative || tokenAmountB.currency.isNative
@@ -173,7 +173,7 @@ export abstract class Router {
     curveId: number,
     liquidityAmount: BigintIsh,
     options: TradeOptions
-  ): SwapParameters {
+  ): MethodParameters {
     invariant(!tokenAmountA.currency.equals(tokenAmountB.currency), 'ATTEMPTING_TO_REMOVE_LIQ_FOR_SAME_TOKEN')
     const etherOut = tokenAmountA.currency.isNative || tokenAmountB.currency.isNative
     const validatedRecipient = validateAndParseAddress(options.recipient)
