@@ -165,9 +165,7 @@ export abstract class Router {
     let value: string = ZERO_HEX
     if (etherIn) {
       value = tokenAmountA.currency.isNative ? tokenAmountA.quotient.toString() : tokenAmountB.quotient.toString()
-      // are these needed??
       calldatas.push(Payments.encodeRefundETH())
-      // calldatas.push(Payments.encodeSweepToken())
     }
 
     const calldata = Multicall.encodeMulticall(calldatas)
