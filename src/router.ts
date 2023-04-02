@@ -169,7 +169,6 @@ export abstract class Router {
     }
 
     const calldata = Multicall.encodeMulticall(calldatas)
-    console.log('add liq calldata', calldata)
 
     return {
       calldata,

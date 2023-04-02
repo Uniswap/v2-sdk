@@ -1,4 +1,4 @@
-// ADAPTED FROM BALANCER https://github.com/balancer-labs/balancer-v2-monorepo/blob/master/pvt/helpers/src/models/pools/stable/math.ts
+// ADAPTED FROM BALANCER
 
 import { Decimal } from 'decimal.js'
 import { BigNumber } from '@ethersproject/bignumber'
@@ -16,19 +16,15 @@ export function calculateInvariant(
   return calculateApproxInvariant(xp0, xp1, amplificationCoefficient)
 }
 
-export function calculateApproxInvariant(
+function calculateApproxInvariant(
   xp0: BigNumberish,
   xp1: BigNumberish,
   amplificationCoefficient: BigNumberish
 ): BigNumber {
   const bal0 = decimal(xp0)
   const bal1 = decimal(xp1)
-  // console.log("xp0", xp0.toString())
-  // console.log("bal0", bal0.toString())
 
   const sum = bal0.add(bal1)
-
-  // console.log("sum is", sum.toString())
 
   if (sum.isZero()) {
     return bn(0)
@@ -74,12 +70,7 @@ export function calcOutGivenIn(
 ): Decimal {
   const invariant = fromFp(calculateInvariant(reserveIn, reserveOut, amplificationCoefficient))
 
-  // console.log("invariant", invariant.toString())
-  // console.log("reserve out", reserveOut.toString())
-  // console.log("reserve in", reserveIn.toString())
-
   let balanceIn = decimal(reserveIn).add(decimal(fpTokenAmountIn))
-  // console.log("bal in", balanceIn.toString())
 
   const finalBalanceOut = _getTokenBalanceGivenInvariantAndAllOtherBalances(
     balanceIn,
@@ -87,8 +78,6 @@ export function calcOutGivenIn(
     invariant
   )
 
-  // console.log("final balance out", finalBalanceOut.toString())
-  // console.log("decimal(reserveOut).sub(finalBalanceOut)", decimal(reserveOut).sub(finalBalanceOut).toString())
   return decimal(reserveOut).sub(finalBalanceOut)
 }
 
@@ -143,4 +132,46 @@ function _getTokenBalanceGivenInvariantAndAllOtherBalances(
     }
   }
   return y
+}
+
+// calculates the spot price of token1 in token0
+export function calculateStableSpotPrice(
+  scaledReserve0: BigNumberish,
+  scaledReserve1: BigNumberish,
+  amplificationCoefficient: BigNumberish
+): Decimal {
+  const invariant = fromFp(calculateInvariant(scaledReserve0, scaledReserve1, amplificationCoefficient))
+  const a = decimal(amplificationCoefficient)
+    .mul(2)
+    .div(A_PRECISION)
+
+  const b = invariant.mul(a).sub(invariant)
+
+  const bal0 = decimal(scaledReserve0)
+  const bal1 = decimal(scaledReserve1)
+
+  const axy2 = a
+    .mul(2)
+    .mul(bal0)
+    .mul(bal1)
+    .div(1e18)
+
+  const derivativeX = axy2
+    .add(
+      a
+        .mul(bal1)
+        .mul(bal1)
+        .div(1e18)
+    )
+    .sub(b.mul(bal1).div(1e18))
+  const derivativeY = axy2
+    .add(
+      a
+        .mul(bal0)
+        .mul(bal0)
+        .div(1e18)
+    )
+    .sub(b.mul(bal0).div(1e18))
+
+  return derivativeX.div(derivativeY)
 }

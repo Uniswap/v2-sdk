@@ -17,7 +17,7 @@ import { InsufficientReservesError, InsufficientInputAmountError } from '../erro
 import ConstantProductPair from '../abis/ConstantProductPair.json'
 import StablePair from '../abis/StablePair.json'
 import { defaultAbiCoder } from '@ethersproject/abi'
-import { calcInGivenOut, calcOutGivenIn, calculateInvariant } from '../lib/balancer-math'
+import { calcInGivenOut, calcOutGivenIn, calculateInvariant } from '../lib/stableMath'
 import { decimal } from '../lib/numbers'
 
 export const computePairAddress = ({
@@ -124,6 +124,17 @@ export class Pair {
   }
 
   /**
+   * Returns the quote token's liq expressed in terms of the base token's liq
+   * @param token base token
+   */
+  public liqRatio(token: Token): Price<Token, Token> {
+    invariant(this.involvesToken(token), 'TOKEN')
+    return token.equals(this.token0)
+      ? new Price(this.token0, this.token1, this.tokenAmounts[0].quotient, this.tokenAmounts[1].quotient)
+      : new Price(this.token1, this.token0, this.tokenAmounts[1].quotient, this.tokenAmounts[0].quotient)
+  }
+
+  /**
    * Return the price of the given token in terms of the other token in the pair.
    * @param token token to return price of
    */
@@ -180,7 +191,6 @@ export class Pair {
       if (JSBI.equal(outputAmount.quotient, ZERO)) {
         throw new InsufficientInputAmountError()
       }
-      // console.log("exact output CP", outputAmount.toExact())
     } else if (this.curveId == 1) {
       invariant(this.amplificationCoefficient != null)
       const feeDeductedAmountIn = inputAmount.multiply(JSBI.subtract(FEE_ACCURACY, this.swapFee)).divide(FEE_ACCURACY)
@@ -193,13 +203,10 @@ export class Pair {
       )
       outputAmount = outputAmount.mul(decimal(10).pow(outputReserve.currency.decimals)).toDP(0)
 
-      // console.log("raw output amt", outputAmount.toString())
-
       outputAmount = CurrencyAmount.fromRawAmount(
         inputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
         JSBI.BigInt(outputAmount.toString())
       )
-      // console.log("exact output stab", outputAmount.toExact())
     }
 
     // @ts-ignore
