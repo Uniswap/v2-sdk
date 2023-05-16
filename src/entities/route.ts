@@ -57,33 +57,25 @@ export class Route<TInput extends Currency, TOutput extends Currency> {
         ? new Price(pair.reserve0.currency, pair.reserve1.currency, pair.reserve0.quotient, pair.reserve1.quotient)
         : new Price(pair.reserve1.currency, pair.reserve0.currency, pair.reserve1.quotient, pair.reserve0.quotient)
     } else {
-      price = token.equals(pair.token0)
-        ? new Price(
-            pair.reserve0.currency,
-            pair.reserve1.currency,
-            1e18,
-            calculateStableSpotPrice(
-              pair.reserve0.toExact(),
-              pair.reserve1.toExact(),
-              pair.amplificationCoefficient!.toString()
-            )
-              .mul(decimal(10).pow(18))
-              .toDP(0)
-              .toString()
-          )
-        : new Price(
-            pair.reserve1.currency,
-            pair.reserve0.currency,
-            1e18,
-            calculateStableSpotPrice(
-              pair.reserve1.toExact(),
-              pair.reserve0.toExact(),
-              pair.amplificationCoefficient!.toString()
-            )
-              .mul(decimal(10).pow(18))
-              .toDP(0)
-              .toString()
-          )
+      if (token.equals(pair.token0)) {
+        const stableSpotPrice = calculateStableSpotPrice(
+            pair.reserve0.toExact(),
+            pair.reserve1.toExact(),
+            pair.amplificationCoefficient!.toString()
+        )
+        // we express the price as a fraction with the numerator at index 0 and denominator at index 1
+        // to feed into the `Price` constructor
+        const frac = stableSpotPrice.toFraction()
+        price = new Price(pair.reserve0.currency, pair.reserve1.currency, frac[1].toString(), frac[0].toString())
+      } else {
+        const stableSpotPrice = calculateStableSpotPrice(
+            pair.reserve1.toExact(),
+            pair.reserve0.toExact(),
+            pair.amplificationCoefficient!.toString()
+        )
+        const frac = stableSpotPrice.toFraction()
+        price = new Price(pair.reserve1.currency, pair.reserve0.currency, frac[1].toString(), frac[0].toString())
+      }
     }
     return price
   }
