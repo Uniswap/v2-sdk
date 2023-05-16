@@ -135,6 +135,7 @@ function _getTokenBalanceGivenInvariantAndAllOtherBalances(
 }
 
 // calculates the spot price of token1 in token0
+// reserves are in decimal form. E.g. 500.1 USDC would be 500.1, not 500100000
 export function calculateStableSpotPrice(
   scaledReserve0: BigNumberish,
   scaledReserve1: BigNumberish,
