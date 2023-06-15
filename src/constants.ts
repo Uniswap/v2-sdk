@@ -8,7 +8,6 @@ export const MAINNET_FACTORY_ADDRESS = '0x47e537e1452dbc9c3ee8f1420e5aaf22111d35
 // this is deployed manually as it wasn't necessary to use the ReservoirDeployer at that time
 export const TESTNET_FACTORY_ADDRESS = '0xCae997a6f253814441B878868fd6DBB32a52816f'
 
-
 export const TESTNET_ROUTER_ADDRESS = '0xd627FdC984a249E9b5F2df263A37368f4e459726'
 export const MAINNET_ROUTER_ADDRESS = '0x67bc78378723acd8876FCA16d9c6C24ff79acb8e'
 export const ROUTER_ADDRESS = TESTNET_ROUTER_ADDRESS
