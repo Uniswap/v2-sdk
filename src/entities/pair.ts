@@ -70,7 +70,11 @@ export class Pair {
   public readonly amplificationCoefficient: JSBI | null
 
   public static getAddress(tokenA: Token, tokenB: Token, curveId: number): string {
-    return computePairAddress({ factoryAddress: FACTORY_ADDRESS, tokenA, tokenB, curveId })
+    // it is assumed that the chainId of tokenA is on one of the supported chains. Else it will throw
+    // I would write an invariant to assert this but I don't know how to write it elegantly at the moment
+    // so using this ts-ignore for now
+    // @ts-ignore
+    return computePairAddress({ factoryAddress: FACTORY_ADDRESS[tokenA.chainId], tokenA, tokenB, curveId })
   }
 
   public constructor(

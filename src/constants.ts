@@ -1,14 +1,17 @@
 import JSBI from 'jsbi'
+import { SupportedChainId } from '@reservoir-labs/sdk-core'
 
-// TODO: update this with the standardized CREATE2 address that will be the same across all chains
-// Currently it only works for the wallet with the custom mnemonic given to anvil
-export const FACTORY_ADDRESS = '0xCae997a6f253814441B878868fd6DBB32a52816f'
+export const FACTORY_ADDRESS = {
+  // this is deployed using the ReservoirDeployer
+  [SupportedChainId.AVAX]: '0x47e537e1452dbc9c3ee8f1420e5aaf22111d3547',
+  // this is deployed manually as it wasn't necessary to use the ReservoirDeployer at that time
+  [SupportedChainId.AVAX_TESTNET]: '0xCae997a6f253814441B878868fd6DBB32a52816f'
+}
 
-// This address is the product of using create2 with testnet WAVAX's contract address
-export const TESTNET_ROUTER_ADDRESS = '0xd627FdC984a249E9b5F2df263A37368f4e459726'
-// This address is the product of using create2 with mainnet WAVAX's contract address
-export const MAINNET_ROUTER_ADDRESS = '0x7f05c63dc7ca3f99f2d3409f0017c28058c42b27'
-export const ROUTER_ADDRESS = TESTNET_ROUTER_ADDRESS
+export const ROUTER_ADDRESS = {
+  [SupportedChainId.AVAX]: '0xd627FdC984a249E9b5F2df263A37368f4e459726',
+  [SupportedChainId.AVAX_TESTNET]: '0x67bc78378723acd8876FCA16d9c6C24ff79acb8e'
+}
 export const MINIMUM_LIQUIDITY = JSBI.BigInt(1000)
 export const FEE_ACCURACY = JSBI.BigInt(1_000_000) // 100%
 

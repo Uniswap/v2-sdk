@@ -11,9 +11,9 @@ import StablePair from './abis/StablePair.json'
 import JSBI from 'jsbi'
 
 let TOKEN_DECIMALS_CACHE: { [chainId: number]: { [address: string]: number } } = {
-  [SupportedChainId.MAINNET]: {
-    '0xE0B7927c4aF23765Cb51314A0E0521A9645F0E2A': 9 // DGD
-  }
+  // [SupportedChainId.MAINNET]: {
+  //   '0xE0B7927c4aF23765Cb51314A0E0521A9645F0E2A': 9 // DGD
+  // }
 }
 
 // TODO: import these abis as npm package dependencies
@@ -68,7 +68,7 @@ export abstract class Fetcher {
     chainId: SupportedChainId,
     provider = getDefaultProvider(getNetwork(chainId))
   ): Promise<string[]> {
-    return await new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider).allPairs()
+    return await new Contract(FACTORY_ADDRESS[chainId], GenericFactory.abi, provider).allPairs()
   }
 
   // private static async _fetchPairIfExists(
@@ -232,7 +232,7 @@ export abstract class Fetcher {
     const swapFee: JSBI = JSBI.BigInt(await pair.swapFee())
     let curveId
 
-    const factory = new Contract(FACTORY_ADDRESS, GenericFactory.abi, provider)
+    const factory = new Contract(FACTORY_ADDRESS[chainId], GenericFactory.abi, provider)
     if (address == (await factory.getPair(token0.address, token1.address, 0))) {
       curveId = 0
     } else {

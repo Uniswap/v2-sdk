@@ -1,10 +1,4 @@
-export {
-  FACTORY_ADDRESS,
-  MINIMUM_LIQUIDITY,
-  FEE_ACCURACY,
-  TESTNET_ROUTER_ADDRESS,
-  MAINNET_ROUTER_ADDRESS
-} from './constants'
+export { FACTORY_ADDRESS, ROUTER_ADDRESS, MINIMUM_LIQUIDITY, FEE_ACCURACY } from './constants'
 
 export * from './errors'
 export * from './entities'
