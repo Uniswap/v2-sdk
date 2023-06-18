@@ -82,7 +82,9 @@ export abstract class Router {
       calldatas.push(encodedPermit)
     }
 
-    const to: string = etherOut ? ROUTER_ADDRESS : validateAndParseAddress(options.recipient)
+    // assumed that the chainId is part of the SupportedChainId
+    // @ts-ignore
+    const to: string = etherOut ? ROUTER_ADDRESS[trade.route.chainId] : validateAndParseAddress(options.recipient)
     const amountIn: string = toHex(trade.maximumAmountIn(options.allowedSlippage))
     const amountOut: string = toHex(trade.minimumAmountOut(options.allowedSlippage))
     const path: string[] = trade.route.path.map((token: Token) => token.address)
@@ -194,7 +196,9 @@ export abstract class Router {
     }
 
     const methodName = 'removeLiquidity'
-    const to = etherOut ? ROUTER_ADDRESS : validatedRecipient
+    // it is assumed that the chainId is part of the SupportedChainId
+    // @ts-ignore
+    const to = etherOut ? ROUTER_ADDRESS[trade.route.chainId] : validatedRecipient
     const tokenAMinimumAmount = calculateSlippageAmount(tokenAmountA.quotient, options.allowedSlippage).lower
     const tokenBMinimumAmount = calculateSlippageAmount(tokenAmountB.quotient, options.allowedSlippage).lower
     const args = [
