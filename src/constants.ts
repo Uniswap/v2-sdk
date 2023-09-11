@@ -1,5 +1,5 @@
 import JSBI from 'jsbi'
-import {Fraction} from "@uniswap/sdk-core";
+import { Fraction } from '@uniswap/sdk-core'
 
 export const FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
 

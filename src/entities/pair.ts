@@ -1,4 +1,4 @@
-import {BigintIsh, Price, sqrt, Token, CurrencyAmount, Fraction} from '@uniswap/sdk-core'
+import { BigintIsh, Price, sqrt, Token, CurrencyAmount, Fraction } from '@uniswap/sdk-core'
 import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
 import { pack, keccak256 } from '@ethersproject/solidity'
@@ -15,7 +15,8 @@ import {
   ONE,
   ZERO,
   _10000,
-  ZERO_FRACTION, ONE_FRACTION
+  ZERO_FRACTION,
+  ONE_FRACTION
 } from '../constants'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
 
@@ -183,10 +184,12 @@ export class Pair {
     const outputReserve = this.reserveOf(inputAmount.currency.equals(this.token0) ? this.token1 : this.token0)
     const inputAmountWithFee = JSBI.multiply(inputAmount.quotient, _997)
 
-    const percentAfterSellFeesInDecimal = this.derivePercentAfterSellFeesInDecimal(CurrencyAmount.fromRawAmount(inputAmount.currency, inputAmountWithFee))
-    const inputAmountWithFeeAndTax = (percentAfterSellFeesInDecimal.greaterThan(ZERO)) ?
-            percentAfterSellFeesInDecimal.multiply(inputAmountWithFee).quotient // fraction.quotient will round down by itself, which is desired
-            : inputAmountWithFee
+    const percentAfterSellFeesInDecimal = this.derivePercentAfterSellFeesInDecimal(
+      CurrencyAmount.fromRawAmount(inputAmount.currency, inputAmountWithFee)
+    )
+    const inputAmountWithFeeAndTax = percentAfterSellFeesInDecimal.greaterThan(ZERO)
+      ? percentAfterSellFeesInDecimal.multiply(inputAmountWithFee).quotient // fraction.quotient will round down by itself, which is desired
+      : inputAmountWithFee
 
     const numerator = JSBI.multiply(inputAmountWithFeeAndTax, outputReserve.quotient)
     const denominator = JSBI.add(JSBI.multiply(inputReserve.quotient, _1000), inputAmountWithFeeAndTax)
@@ -200,11 +203,12 @@ export class Pair {
     }
 
     const percentAfterBuyFeesInDecimal = this.derivePercentAfterBuyFeesInDecimal(outputAmount)
-    const outputAmountWithTax = percentAfterBuyFeesInDecimal.greaterThan(ZERO) ?
-        CurrencyAmount.fromRawAmount(
-            outputAmount.currency,
-            outputAmount.multiply(percentAfterBuyFeesInDecimal).quotient // fraction.quotient will round down by itself, which is desired
-        ) : outputAmount
+    const outputAmountWithTax = percentAfterBuyFeesInDecimal.greaterThan(ZERO)
+      ? CurrencyAmount.fromRawAmount(
+          outputAmount.currency,
+          outputAmount.multiply(percentAfterBuyFeesInDecimal).quotient // fraction.quotient will round down by itself, which is desired
+        )
+      : outputAmount
     if (JSBI.equal(outputAmountWithTax.quotient, ZERO)) {
       throw new InsufficientInputAmountError()
     }
@@ -257,10 +261,12 @@ export class Pair {
   public getInputAmount(outputAmount: CurrencyAmount<Token>): [CurrencyAmount<Token>, Pair] {
     invariant(this.involvesToken(outputAmount.currency), 'TOKEN')
     const percentAfterBuyFeesInDecimal = this.derivePercentAfterBuyFeesInDecimal(outputAmount)
-    const outputAmountWithTax = percentAfterBuyFeesInDecimal.greaterThan(ZERO) ? CurrencyAmount.fromRawAmount(
-        outputAmount.currency,
-        JSBI.add(outputAmount.divide(percentAfterBuyFeesInDecimal).quotient, ONE) // add 1 for rounding up
-    ) : outputAmount
+    const outputAmountWithTax = percentAfterBuyFeesInDecimal.greaterThan(ZERO)
+      ? CurrencyAmount.fromRawAmount(
+          outputAmount.currency,
+          JSBI.add(outputAmount.divide(percentAfterBuyFeesInDecimal).quotient, ONE) // add 1 for rounding up
+        )
+      : outputAmount
 
     if (
       JSBI.equal(this.reserve0.quotient, ZERO) ||
@@ -282,11 +288,12 @@ export class Pair {
     )
 
     const percentAfterSellFeesInDecimal = this.derivePercentAfterSellFeesInDecimal(inputAmount)
-    const inputAmountWithTax = (percentAfterSellFeesInDecimal.greaterThan(ZERO)) ?
-        CurrencyAmount.fromRawAmount(
-            inputAmount.currency,
-            JSBI.add(inputAmount.divide(percentAfterSellFeesInDecimal).quotient, ONE) // add 1 for rounding up
-        ) : inputAmount
+    const inputAmountWithTax = percentAfterSellFeesInDecimal.greaterThan(ZERO)
+      ? CurrencyAmount.fromRawAmount(
+          inputAmount.currency,
+          JSBI.add(inputAmount.divide(percentAfterSellFeesInDecimal).quotient, ONE) // add 1 for rounding up
+        )
+      : inputAmount
     return [inputAmountWithTax, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
   }
 

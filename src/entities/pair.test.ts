@@ -1,8 +1,8 @@
-import {ChainId, CurrencyAmount, Price, Token, WETH9} from '@uniswap/sdk-core'
-import {InsufficientInputAmountError} from '../errors'
-import {computePairAddress, Pair} from './pair'
-import {BigNumber} from "@ethersproject/bignumber";
-import JSBI from "jsbi";
+import { ChainId, CurrencyAmount, Price, Token, WETH9 } from '@uniswap/sdk-core'
+import { InsufficientInputAmountError } from '../errors'
+import { computePairAddress, Pair } from './pair'
+import { BigNumber } from '@ethersproject/bignumber'
+import JSBI from 'jsbi'
 
 describe('computePairAddress', () => {
   it('should correctly compute the pool address', () => {
@@ -178,25 +178,27 @@ describe('Pair', () => {
     const BLASTBuyFeeBps = BigNumber.from(400)
     const BLASTSellFeeBps = BigNumber.from(10000)
     const BLAST = new Token(
-        ChainId.MAINNET,
-        '0x3ed643e9032230f01c6c36060e305ab53ad3b482',
-        18,
-        'BLAST',
-        'BLAST',
-        false,
-        BLASTBuyFeeBps,
-        BLASTSellFeeBps)
+      ChainId.MAINNET,
+      '0x3ed643e9032230f01c6c36060e305ab53ad3b482',
+      18,
+      'BLAST',
+      'BLAST',
+      false,
+      BLASTBuyFeeBps,
+      BLASTSellFeeBps
+    )
     const BLASTERSBuyFeeBps = BigNumber.from(300)
     const BLASTERSSellFeeBps = BigNumber.from(350)
     const BLASTERS = new Token(
-        ChainId.MAINNET,
-        '0xab98093C7232E98A47D7270CE0c1c2106f61C73b',
-        9,
-        'BLAST',
-        'BLASTERS',
-        false,
-        BLASTERSBuyFeeBps,
-        BLASTERSSellFeeBps)
+      ChainId.MAINNET,
+      '0xab98093C7232E98A47D7270CE0c1c2106f61C73b',
+      9,
+      'BLAST',
+      'BLASTERS',
+      false,
+      BLASTERSBuyFeeBps,
+      BLASTERSSellFeeBps
+    )
 
     describe('getOutputAmount', () => {
       it('getOutputAmount for input token BLASTERS and output token BLAST', () => {
@@ -380,4 +382,3 @@ describe('Pair', () => {
     })
   })
 })
-
