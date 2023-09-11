@@ -1,6 +1,7 @@
-import { Token, WETH9, Price, CurrencyAmount } from '@uniswap/sdk-core'
+import { ChainId, CurrencyAmount, Price, Token, WETH9 } from '@uniswap/sdk-core'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
+import { BigNumber } from '@ethersproject/bignumber'
 
 describe('computePairAddress', () => {
   it('should correctly compute the pool address', () => {
@@ -171,6 +172,107 @@ describe('Pair', () => {
         WETH9[1]
       )
     ).toEqual(false)
+  })
+  describe('getInputAmount and getOutputAmount', () => {
+    const BLASTBuyFeeBps = BigNumber.from(400)
+    const BLASTSellFeeBps = BigNumber.from(10000)
+    const BLAST = new Token(
+      ChainId.MAINNET,
+      '0x3ed643e9032230f01c6c36060e305ab53ad3b482',
+      18,
+      'BLAST',
+      'BLAST',
+      false,
+      BLASTBuyFeeBps,
+      BLASTSellFeeBps
+    )
+    const BLASTERSBuyFeeBps = BigNumber.from(300)
+    const BLASTERSSellFeeBps = BigNumber.from(350)
+    const BLASTERS = new Token(
+      ChainId.MAINNET,
+      '0xab98093C7232E98A47D7270CE0c1c2106f61C73b',
+      9,
+      'BLAST',
+      'BLASTERS',
+      false,
+      BLASTERSBuyFeeBps,
+      BLASTERSSellFeeBps
+    )
+
+    describe('getOutputAmount', () => {
+      it('getOutputAmount for input token BLASTERS and output token BLAST', () => {
+        const reserveBlasterAmount = CurrencyAmount.fromRawAmount(BLASTERS, '10000')
+        const reserveBlastAmount = CurrencyAmount.fromRawAmount(BLAST, '10000')
+
+        const pair = new Pair(reserveBlasterAmount, reserveBlastAmount)
+
+        const inputBlastersAmount = CurrencyAmount.fromRawAmount(BLASTERS, '100')
+        const [outputBlastAmount] = pair.getOutputAmount(inputBlastersAmount)
+
+        // Theoretical amount out:
+        // (10000 * 997 * 100 * (1 - 3.5%) / (10000 * 1000 + 997 * 100 * (1 - 3.5%))) * (1 - 4%)
+        // = 91.48
+        //
+        // However in practice, we have round down of precisions in multiple steps
+        // hence the amount out will be slightly less than 91.48:
+        //
+        // inputAmount = 100
+        // percentAfterSellFeesInDecimal = fraction(9650, 10000)
+        // inputAmountAfterTax = 100 * fraction(9650, 10000) = 96.5 = 96 (rounded down)
+        // inputAmountWithFeeAndAfterTax = 96 * 997 = 95712
+        // numerator = 95712 * 10000 = 957120000
+        // denominator = 10000 * 1000 + 95712 = 10095712
+        // outputAmount = 957120000 / 10095712 = 94.8046061536 = 94 (rounded down)
+        // buyFeePercentInDecimal = fraction(400, 10000)
+        // percentAfterBuyFeesInDecimal = fraction(9600, 10000)
+        // outputAmountAfterTax = 94 * fraction(9600, 10000)
+        //                     = 94 * 0.96
+        //                     = 90.24
+        //                     = 90 (rounded down)
+        const expectedOutputBlastAmount = '0.00000000000000009'
+        expect(outputBlastAmount.toExact()).toEqual(expectedOutputBlastAmount)
+      })
+
+      it('getInputAmount for input token BLASTERS and output token BLAST', () => {
+        const reserveBlasterAmount = CurrencyAmount.fromRawAmount(BLASTERS, '10000')
+        const reserveBlastAmount = CurrencyAmount.fromRawAmount(BLAST, '10000')
+
+        const pair = new Pair(reserveBlasterAmount, reserveBlastAmount)
+
+        const outputBlastAmount = CurrencyAmount.fromRawAmount(BLAST, '91')
+        const [inputBlasterAmount] = pair.getInputAmount(outputBlastAmount)
+
+        // Theoretical amount in:
+        // 10000 * 100 * (1 - 4%) * 1000 / ((10000 - 100 * (1 - 4%)) * 997) / (1 - 3.5%)
+        // = 100.7483934892
+        //
+        // However in practice, we have round up of precisions in multiple steps
+        // hence the amount out will be slightly more than 100.7483934892:
+        //
+        // buyFeePercentInDecimal = fraction(400, 10000)
+        // percentAfterBuyFeesInDecimal = 1 - fraction(400, 10000) = fraction(9600, 10000)
+        // outputAmountBeforeTax = 91 / fraction(960000, 10000) + 1
+        //                     = 91 / 0.96 + 1
+        //                     = 94.7916666667 + 1
+        //                     = 94 (rounded down) + 1
+        //                     = 95 (rounded up)
+        // numerator = 10000 * 95 * 1000 = 950000000
+        // denominator = (10000 - 95) * 997 = 9875285
+        // inputAmount = 950000000 / 9875285 + 1
+        //             = 96.1997552476 + 1
+        //             = 96 (rounded down) + 1
+        //             = 97 (rounded up)
+        // sellFeePercentInDecimal = fraction(350, 10000)
+        // percentAfterSellFeesInDecimal = 1 - fraction(350, 10000) = fraction(9650, 10000)
+        // inputAmountBeforeTax = (97 / fraction(9650, 10000)) + 1
+        //                     = (97 / 0.965) + 1
+        //                     = 100.518134715 + 1
+        //                     = 100 (rounded down) + 1
+        //                     = 101
+        const expectedInputBlasterAmount = '0.000000101'
+        expect(inputBlasterAmount.toExact()).toEqual(expectedInputBlasterAmount)
+      })
+    })
   })
   describe('miscellaneous', () => {
     it('getLiquidityMinted:0', async () => {

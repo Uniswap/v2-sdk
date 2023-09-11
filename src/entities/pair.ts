@@ -1,10 +1,23 @@
-import { BigintIsh, Price, sqrt, Token, CurrencyAmount } from '@uniswap/sdk-core'
+import { BigintIsh, Price, sqrt, Token, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
 import { pack, keccak256 } from '@ethersproject/solidity'
 import { getCreate2Address } from '@ethersproject/address'
+import { BigNumber } from '@ethersproject/bignumber'
 
-import { FACTORY_ADDRESS, INIT_CODE_HASH, MINIMUM_LIQUIDITY, FIVE, _997, _1000, ONE, ZERO } from '../constants'
+import {
+  FACTORY_ADDRESS,
+  INIT_CODE_HASH,
+  MINIMUM_LIQUIDITY,
+  FIVE,
+  _997,
+  _1000,
+  ONE,
+  ZERO,
+  BASIS_POINTS,
+  ONE_HUNDRED_PERCENT,
+  ZERO_PERCENT
+} from '../constants'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
 
 export const computePairAddress = ({
@@ -106,6 +119,65 @@ export class Pair {
     return token.equals(this.token0) ? this.reserve0 : this.reserve1
   }
 
+  /**
+   * getAmountOut is the linear algebra of reserve ratio against amountIn:amountOut.
+   * https://ethereum.stackexchange.com/questions/101629/what-is-math-for-uniswap-calculates-the-amountout-and-amountin-why-997-and-1000
+   * has the math deduction for the reserve calculation without fee-on-transfer fees.
+   *
+   * With fee-on-transfer tax, intuitively it's just:
+   * inputAmountWithFeeAndTax = 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn
+   *                          = (1 - amountIn.sellFeesBips / 10000) * amountInWithFee
+   * where amountInWithFee is the amountIn after taking out the LP fees
+   * outputAmountWithTax = amountOut * (1 - amountOut.buyFeesBips / 10000)
+   *
+   * But we are illustrating the math deduction below to ensure that's the case.
+   *
+   * before swap A * B = K where A = reserveIn B = reserveOut
+   *
+   * after swap A' * B' = K where only k is a constant value
+   *
+   * getAmountOut
+   *
+   * A' = A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn # here 0.3% is deducted
+   * B' = B - amountOut * (1 - amountOut.buyFeesBips / 10000)
+   * amountOut = (B - B') / (1 - amountOut.buyFeesBips / 10000) # where A' * B' still is k
+   *           = (B - K/(A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn))
+   *             /
+   *             (1 - amountOut.buyFeesBips / 10000)
+   *           = (B - AB/(A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn))
+   *             /
+   *             (1 - amountOut.buyFeesBips / 10000)
+   *           = ((BA + B * 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn - AB)/(A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn))
+   *             /
+   *             (1 - amountOut.buyFeesBips / 10000)
+   *           = (B * 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn / (A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn)
+   *             /
+   *             (1 - amountOut.buyFeesBips / 10000)
+   * amountOut * (1 - amountOut.buyFeesBips / 10000) = (B * 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn
+   *                                                    /
+   *                                                    (A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn)
+   *
+   * outputAmountWithTax = (B * 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn
+   *                       /
+   *                       (A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn)
+   *                       = (B * 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn * 1000
+   *                       /
+   *                       ((A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn) * 1000)
+   *                     = (B * (1 - amountIn.sellFeesBips / 10000) 997 * * amountIn
+   *                       /
+   *                       (1000 * A + (1 - amountIn.sellFeesBips / 10000) * 997 * amountIn)
+   *                     = (B * (1 - amountIn.sellFeesBips / 10000) * inputAmountWithFee)
+   *                       /
+   *                       (1000 * A + (1 - amountIn.sellFeesBips / 10000) * inputAmountWithFee)
+   *                     = (B * inputAmountWithFeeAndTax)
+   *                       /
+   *                       (1000 * A + inputAmountWithFeeAndTax)
+   *
+   * inputAmountWithFeeAndTax = (1 - amountIn.sellFeesBips / 10000) * inputAmountWithFee
+   * outputAmountWithTax = amountOut * (1 - amountOut.buyFeesBips / 10000)
+   *
+   * @param inputAmount
+   */
   public getOutputAmount(inputAmount: CurrencyAmount<Token>): [CurrencyAmount<Token>, Pair] {
     invariant(this.involvesToken(inputAmount.currency), 'TOKEN')
     if (JSBI.equal(this.reserve0.quotient, ZERO) || JSBI.equal(this.reserve1.quotient, ZERO)) {
@@ -113,38 +185,123 @@ export class Pair {
     }
     const inputReserve = this.reserveOf(inputAmount.currency)
     const outputReserve = this.reserveOf(inputAmount.currency.equals(this.token0) ? this.token1 : this.token0)
-    const inputAmountWithFee = JSBI.multiply(inputAmount.quotient, _997)
-    const numerator = JSBI.multiply(inputAmountWithFee, outputReserve.quotient)
-    const denominator = JSBI.add(JSBI.multiply(inputReserve.quotient, _1000), inputAmountWithFee)
+
+    const percentAfterSellFees = this.derivePercentAfterSellFees(inputAmount)
+    const inputAmountAfterTax = percentAfterSellFees.greaterThan(ZERO_PERCENT)
+      ? CurrencyAmount.fromRawAmount(
+          inputAmount.currency,
+          percentAfterSellFees.multiply(inputAmount).quotient // fraction.quotient will round down by itself, which is desired
+        )
+      : inputAmount
+
+    const inputAmountWithFeeAndAfterTax = JSBI.multiply(inputAmountAfterTax.quotient, _997)
+    const numerator = JSBI.multiply(inputAmountWithFeeAndAfterTax, outputReserve.quotient)
+    const denominator = JSBI.add(JSBI.multiply(inputReserve.quotient, _1000), inputAmountWithFeeAndAfterTax)
     const outputAmount = CurrencyAmount.fromRawAmount(
       inputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
-      JSBI.divide(numerator, denominator)
+      JSBI.divide(numerator, denominator) // JSBI.divide will round down by itself, which is desired
     )
+
     if (JSBI.equal(outputAmount.quotient, ZERO)) {
       throw new InsufficientInputAmountError()
     }
-    return [outputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
+
+    const percentAfterBuyFees = this.derivePercentAfterBuyFees(outputAmount)
+    const outputAmountAfterTax = percentAfterBuyFees.greaterThan(ZERO_PERCENT)
+      ? CurrencyAmount.fromRawAmount(
+          outputAmount.currency,
+          outputAmount.multiply(percentAfterBuyFees).quotient // fraction.quotient will round down by itself, which is desired
+        )
+      : outputAmount
+    if (JSBI.equal(outputAmountAfterTax.quotient, ZERO)) {
+      throw new InsufficientInputAmountError()
+    }
+
+    return [
+      outputAmountAfterTax,
+      new Pair(inputReserve.add(inputAmountAfterTax), outputReserve.subtract(outputAmountAfterTax))
+    ]
   }
 
+  /**
+   * getAmountIn is the linear algebra of reserve ratio against amountIn:amountOut.
+   * https://ethereum.stackexchange.com/questions/101629/what-is-math-for-uniswap-calculates-the-amountout-and-amountin-why-997-and-1000
+   * has the math deduction for the reserve calculation without fee-on-transfer fees.
+   *
+   * With fee-on-transfer fees, intuitively it's just:
+   * outputAmountWithTax = amountOut / (1 - amountOut.buyFeesBips / 10000)
+   * inputAmountWithTax = amountIn / (1 - amountIn.sellFeesBips / 10000) / 0.997
+   *
+   * But we are illustrating the math deduction below to ensure that's the case.
+   *
+   * before swap A * B = K where A = reserveIn B = reserveOut
+   *
+   * after swap A' * B' = K where only k is a constant value
+   *
+   * getAmountIn
+   *
+   * B' = B - amountOut * (1 - amountOut.buyFeesBips / 10000)
+   * A' = A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn # here 0.3% is deducted
+   * amountIn = (A' - A) / (0.997 * (1 - amountIn.sellFeesBips / 10000))
+   *          = (K / (B - amountOut / (1 - amountOut.buyFeesBips / 10000)) - A)
+   *            /
+   *            (0.997 * (1 - amountIn.sellFeesBips / 10000))
+   *          = (AB / (B - amountOut / (1 - amountOut.buyFeesBips / 10000)) - A)
+   *            /
+   *            (0.997 * (1 - amountIn.sellFeesBips / 10000))
+   *          = ((AB - AB + A * amountOut / (1 - amountOut.buyFeesBips / 10000)) / (B - amountOut / (1 - amountOut.buyFeesBips / 10000)))
+   *            /
+   *            (0.997 * (1 - amountIn.sellFeesBips / 10000))
+   *          = ((A * amountOut / (1 - amountOut.buyFeesBips / 10000)) / (B - amountOut / (1 - amountOut.buyFeesBips / 10000)))
+   *            /
+   *            (0.997 * (1 - amountIn.sellFeesBips / 10000))
+   *          = ((A * 1000 * amountOut / (1 - amountOut.buyFeesBips / 10000)) / (B - amountOut / (1 - amountOut.buyFeesBips / 10000)))
+   *            /
+   *            (997 * (1 - amountIn.sellFeesBips / 10000))
+   *
+   * outputAmountWithTax = amountOut / (1 - amountOut.buyFeesBips / 10000)
+   * inputAmountWithTax = amountIn / (997 * (1 - amountIn.sellFeesBips / 10000))
+   *                    = (A * outputAmountWithTax * 1000) / ((B - outputAmountWithTax) * 997)
+   *
+   * @param outputAmount
+   */
   public getInputAmount(outputAmount: CurrencyAmount<Token>): [CurrencyAmount<Token>, Pair] {
     invariant(this.involvesToken(outputAmount.currency), 'TOKEN')
+    const percentAfterBuyFees = this.derivePercentAfterBuyFees(outputAmount)
+    const outputAmountBeforeTax = percentAfterBuyFees.greaterThan(ZERO_PERCENT)
+      ? CurrencyAmount.fromRawAmount(
+          outputAmount.currency,
+          JSBI.add(outputAmount.divide(percentAfterBuyFees).quotient, ONE) // add 1 for rounding up
+        )
+      : outputAmount
+
     if (
       JSBI.equal(this.reserve0.quotient, ZERO) ||
       JSBI.equal(this.reserve1.quotient, ZERO) ||
-      JSBI.greaterThanOrEqual(outputAmount.quotient, this.reserveOf(outputAmount.currency).quotient)
+      JSBI.greaterThanOrEqual(outputAmount.quotient, this.reserveOf(outputAmount.currency).quotient) ||
+      JSBI.greaterThanOrEqual(outputAmountBeforeTax.quotient, this.reserveOf(outputAmount.currency).quotient)
     ) {
       throw new InsufficientReservesError()
     }
 
     const outputReserve = this.reserveOf(outputAmount.currency)
     const inputReserve = this.reserveOf(outputAmount.currency.equals(this.token0) ? this.token1 : this.token0)
-    const numerator = JSBI.multiply(JSBI.multiply(inputReserve.quotient, outputAmount.quotient), _1000)
-    const denominator = JSBI.multiply(JSBI.subtract(outputReserve.quotient, outputAmount.quotient), _997)
+
+    const numerator = JSBI.multiply(JSBI.multiply(inputReserve.quotient, outputAmountBeforeTax.quotient), _1000)
+    const denominator = JSBI.multiply(JSBI.subtract(outputReserve.quotient, outputAmountBeforeTax.quotient), _997)
     const inputAmount = CurrencyAmount.fromRawAmount(
       outputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
-      JSBI.add(JSBI.divide(numerator, denominator), ONE)
+      JSBI.add(JSBI.divide(numerator, denominator), ONE) // add 1 here is part of the formula, no rounding needed here, since there will not be decimal at this point
     )
-    return [inputAmount, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
+
+    const percentAfterSellFees = this.derivePercentAfterSellFees(inputAmount)
+    const inputAmountBeforeTax = percentAfterSellFees.greaterThan(ZERO_PERCENT)
+      ? CurrencyAmount.fromRawAmount(
+          inputAmount.currency,
+          JSBI.add(inputAmount.divide(percentAfterSellFees).quotient, ONE) // add 1 for rounding up
+        )
+      : inputAmount
+    return [inputAmountBeforeTax, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
   }
 
   public getLiquidityMinted(
@@ -213,5 +370,23 @@ export class Pair {
       token,
       JSBI.divide(JSBI.multiply(liquidity.quotient, this.reserveOf(token).quotient), totalSupplyAdjusted.quotient)
     )
+  }
+
+  private derivePercentAfterSellFees(inputAmount: CurrencyAmount<Token>): Percent {
+    const sellFeeBips = inputAmount.currency.sellFeeBps
+    if (sellFeeBips?.gt(BigNumber.from(0))) {
+      return ONE_HUNDRED_PERCENT.subtract(new Percent(JSBI.BigInt(sellFeeBips)).divide(BASIS_POINTS))
+    } else {
+      return ZERO_PERCENT
+    }
+  }
+
+  private derivePercentAfterBuyFees(outputAmount: CurrencyAmount<Token>): Percent {
+    const buyFeeBps = outputAmount.currency.buyFeeBps
+    if (buyFeeBps?.gt(BigNumber.from(0))) {
+      return ONE_HUNDRED_PERCENT.subtract(new Percent(JSBI.BigInt(buyFeeBps)).divide(BASIS_POINTS))
+    } else {
+      return ZERO_PERCENT
+    }
   }
 }
