@@ -16,3 +16,4 @@ export const _1000 = JSBI.BigInt(1000)
 export const _10000 = JSBI.BigInt(10000)
 
 export const ZERO_FRACTION = new Fraction(ZERO, ONE)
+export const ONE_FRACTION = new Fraction(ONE)

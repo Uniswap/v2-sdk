@@ -216,16 +216,16 @@ describe('Pair', () => {
         // hence the amount out will be slightly less than 91.48:
         //
         // inputAmountWithFee = 100 * 997 = 99700
-        // sellFeePercentInDecimal = fraction(350, 10000)
-        // taxAmount = fraction(34895000, 10000)
-        // inputAmountWithFeeAndTax = (99700 - fraction(34895000, 10000)).quotient = 96210 (rounded down)
+        // percentAfterSellFeesInDecimal = fraction(9650, 10000)
+        // inputAmountWithFeeAndTax = fraction(9650, 10000) * 99700 = 96210.5 = 96210 (rounded down)
         // numerator = 96210 * 10000 = 962100000
         // denominator = 10000 * 1000 + 96210 = 10096210
         // outputAmount = 962100000 / 10096210 = 95 (rounded down)
         // buyFeePercentInDecimal = fraction(400, 10000)
-        // taxAmount = fraction(38000, 10000)
-        // outputAmountWithTax = (95 - fraction(38000, 10000)).quotient
-        //                     = (95 - 3.8).quotient
+        // percentAfterBuyFeesInDecimal = fraction(9600, 10000)
+        // outputAmountWithTax = 95 * fraction(9600, 10000)
+        //                     = 95 * 0.96
+        //                     = 91.2
         //                     = 91 (rounded down)
         const expectedOutputBlastAmount = JSBI.BigInt(91)
         expect(outputBlastAmount.quotient).toEqual(expectedOutputBlastAmount)
@@ -244,21 +244,30 @@ describe('Pair', () => {
         // 10000 * 100 * (1 - 4%) * 1000 / ((10000 - 100 * (1 - 4%)) * 997) / (1 - 3.5%)
         // = 100.7483934892
         //
-        // However in practice, we have round down of precisions in multiple steps
-        // hence the amount out will be slightly less than 100.7483934892:
+        // However in practice, we have round up of precisions in multiple steps
+        // hence the amount out will be slightly more than 100.7483934892:
         //
         // buyFeePercentInDecimal = fraction(400, 10000)
-        // taxAmount = fraction(40000, 10000)
-        // outputAmountWithTax = 91 + fraction(40000, 10000) = 95
+        // percentAfterBuyFeesInDecimal = 1 - fraction(400, 10000) = fraction(9600, 10000)
+        // outputAmountWithTax = 91 / fraction(960000, 10000) + 1
+        //                     = 91 / 0.96 + 1
+        //                     = 94.7916666667 + 1
+        //                     = 94 (rounded down) + 1
+        //                     = 95 (rounded up)
         // numerator = 10000 * 95 * 1000 = 950000000
         // denominator = (10000 - 95) * 997 = 9875285
-        // inputAmount = 950000000 / 9875285 = 96 (rounded down)
+        // inputAmount = 950000000 / 9875285 + 1
+        //             = 96.1997552476 + 1
+        //             = 96 (rounded down) + 1
+        //             = 97 (rounded up)
         // sellFeePercentInDecimal = fraction(350, 10000)
-        // taxAmount = fraction(33950, 10000)
-        // inputAmountWithTax = (96 + fraction(33950, 10000)).quotient
-        //                     = (96 + 3.395).quotient
-        //                     = 99 (rounded down)
-        const expectedInputBlasterAmount = JSBI.BigInt(99)
+        // percentAfterSellFeesInDecimal = 1 - fraction(350, 10000) = fraction(9650, 10000)
+        // inputAmountWithTax = (97 / fraction(9650, 10000)) + 1
+        //                     = (97 / 0.965) + 1
+        //                     = 100.518134715 + 1
+        //                     = 100 (rounded down) + 1
+        //                     = 101
+        const expectedInputBlasterAmount = JSBI.BigInt(101)
         expect(inputBlasterAmount.quotient).toEqual(expectedInputBlasterAmount)
       })
     })

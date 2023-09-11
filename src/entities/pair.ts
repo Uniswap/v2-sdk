@@ -15,7 +15,7 @@ import {
   ONE,
   ZERO,
   _10000,
-  ZERO_FRACTION
+  ZERO_FRACTION, ONE_FRACTION
 } from '../constants'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
 
@@ -123,9 +123,10 @@ export class Pair {
    * https://ethereum.stackexchange.com/questions/101629/what-is-math-for-uniswap-calculates-the-amountout-and-amountin-why-997-and-1000
    * has the math deduction for the reserve calculation without fee-on-transfer fees.
    *
-   * With fee-on-transfer fees, intuitively it's just:
+   * With fee-on-transfer tax, intuitively it's just:
    * inputAmountWithFeeAndTax = 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn
    *                          = (1 - amountIn.sellFeesBips / 10000) * amountInWithFee
+   * where amountInWithFee is the amountIn after taking out the LP fees
    * outputAmountWithTax = amountOut * (1 - amountOut.buyFeesBips / 10000)
    *
    * But we are illustrating the math deduction below to ensure that's the case.
@@ -182,22 +183,28 @@ export class Pair {
     const outputReserve = this.reserveOf(inputAmount.currency.equals(this.token0) ? this.token1 : this.token0)
     const inputAmountWithFee = JSBI.multiply(inputAmount.quotient, _997)
 
-    const inputAmountTax = this.deriveInputAmountTax(CurrencyAmount.fromRawAmount(inputAmount.currency, inputAmountWithFee))
-    const inputAmountWithFeeAndTax = CurrencyAmount.fromRawAmount(inputAmount.currency, inputAmountWithFee).asFraction.subtract(inputAmountTax)
+    const percentAfterSellFeesInDecimal = this.derivePercentAfterSellFeesInDecimal(CurrencyAmount.fromRawAmount(inputAmount.currency, inputAmountWithFee))
+    const inputAmountWithFeeAndTax = (percentAfterSellFeesInDecimal.greaterThan(ZERO)) ?
+            percentAfterSellFeesInDecimal.multiply(inputAmountWithFee).quotient // fraction.quotient will round down by itself, which is desired
+            : inputAmountWithFee
 
-    const numerator = JSBI.multiply(inputAmountWithFeeAndTax.quotient, outputReserve.quotient)
-    const denominator = JSBI.add(JSBI.multiply(inputReserve.quotient, _1000), inputAmountWithFeeAndTax.quotient)
+    const numerator = JSBI.multiply(inputAmountWithFeeAndTax, outputReserve.quotient)
+    const denominator = JSBI.add(JSBI.multiply(inputReserve.quotient, _1000), inputAmountWithFeeAndTax)
     const outputAmount = CurrencyAmount.fromRawAmount(
       inputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
-      JSBI.divide(numerator, denominator)
+      JSBI.divide(numerator, denominator) // JSBI.divide will round down by itself, which is desired
     )
 
     if (JSBI.equal(outputAmount.quotient, ZERO)) {
       throw new InsufficientInputAmountError()
     }
 
-    const outputAmountTax = this.deriveOutputAmountTax(outputAmount)
-    const outputAmountWithTax = CurrencyAmount.fromRawAmount(outputAmount.currency, outputAmount.asFraction.subtract(outputAmountTax).quotient)
+    const percentAfterBuyFeesInDecimal = this.derivePercentAfterBuyFeesInDecimal(outputAmount)
+    const outputAmountWithTax = percentAfterBuyFeesInDecimal.greaterThan(ZERO) ?
+        CurrencyAmount.fromRawAmount(
+            outputAmount.currency,
+            outputAmount.multiply(percentAfterBuyFeesInDecimal).quotient // fraction.quotient will round down by itself, which is desired
+        ) : outputAmount
     if (JSBI.equal(outputAmountWithTax.quotient, ZERO)) {
       throw new InsufficientInputAmountError()
     }
@@ -249,8 +256,11 @@ export class Pair {
    */
   public getInputAmount(outputAmount: CurrencyAmount<Token>): [CurrencyAmount<Token>, Pair] {
     invariant(this.involvesToken(outputAmount.currency), 'TOKEN')
-    const outputAmountTax = this.deriveOutputAmountTax(outputAmount)
-    const outputAmountWithTax = CurrencyAmount.fromRawAmount(outputAmount.currency, outputAmount.asFraction.add(outputAmountTax).quotient)
+    const percentAfterBuyFeesInDecimal = this.derivePercentAfterBuyFeesInDecimal(outputAmount)
+    const outputAmountWithTax = percentAfterBuyFeesInDecimal.greaterThan(ZERO) ? CurrencyAmount.fromRawAmount(
+        outputAmount.currency,
+        JSBI.add(outputAmount.divide(percentAfterBuyFeesInDecimal).quotient, ONE) // add 1 for rounding up
+    ) : outputAmount
 
     if (
       JSBI.equal(this.reserve0.quotient, ZERO) ||
@@ -268,10 +278,15 @@ export class Pair {
     const denominator = JSBI.multiply(JSBI.subtract(outputReserve.quotient, outputAmountWithTax.quotient), _997)
     const inputAmount = CurrencyAmount.fromRawAmount(
       outputAmount.currency.equals(this.token0) ? this.token1 : this.token0,
-      JSBI.add(JSBI.divide(numerator, denominator), ONE)
+      JSBI.add(JSBI.divide(numerator, denominator), ONE) // add 1 here is part of the formula, no rounding needed here, since there will not be decimal at this point
     )
-    const inputAmountTax = this.deriveInputAmountTax(inputAmount)
-    const inputAmountWithTax = CurrencyAmount.fromRawAmount(inputAmount.currency, inputAmount.asFraction.add(inputAmountTax).quotient)
+
+    const percentAfterSellFeesInDecimal = this.derivePercentAfterSellFeesInDecimal(inputAmount)
+    const inputAmountWithTax = (percentAfterSellFeesInDecimal.greaterThan(ZERO)) ?
+        CurrencyAmount.fromRawAmount(
+            inputAmount.currency,
+            JSBI.add(inputAmount.divide(percentAfterSellFeesInDecimal).quotient, ONE) // add 1 for rounding up
+        ) : inputAmount
     return [inputAmountWithTax, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
   }
 
@@ -343,21 +358,19 @@ export class Pair {
     )
   }
 
-  private deriveInputAmountTax(inputAmount: CurrencyAmount<Token>): Fraction {
+  private derivePercentAfterSellFeesInDecimal(inputAmount: CurrencyAmount<Token>): Fraction {
     const sellFeeBips = inputAmount.currency.sellFeeBps
     if (sellFeeBips?.gt(BigNumber.from(0))) {
-      const sellFeePercentInDecimal = new Fraction(JSBI.BigInt(sellFeeBips), _10000)
-      return sellFeePercentInDecimal.multiply(inputAmount)
+      return ONE_FRACTION.subtract(new Fraction(JSBI.BigInt(sellFeeBips), _10000))
     } else {
       return ZERO_FRACTION
     }
   }
 
-  private deriveOutputAmountTax(outputAmount: CurrencyAmount<Token>): Fraction {
+  private derivePercentAfterBuyFeesInDecimal(outputAmount: CurrencyAmount<Token>): Fraction {
     const buyFeeBps = outputAmount.currency.buyFeeBps
     if (buyFeeBps?.gt(BigNumber.from(0))) {
-      const buyFeePercentInDecimal = new Fraction(JSBI.BigInt(buyFeeBps), _10000)
-      return buyFeePercentInDecimal.multiply(outputAmount)
+      return ONE_FRACTION.subtract(new Fraction(JSBI.BigInt(buyFeeBps), _10000))
     } else {
       return ZERO_FRACTION
     }
