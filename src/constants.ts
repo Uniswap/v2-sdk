@@ -1,5 +1,5 @@
+import {Percent } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
-import { Fraction } from '@uniswap/sdk-core'
 
 export const FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'
 
@@ -13,7 +13,7 @@ export const ONE = JSBI.BigInt(1)
 export const FIVE = JSBI.BigInt(5)
 export const _997 = JSBI.BigInt(997)
 export const _1000 = JSBI.BigInt(1000)
-export const _10000 = JSBI.BigInt(10000)
+export const BASIS_POINTS = JSBI.BigInt(10000)
 
-export const ZERO_FRACTION = new Fraction(ZERO, ONE)
-export const ONE_FRACTION = new Fraction(ONE)
+export const ZERO_PERCENT = new Percent(ZERO)
+export const ONE_HUNDRED_PERCENT = new Percent(ONE)

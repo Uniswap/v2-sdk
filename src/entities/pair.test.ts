@@ -2,7 +2,6 @@ import { ChainId, CurrencyAmount, Price, Token, WETH9 } from '@uniswap/sdk-core'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
 import { BigNumber } from '@ethersproject/bignumber'
-import JSBI from 'jsbi'
 
 describe('computePairAddress', () => {
   it('should correctly compute the pool address', () => {
@@ -230,8 +229,8 @@ describe('Pair', () => {
         //                     = 94 * 0.96
         //                     = 90.24
         //                     = 90 (rounded down)
-        const expectedOutputBlastAmount = JSBI.BigInt(90)
-        expect(outputBlastAmount.quotient).toEqual(expectedOutputBlastAmount)
+        const expectedOutputBlastAmount = "0.00000000000000009"
+        expect(outputBlastAmount.toExact()).toEqual(expectedOutputBlastAmount)
       })
 
       it('getInputAmount for input token BLASTERS and output token BLAST', () => {
@@ -270,8 +269,8 @@ describe('Pair', () => {
         //                     = 100.518134715 + 1
         //                     = 100 (rounded down) + 1
         //                     = 101
-        const expectedInputBlasterAmount = JSBI.BigInt(101)
-        expect(inputBlasterAmount.quotient).toEqual(expectedInputBlasterAmount)
+        const expectedInputBlasterAmount = "0.000000101"
+        expect(inputBlasterAmount.toExact()).toEqual(expectedInputBlasterAmount)
       })
     })
   })
