@@ -160,9 +160,12 @@ export class Pair {
    * outputAmountWithTax = (B * 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn
    *                       /
    *                       (A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn)
-   *                     = (B * 997 * (1 - amountIn.sellFeesBips / 10000) * amountIn
+ *                       = (B * 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn * 1000
    *                       /
-   *                       (1000 * A + 997 * (1 - amountIn.sellFeesBips / 10000) * amountIn)
+   *                       ((A + 0.997 * (1 - amountIn.sellFeesBips / 10000) * amountIn) * 1000)
+   *                     = (B * (1 - amountIn.sellFeesBips / 10000) 997 * * amountIn
+   *                       /
+   *                       (1000 * A + (1 - amountIn.sellFeesBips / 10000) * 997 * amountIn)
    *                     = (B * (1 - amountIn.sellFeesBips / 10000) * inputAmountWithFee)
    *                       /
    *                       (1000 * A + (1 - amountIn.sellFeesBips / 10000) * inputAmountWithFee)
