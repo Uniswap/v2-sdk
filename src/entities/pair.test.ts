@@ -229,7 +229,7 @@ describe('Pair', () => {
         //                     = 94 * 0.96
         //                     = 90.24
         //                     = 90 (rounded down)
-        const expectedOutputBlastAmount = "0.00000000000000009"
+        const expectedOutputBlastAmount = '0.00000000000000009'
         expect(outputBlastAmount.toExact()).toEqual(expectedOutputBlastAmount)
       })
 
@@ -269,7 +269,7 @@ describe('Pair', () => {
         //                     = 100.518134715 + 1
         //                     = 100 (rounded down) + 1
         //                     = 101
-        const expectedInputBlasterAmount = "0.000000101"
+        const expectedInputBlasterAmount = '0.000000101'
         expect(inputBlasterAmount.toExact()).toEqual(expectedInputBlasterAmount)
       })
     })

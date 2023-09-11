@@ -1,4 +1,4 @@
-import {Percent } from '@uniswap/sdk-core'
+import { Percent } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 
 export const FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f'

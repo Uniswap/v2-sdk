@@ -14,7 +14,9 @@ import {
   _1000,
   ONE,
   ZERO,
-  BASIS_POINTS, ONE_HUNDRED_PERCENT, ZERO_PERCENT
+  BASIS_POINTS,
+  ONE_HUNDRED_PERCENT,
+  ZERO_PERCENT
 } from '../constants'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
 
@@ -185,11 +187,12 @@ export class Pair {
     const outputReserve = this.reserveOf(inputAmount.currency.equals(this.token0) ? this.token1 : this.token0)
 
     const percentAfterSellFees = this.derivePercentAfterSellFees(inputAmount)
-    const inputAmountAfterTax = percentAfterSellFees.greaterThan(ZERO_PERCENT) ?
-        CurrencyAmount.fromRawAmount(
-            inputAmount.currency,
-            percentAfterSellFees.multiply(inputAmount).quotient   // fraction.quotient will round down by itself, which is desired
-        ) : inputAmount;
+    const inputAmountAfterTax = percentAfterSellFees.greaterThan(ZERO_PERCENT)
+      ? CurrencyAmount.fromRawAmount(
+          inputAmount.currency,
+          percentAfterSellFees.multiply(inputAmount).quotient // fraction.quotient will round down by itself, which is desired
+        )
+      : inputAmount
 
     const inputAmountWithFeeAndAfterTax = JSBI.multiply(inputAmountAfterTax.quotient, _997)
     const numerator = JSBI.multiply(inputAmountWithFeeAndAfterTax, outputReserve.quotient)
@@ -204,16 +207,20 @@ export class Pair {
     }
 
     const percentAfterBuyFees = this.derivePercentAfterBuyFees(outputAmount)
-    const outputAmountAfterTax =  percentAfterBuyFees.greaterThan(ZERO_PERCENT) ?
-        CurrencyAmount.fromRawAmount(
+    const outputAmountAfterTax = percentAfterBuyFees.greaterThan(ZERO_PERCENT)
+      ? CurrencyAmount.fromRawAmount(
           outputAmount.currency,
           outputAmount.multiply(percentAfterBuyFees).quotient // fraction.quotient will round down by itself, which is desired
-        ) : outputAmount;
+        )
+      : outputAmount
     if (JSBI.equal(outputAmountAfterTax.quotient, ZERO)) {
       throw new InsufficientInputAmountError()
     }
 
-    return [outputAmountAfterTax, new Pair(inputReserve.add(inputAmountAfterTax), outputReserve.subtract(outputAmountAfterTax))]
+    return [
+      outputAmountAfterTax,
+      new Pair(inputReserve.add(inputAmountAfterTax), outputReserve.subtract(outputAmountAfterTax))
+    ]
   }
 
   /**
@@ -261,11 +268,12 @@ export class Pair {
   public getInputAmount(outputAmount: CurrencyAmount<Token>): [CurrencyAmount<Token>, Pair] {
     invariant(this.involvesToken(outputAmount.currency), 'TOKEN')
     const percentAfterBuyFees = this.derivePercentAfterBuyFees(outputAmount)
-    const outputAmountBeforeTax = percentAfterBuyFees.greaterThan(ZERO_PERCENT) ?
-        CurrencyAmount.fromRawAmount(
+    const outputAmountBeforeTax = percentAfterBuyFees.greaterThan(ZERO_PERCENT)
+      ? CurrencyAmount.fromRawAmount(
           outputAmount.currency,
           JSBI.add(outputAmount.divide(percentAfterBuyFees).quotient, ONE) // add 1 for rounding up
-        ) : outputAmount;
+        )
+      : outputAmount
 
     if (
       JSBI.equal(this.reserve0.quotient, ZERO) ||
@@ -287,11 +295,12 @@ export class Pair {
     )
 
     const percentAfterSellFees = this.derivePercentAfterSellFees(inputAmount)
-    const inputAmountBeforeTax = percentAfterSellFees.greaterThan(ZERO_PERCENT) ?
-        CurrencyAmount.fromRawAmount(
+    const inputAmountBeforeTax = percentAfterSellFees.greaterThan(ZERO_PERCENT)
+      ? CurrencyAmount.fromRawAmount(
           inputAmount.currency,
           JSBI.add(inputAmount.divide(percentAfterSellFees).quotient, ONE) // add 1 for rounding up
-        ) : inputAmount;
+        )
+      : inputAmount
     return [inputAmountBeforeTax, new Pair(inputReserve.add(inputAmount), outputReserve.subtract(outputAmount))]
   }
 
