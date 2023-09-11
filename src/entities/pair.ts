@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant'
 import JSBI from 'jsbi'
 import { pack, keccak256 } from '@ethersproject/solidity'
 import { getCreate2Address } from '@ethersproject/address'
+import { BigNumber } from '@ethersproject/bignumber'
 
 import { FACTORY_ADDRESS, INIT_CODE_HASH, MINIMUM_LIQUIDITY, FIVE, _997, _1000, ONE, ZERO } from '../constants'
 import { InsufficientReservesError, InsufficientInputAmountError } from '../errors'
@@ -325,8 +326,8 @@ export class Pair {
 
   private deriveInputAmountWithTax(inputAmount: CurrencyAmount<Token>): CurrencyAmount<Token> {
     const sellFeeBips = inputAmount.currency.sellFeeBps
-    if (sellFeeBips) {
-      const sellFeePercentInDecimal = JSBI.divide(JSBI.BigInt(inputAmount.currency.sellFeeBps), JSBI.BigInt(10000))
+    if (sellFeeBips?.gt(BigNumber.from(0))) {
+      const sellFeePercentInDecimal = JSBI.divide(JSBI.BigInt(sellFeeBips), JSBI.BigInt(10000))
       const taxAmount = JSBI.multiply(inputAmount.quotient, sellFeePercentInDecimal)
       return CurrencyAmount.fromRawAmount(inputAmount.currency, JSBI.subtract(inputAmount.quotient, taxAmount))
     } else {
@@ -336,8 +337,8 @@ export class Pair {
 
   private deriveOutputAmountWithTax(outputAmount: CurrencyAmount<Token>): CurrencyAmount<Token> {
     const buyFeeBps = outputAmount.currency.buyFeeBps
-    if (buyFeeBps) {
-      const buyFeePercentInDecimal = JSBI.divide(JSBI.BigInt(outputAmount.currency.buyFeeBps), JSBI.BigInt(10000))
+    if (buyFeeBps?.gt(BigNumber.from(0))) {
+      const buyFeePercentInDecimal = JSBI.divide(JSBI.BigInt(buyFeeBps), JSBI.BigInt(10000))
       const taxAmount = JSBI.multiply(outputAmount.quotient, buyFeePercentInDecimal)
       return CurrencyAmount.fromRawAmount(outputAmount.currency, JSBI.subtract(outputAmount.quotient, taxAmount))
     } else {
