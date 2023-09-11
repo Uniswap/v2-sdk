@@ -171,7 +171,8 @@ export class Pair {
     const inputAmountWithFee = JSBI.multiply(inputAmount.quotient, _997)
 
     const inputAmountWithFeeAndTax = this.deriveInputAmountWithTax(
-        CurrencyAmount.fromRawAmount(inputAmount.currency, inputAmountWithFee));
+      CurrencyAmount.fromRawAmount(inputAmount.currency, inputAmountWithFee)
+    )
 
     const numerator = JSBI.multiply(inputAmountWithFeeAndTax.quotient, outputReserve.quotient)
     const denominator = JSBI.add(JSBI.multiply(inputReserve.quotient, _1000), inputAmountWithFeeAndTax.quotient)
@@ -327,10 +328,7 @@ export class Pair {
     if (sellFeeBips) {
       const sellFeePercentInDecimal = JSBI.divide(JSBI.BigInt(inputAmount.currency.sellFeeBps), JSBI.BigInt(10000))
       const taxAmount = JSBI.multiply(inputAmount.quotient, sellFeePercentInDecimal)
-      return CurrencyAmount.fromRawAmount(
-          inputAmount.currency,
-          JSBI.subtract(inputAmount.quotient, taxAmount)
-      );
+      return CurrencyAmount.fromRawAmount(inputAmount.currency, JSBI.subtract(inputAmount.quotient, taxAmount))
     } else {
       return inputAmount
     }
@@ -341,10 +339,7 @@ export class Pair {
     if (buyFeeBps) {
       const buyFeePercentInDecimal = JSBI.divide(JSBI.BigInt(outputAmount.currency.buyFeeBps), JSBI.BigInt(10000))
       const taxAmount = JSBI.multiply(outputAmount.quotient, buyFeePercentInDecimal)
-      return CurrencyAmount.fromRawAmount(
-          outputAmount.currency,
-          JSBI.subtract(outputAmount.quotient, taxAmount)
-      )
+      return CurrencyAmount.fromRawAmount(outputAmount.currency, JSBI.subtract(outputAmount.quotient, taxAmount))
     } else {
       return outputAmount
     }
