@@ -199,11 +199,11 @@ describe('Pair', () => {
       BLASTERSSellFeeBps
     )
 
-    let calculateFotFees: boolean = false;
+    let calculateFotFees: boolean = false
 
     describe('when calculating FOT fees', () => {
       beforeEach(() => {
-        calculateFotFees = true;
+        calculateFotFees = true
       })
 
       describe('getOutputAmount', () => {
@@ -284,7 +284,7 @@ describe('Pair', () => {
 
     describe('when NOT calculating FOT fees', () => {
       beforeEach(() => {
-        calculateFotFees = false;
+        calculateFotFees = false
       })
 
       describe('getOutputAmount', () => {
