@@ -187,12 +187,12 @@ describe('Pair', () => {
       BLASTSellFeeBps
     )
     const BLAST_WIHTOUT_TAX = new Token(
-        ChainId.MAINNET,
-        '0x3ed643e9032230f01c6c36060e305ab53ad3b482',
-        18,
-        'BLAST',
-        'BLAST',
-        false
+      ChainId.MAINNET,
+      '0x3ed643e9032230f01c6c36060e305ab53ad3b482',
+      18,
+      'BLAST',
+      'BLAST',
+      false
     )
     const BLASTERSBuyFeeBps = BigNumber.from(300)
     const BLASTERSSellFeeBps = BigNumber.from(350)
@@ -207,12 +207,12 @@ describe('Pair', () => {
       BLASTERSSellFeeBps
     )
     const BLASTERS_WITHOUT_TAX = new Token(
-        ChainId.MAINNET,
-        '0xab98093C7232E98A47D7270CE0c1c2106f61C73b',
-        9,
-        'BLAST',
-        'BLASTERS',
-        false
+      ChainId.MAINNET,
+      '0xab98093C7232E98A47D7270CE0c1c2106f61C73b',
+      9,
+      'BLAST',
+      'BLASTERS',
+      false
     )
 
     let calculateFotFees: boolean = false

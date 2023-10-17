@@ -380,7 +380,9 @@ export class Pair {
   }
 
   private derivePercentAfterSellFees(inputAmount: CurrencyAmount<Token>): Percent {
-    const sellFeeBips = this.token0.wrapped.equals(inputAmount.wrapped.currency) ? this.token0.wrapped.sellFeeBps : this.token1.wrapped.sellFeeBps;
+    const sellFeeBips = this.token0.wrapped.equals(inputAmount.wrapped.currency)
+      ? this.token0.wrapped.sellFeeBps
+      : this.token1.wrapped.sellFeeBps
     if (sellFeeBips?.gt(BigNumber.from(0))) {
       return ONE_HUNDRED_PERCENT.subtract(new Percent(JSBI.BigInt(sellFeeBips)).divide(BASIS_POINTS))
     } else {
@@ -389,7 +391,9 @@ export class Pair {
   }
 
   private derivePercentAfterBuyFees(outputAmount: CurrencyAmount<Token>): Percent {
-    const buyFeeBps = this.token0.wrapped.equals(outputAmount.wrapped.currency) ? this.token0.wrapped.buyFeeBps : this.token1.wrapped.buyFeeBps;
+    const buyFeeBps = this.token0.wrapped.equals(outputAmount.wrapped.currency)
+      ? this.token0.wrapped.buyFeeBps
+      : this.token1.wrapped.buyFeeBps
     if (buyFeeBps?.gt(BigNumber.from(0))) {
       return ONE_HUNDRED_PERCENT.subtract(new Percent(JSBI.BigInt(buyFeeBps)).divide(BASIS_POINTS))
     } else {
