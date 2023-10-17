@@ -186,6 +186,14 @@ describe('Pair', () => {
       BLASTBuyFeeBps,
       BLASTSellFeeBps
     )
+    const BLAST_WIHTOUT_TAX = new Token(
+      ChainId.MAINNET,
+      '0x3ed643e9032230f01c6c36060e305ab53ad3b482',
+      18,
+      'BLAST',
+      'BLAST',
+      false
+    )
     const BLASTERSBuyFeeBps = BigNumber.from(300)
     const BLASTERSSellFeeBps = BigNumber.from(350)
     const BLASTERS = new Token(
@@ -197,6 +205,14 @@ describe('Pair', () => {
       false,
       BLASTERSBuyFeeBps,
       BLASTERSSellFeeBps
+    )
+    const BLASTERS_WITHOUT_TAX = new Token(
+      ChainId.MAINNET,
+      '0xab98093C7232E98A47D7270CE0c1c2106f61C73b',
+      9,
+      'BLAST',
+      'BLASTERS',
+      false
     )
 
     let calculateFotFees: boolean = false
@@ -213,7 +229,7 @@ describe('Pair', () => {
 
           const pair = new Pair(reserveBlasterAmount, reserveBlastAmount)
 
-          const inputBlastersAmount = CurrencyAmount.fromRawAmount(BLASTERS, '100')
+          const inputBlastersAmount = CurrencyAmount.fromRawAmount(BLASTERS_WITHOUT_TAX, '100')
           const [outputBlastAmount] = pair.getOutputAmount(inputBlastersAmount, calculateFotFees)
 
           // Theoretical amount out:
@@ -246,7 +262,7 @@ describe('Pair', () => {
 
           const pair = new Pair(reserveBlasterAmount, reserveBlastAmount)
 
-          const outputBlastAmount = CurrencyAmount.fromRawAmount(BLAST, '91')
+          const outputBlastAmount = CurrencyAmount.fromRawAmount(BLAST_WIHTOUT_TAX, '91')
           const [inputBlasterAmount] = pair.getInputAmount(outputBlastAmount, calculateFotFees)
 
           // Theoretical amount in:
@@ -294,7 +310,7 @@ describe('Pair', () => {
 
           const pair = new Pair(reserveBlasterAmount, reserveBlastAmount)
 
-          const inputBlastersAmount = CurrencyAmount.fromRawAmount(BLASTERS, '100')
+          const inputBlastersAmount = CurrencyAmount.fromRawAmount(BLASTERS_WITHOUT_TAX, '100')
           const [outputBlastAmount] = pair.getOutputAmount(inputBlastersAmount, calculateFotFees)
 
           const expectedOutputBlastAmount = '0.000000000000000098'
@@ -307,7 +323,7 @@ describe('Pair', () => {
 
           const pair = new Pair(reserveBlasterAmount, reserveBlastAmount)
 
-          const outputBlastAmount = CurrencyAmount.fromRawAmount(BLAST, '91')
+          const outputBlastAmount = CurrencyAmount.fromRawAmount(BLAST_WIHTOUT_TAX, '91')
           const [inputBlasterAmount] = pair.getInputAmount(outputBlastAmount, calculateFotFees)
 
           const expectedInputBlasterAmount = '0.000000093'
