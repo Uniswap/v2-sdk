@@ -181,7 +181,7 @@ export class Pair {
    */
   public getOutputAmount(
     inputAmount: CurrencyAmount<Token>,
-    calculateFotFees: boolean = false
+    calculateFotFees: boolean = true
   ): [CurrencyAmount<Token>, Pair] {
     invariant(this.involvesToken(inputAmount.currency), 'TOKEN')
     if (JSBI.equal(this.reserve0.quotient, ZERO) || JSBI.equal(this.reserve1.quotient, ZERO)) {
@@ -271,7 +271,7 @@ export class Pair {
    */
   public getInputAmount(
     outputAmount: CurrencyAmount<Token>,
-    calculateFotFees: boolean = false
+    calculateFotFees: boolean = true
   ): [CurrencyAmount<Token>, Pair] {
     invariant(this.involvesToken(outputAmount.currency), 'TOKEN')
     const percentAfterBuyFees = calculateFotFees ? this.derivePercentAfterBuyFees(outputAmount) : ZERO_PERCENT
