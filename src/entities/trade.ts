@@ -217,12 +217,12 @@ export class Trade<TInput extends Currency, TOutput extends Currency, TTradeType
    * Note this does not consider aggregation, as routes are linear. It's possible a better route exists by splitting
    * the amount in among multiple routes.
    * @param pairs the pairs to consider in finding the best trade
-   * @param nextAmountIn exact amount of input currency to spend
+   * @param currencyAmountIn exact amount of input currency to spend
    * @param currencyOut the desired currency out
    * @param maxNumResults maximum number of results to return
    * @param maxHops maximum number of hops a returned trade can make, e.g. 1 hop goes through a single pair
    * @param currentPairs used in recursion; the current list of pairs
-   * @param currencyAmountIn used in recursion; the original value of the currencyAmountIn parameter
+   * @param nextAmountIn used in recursion; the original value of the currencyAmountIn parameter
    * @param bestTrades used in recursion; the current list of best trades
    */
   public static bestTradeExactIn<TInput extends Currency, TOutput extends Currency>(
@@ -312,11 +312,11 @@ export class Trade<TInput extends Currency, TOutput extends Currency, TTradeType
    * the amount in among multiple routes.
    * @param pairs the pairs to consider in finding the best trade
    * @param currencyIn the currency to spend
-   * @param nextAmountOut the exact amount of currency out
+   * @param currencyAmountOut the exact amount of currency out
    * @param maxNumResults maximum number of results to return
    * @param maxHops maximum number of hops a returned trade can make, e.g. 1 hop goes through a single pair
    * @param currentPairs used in recursion; the current list of pairs
-   * @param currencyAmountOut used in recursion; the original value of the currencyAmountOut parameter
+   * @param nextAmountOut used in recursion; the original value of the currencyAmountOut parameter
    * @param bestTrades used in recursion; the current list of best trades
    */
   public static bestTradeExactOut<TInput extends Currency, TOutput extends Currency>(

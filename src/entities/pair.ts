@@ -177,7 +177,7 @@ export class Pair {
    * outputAmountWithTax = amountOut * (1 - amountOut.buyFeesBips / 10000)
    *
    * @param inputAmount
-   * @param calculateFotFees
+   * @param calculateFotFees calculating fee-on-transfer (FOT) tax or not; default: true
    */
   public getOutputAmount(
     inputAmount: CurrencyAmount<Token>,
@@ -268,6 +268,7 @@ export class Pair {
    *                    = (A * outputAmountWithTax * 1000) / ((B - outputAmountWithTax) * 997)
    *
    * @param outputAmount
+   * @param calculateFotFees calculating fee-on-transfer (FOT) tax or not; default: true
    */
   public getInputAmount(
     outputAmount: CurrencyAmount<Token>,
