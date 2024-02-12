@@ -1,4 +1,4 @@
-import {Percent, V2_FACTORY_ADDRESSES} from '@uniswap/sdk-core'
+import { Percent, V2_FACTORY_ADDRESSES } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 
 /**
