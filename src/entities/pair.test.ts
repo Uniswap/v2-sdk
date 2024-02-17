@@ -1,8 +1,16 @@
+<<<<<<< Updated upstream
 import { BigNumber } from '@ethersproject/bignumber'
 import { ChainId, CurrencyAmount, Price, Token, WETH9 } from '@uniswap/sdk-core'
 import { FACTORY_ADDRESS } from 'constants'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
+=======
+import {BigNumber} from '@ethersproject/bignumber'
+import {ChainId, CurrencyAmount, Price, Token, WETH9} from '@uniswap/sdk-core'
+import {FACTORY_ADDRESS} from '../constants';
+import {InsufficientInputAmountError} from '../errors'
+import {computePairAddress, Pair} from './pair'
+>>>>>>> Stashed changes
 
 describe('computePairAddress', () => {
   it('should correctly compute the pool address', () => {
