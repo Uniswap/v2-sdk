@@ -1,7 +1,8 @@
+import { BigNumber } from '@ethersproject/bignumber'
 import { ChainId, CurrencyAmount, Price, Token, WETH9 } from '@uniswap/sdk-core'
+import { FACTORY_ADDRESS } from '../constants'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
-import { BigNumber } from '@ethersproject/bignumber'
 
 describe('computePairAddress', () => {
   it('should correctly compute the pool address', () => {
@@ -42,6 +43,9 @@ describe('Pair', () => {
   const USDC = new Token(1, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
   const DAI = new Token(1, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
 
+  const USDC_SEPOLIA = new Token(11155111, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 18, 'USDC', 'USD Coin')
+  const DAI_SEPOLIA = new Token(11155111, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'DAI Stablecoin')
+
   describe('constructor', () => {
     it('cannot be used for tokens on different chains', () => {
       expect(
@@ -53,6 +57,10 @@ describe('Pair', () => {
   describe('#getAddress', () => {
     it('returns the correct address', () => {
       expect(Pair.getAddress(USDC, DAI)).toEqual('0xAE461cA67B15dc8dc81CE7615e0320dA1A9aB8D5')
+    })
+
+    it('returns the default address for a testnet not in the map', () => {
+      expect(Pair.getAddress(USDC_SEPOLIA, DAI_SEPOLIA)).toEqual(FACTORY_ADDRESS)
     })
   })
 
