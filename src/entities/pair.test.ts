@@ -1,8 +1,8 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { ChainId, CurrencyAmount, Price, Token, WETH9 } from '@uniswap/sdk-core'
-import { FACTORY_ADDRESS } from '../constants'
-import { InsufficientInputAmountError } from '../errors'
-import { computePairAddress, Pair } from './pair'
+import {BigNumber} from '@ethersproject/bignumber'
+import {ChainId, CurrencyAmount, Price, Token, WETH9} from '@uniswap/sdk-core'
+import {FACTORY_ADDRESS} from '../constants'
+import {InsufficientInputAmountError} from '../errors'
+import {computePairAddress, Pair} from './pair'
 
 describe('computePairAddress', () => {
   it('should correctly compute the pool address', () => {
@@ -60,7 +60,11 @@ describe('Pair', () => {
     })
 
     it('returns the default address for a testnet not in the map', () => {
-      expect(Pair.getAddress(USDC_SEPOLIA, DAI_SEPOLIA)).toEqual(FACTORY_ADDRESS)
+      expect(Pair.getAddress(USDC_SEPOLIA, DAI_SEPOLIA)).toEqual(computePairAddress({
+        factoryAddress: FACTORY_ADDRESS,
+        tokenA: USDC_SEPOLIA,
+        tokenB: DAI_SEPOLIA
+      }))
     })
   })
 
