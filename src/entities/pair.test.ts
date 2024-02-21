@@ -60,7 +60,13 @@ describe('Pair', () => {
     })
 
     it('returns the default address for a testnet not in the map', () => {
-      expect(Pair.getAddress(USDC_SEPOLIA, DAI_SEPOLIA)).toEqual(FACTORY_ADDRESS)
+      expect(Pair.getAddress(USDC_SEPOLIA, DAI_SEPOLIA)).toEqual(
+        computePairAddress({
+          factoryAddress: FACTORY_ADDRESS,
+          tokenA: USDC_SEPOLIA,
+          tokenB: DAI_SEPOLIA
+        })
+      )
     })
   })
 
