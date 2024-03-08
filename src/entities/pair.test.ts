@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import {ChainId, CurrencyAmount, Price, Token, V2_FACTORY_ADDRESSES, WETH9} from '@uniswap/sdk-core'
+import { ChainId, CurrencyAmount, Price, Token, V2_FACTORY_ADDRESSES, WETH9 } from '@uniswap/sdk-core'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
 
