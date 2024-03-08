@@ -1,6 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { ChainId, CurrencyAmount, Price, Token, WETH9 } from '@uniswap/sdk-core'
-import { FACTORY_ADDRESS } from '../constants'
+import { ChainId, CurrencyAmount, Price, Token, V2_FACTORY_ADDRESSES, WETH9 } from '@uniswap/sdk-core'
 import { InsufficientInputAmountError } from '../errors'
 import { computePairAddress, Pair } from './pair'
 
@@ -62,7 +61,7 @@ describe('Pair', () => {
     it('returns the default address for a testnet not in the map', () => {
       expect(Pair.getAddress(USDC_SEPOLIA, DAI_SEPOLIA)).toEqual(
         computePairAddress({
-          factoryAddress: FACTORY_ADDRESS,
+          factoryAddress: V2_FACTORY_ADDRESSES[ChainId.SEPOLIA],
           tokenA: USDC_SEPOLIA,
           tokenB: DAI_SEPOLIA
         })
